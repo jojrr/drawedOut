@@ -1,0 +1,263 @@
+namespace drawedOut
+{
+    public partial class Form1 : Form
+    {
+
+        Character playerBox = new(
+            origin: new Point(750, 250),
+            width: 50,
+            height: 50,
+            LocatedLevel: 0,
+            LocatedChunk: 0,
+            yVelocity: -0.2);
+
+        Platform box2 = new(
+           origin: new Point(1, 650),
+           width: 5400,
+           height: 550,
+           LocatedLevel: 0,
+           LocatedChunk: 0);
+
+        Platform box3 = new(
+           origin: new Point(300, 200),
+           width: 400,
+           height: 175,
+           LocatedLevel: 0,
+           LocatedChunk: 1);
+
+        Platform box4 = new(
+           origin: new Point(1000, 400),
+           width: 200,
+           height: 300,
+           LocatedLevel: 0,
+           LocatedChunk: 1);
+
+        Entity chunkLoader1 = new Entity(
+            origin: new Point(2000, 0),
+            width: 1,
+            height: 2000);
+            
+
+             
+        Rectangle viewPort;
+        string onWorldBoundary = "left";
+
+        bool movingLeft = false;
+        bool movingRight = false;
+        bool jumping = false;
+
+        bool scrollRight = false;
+        bool scrollLeft = false;
+
+        int jumpVelocity = -22;
+        double xAccel = 2;
+
+        int CurrentLevel;
+        List<int> LoadedChunks;
+        int AllChunks;
+
+        public Form1()
+        {
+            InitializeComponent();
+            this.DoubleBuffered = true;
+            timer1.Interval
+        }
+
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            CurrentLevel = 0;
+            LoadedChunks = [0,1];
+            AllChunks = box2.getChunksInLvl(CurrentLevel); 
+            int windowWidth = this.Width;
+            int windowHeight = this.Height;
+            viewPort = new Rectangle( new Point(-5,0), new Size(windowWidth+10, windowHeight ) );
+        }
+
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (playerBox.IsOnFloor && jumping) { playerBox.yVelocity = jumpVelocity; playerBox.IsOnFloor = false; }
+            if (movingLeft) { playerBox.xVelocity -= xAccel; }
+            if (movingRight) { playerBox.xVelocity += xAccel; }
+
+            if ((!movingLeft && !movingRight) || (playerBox.CollisionState[1] != "null"))
+            {
+                playerBox.IsMoving = false;
+            }
+            else
+            {
+                playerBox.IsMoving = true;
+            }
+
+
+
+            foreach (int chunk1 in LoadedChunks)
+            {
+                foreach (Character chara in Character.CharacterList[CurrentLevel][chunk1])
+                {
+
+                    if (Math.Abs(chara.xVelocity) > 0)
+                    {
+                        if (viewPort.Left < box2.getHitbox().Left) { onWorldBoundary = "left"; }
+                        else if (viewPort.Right > box2.getHitbox().Right) { onWorldBoundary = "right"; }
+                        else { onWorldBoundary = "null"; }
+
+                        if ((playerBox.getCenter().X < 500) && (playerBox.xVelocity < 0))
+                        { scrollLeft = true; }
+                        else if ((playerBox.getCenter().X > 1300) && (playerBox.xVelocity > 0))
+                        { scrollRight = true; }
+                        else
+                        {
+                            scrollLeft = false;
+                            scrollRight = false;
+                        }
+
+
+                        if (onWorldBoundary == "left")
+                        {
+                            scrollLeft = false;
+                        }
+
+                        else if (onWorldBoundary == "right")
+                        {
+                            scrollRight = false;
+                        }
+
+                    }
+
+                    bool isScrolling = (scrollRight || scrollLeft);
+
+                    if (isScrolling)
+                        ScrollPlatform(currentLevel: CurrentLevel, velocity: -chara.xVelocity);
+
+                    foreach (int chunk2 in LoadedChunks)
+                    {
+                        foreach (Platform plat in Platform.PlatformList[CurrentLevel][chunk2])
+                        {
+                            chara.CheckPlatformCollision(plat);
+                        }
+                    }
+
+
+                    chara.MoveCharacter(isScrolling: isScrolling);
+                }
+            }
+
+
+            if (playerBox.getCenter().X > chunkLoader1.getCenter().X)
+            {
+                if (LoadedChunks.Contains(1))
+                {
+                    LoadedChunks.Remove(1);
+                }
+            }
+            else
+                if (!LoadedChunks.Contains(1))
+                {
+                    LoadedChunks.Add(1);
+                }
+
+
+            //label5.Text = (playerBox.CollisionState[0]).ToString();
+            //label4.Text = (playerBox.CollisionState[1]).ToString();
+
+            //string chunkStrings = "";
+            //foreach (int chunk in LoadedChunks)
+            //{
+            //    chunkStrings = chunkStrings + ($"{chunk}, ");
+            //}
+            //label2.Text = (chunkStrings).ToString();
+
+            //label1.Text = (playerBox.getCenter()).ToString();
+            //label3.Text = (onWorldBoundary).ToString();
+            GC.Collect();
+            this.Refresh();
+        }
+
+
+
+
+
+        public void ScrollPlatform(int currentLevel, double velocity)
+        {
+            if ((playerBox.CollisionState[1] == "left") && (playerBox.xVelocity < 0)) { velocity = 0; }
+            if ((playerBox.CollisionState[1] == "right") && (playerBox.xVelocity > 0)) { velocity= 0; }
+            for (int i = 0; i < AllChunks; i++)
+            {
+                foreach (Platform plat in Platform.PlatformList[currentLevel][i])
+                {
+                    plat.updateLocation(plat.getPoint().X + (int)velocity, plat.getPoint().Y);
+                }
+            }
+            chunkLoader1.updateLocation(chunkLoader1.getLocation().X + (int)velocity, chunkLoader1.getLocation().Y);
+        }
+
+
+
+        private void Form1_Paint(object sender, PaintEventArgs e)
+        {
+            Pen bluePen = new Pen(Color.Blue, 3);
+            Pen redPen = new Pen(Color.Red, 3);
+            foreach (int chunk in LoadedChunks)
+            {
+                foreach (Character chara in Character.CharacterList[CurrentLevel][chunk])
+                {
+                    e.Graphics.DrawRectangle(bluePen, chara.getHitbox());
+                }
+                foreach (Platform plat in Platform.PlatformList[CurrentLevel][chunk])
+                {
+                    e.Graphics.DrawRectangle(redPen, plat.getHitbox());
+                }
+            }
+        }
+
+
+
+
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            RectangleF playerBoxHitbox = playerBox.getHitbox();
+            if (e.KeyCode == Keys.A)
+            {
+                movingRight = false;
+                movingLeft = true;
+            }
+            if (e.KeyCode == Keys.D)
+            {
+                movingLeft=false;
+                movingRight = true;
+            }
+            if (e.KeyCode == Keys.W)
+            {
+                if (playerBox.IsOnFloor) { jumping = true; }
+            }
+        }
+
+
+
+
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.A)
+            {
+                movingLeft = false;
+            }
+            if (e.KeyCode == Keys.D)
+            {
+                movingRight = false;
+            }
+            if (e.KeyCode == Keys.W)
+            {
+                if (jumping)
+                {
+                    jumping = false;
+                    if (playerBox.yVelocity < 0) { playerBox.yVelocity = 1; }
+                }
+            }
+        }
+
+    }
+}
