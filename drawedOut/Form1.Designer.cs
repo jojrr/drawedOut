@@ -28,19 +28,43 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            timer1 = new System.Windows.Forms.Timer(components);
+            label1 = new Label();
             SuspendLayout();
+            // 
+            // timer1
+            // 
+            timer1.Tick += timer1_Tick;
+            // 
+            // label1
+            // 
+            label1.Location = new Point(223, 102);
+            label1.Name = "label1";
+            label1.Size = new Size(100, 23);
+            label1.TabIndex = 0;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(label1);
             Name = "Form1";
             Text = "Form1";
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
+            Paint += Form1_Paint;
+            KeyDown += Form1_KeyDown;
+            KeyUp += Form1_KeyUp;
+            MouseDown += Form1_MouseDown;
+            MouseUp += Form1_MouseUp;
             ResumeLayout(false);
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer timer1;
+        private Label label1;
     }
 }

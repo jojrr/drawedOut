@@ -8,7 +8,11 @@ namespace drawedOut
 {
     internal class Platform : Entity
     {
+        /// <summary>
+        /// 2D array: [level] [chunk]
+        /// </summary>
         public static List<Platform>[][] PlatformList = new List<Platform>[TotalLevels][];
+
         static Platform()
         {
             // basically copied from character lol
@@ -25,7 +29,8 @@ namespace drawedOut
 
 
 
-        public Platform(Point origin, int width, int height, int LocatedLevel, int LocatedChunk) : base(origin, width, height)
+        public Platform(Point origin, int width, int height, int LocatedLevel, int LocatedChunk, bool isMainPlat=false)
+            : base(origin, width, height, isMainPlat: isMainPlat)
         {
             PlatformList[LocatedLevel][LocatedChunk].Add(this);
         } 
@@ -36,16 +41,6 @@ namespace drawedOut
         {
             return (this.getLocation());
         }
-
-
-
-        public int getChunksInLvl(int level)
-        {
-            return ChunksInLvl[level];
-        }
-
-
-
 
     }
 }
