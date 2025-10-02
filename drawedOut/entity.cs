@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Media;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
 
 namespace drawedOut 
 {
@@ -13,31 +7,47 @@ namespace drawedOut
     /// </summary>
     internal class Entity
     {
-        public static List<Entity> EntityList = new List<Entity>();
-
-        public bool IsPlayer { get; } 
-        public bool IsMainPlat { get; } 
-        public SizeF Size { get { return size; } }  
 
         protected PointF Location;
         protected PointF Center;
-        protected SizeF 
-            size,
-            scaledSize;
-        protected int
-            Width = 0,
-            Height = 0;
+
+        protected SizeF scaledSize;
+        public SizeF Size { get;  protected set; }
+        protected float Width { get { return scaledSize.Width; } }
+        protected float Height { get { return scaledSize.Height; } }
+
         protected RectangleF Hitbox;
-
-        protected const int TotalLevels = 1;
-        protected static readonly int[] ChunksInLvl = { 3 };
-
         /// <summary>
         /// returns the hitbox as a rectangle
         /// </summary>
         /// <returns>hitbox of type rectangle</returns>
         public RectangleF getHitbox() { return Hitbox; }
 
+
+        protected const int TotalLevels = 1;
+        protected static readonly int[] ChunksInLvl = { 3 };
+
+        public static ConcurrentBag<Entity>[][] EntityList = new ConcurrentBag<Entity>[TotalLevels][];
+
+
+        static Entity()
+        {
+            /*
+            Loops through all levels and looks at the number of chunks of each level stored in the array
+            [ChunksInLvl] at each according level and initalises the jagged array [CharacterList] accordingly
+            */
+            for (int level = 0; level < TotalLevels; level++)
+            {
+                int chunks = ChunksInLvl[level];
+                EntityList[level] = new ConcurrentBag<Entity>[chunks];
+
+                //loops through each chunk and adds the list into the dimension of said chunk
+                for (int i = 0; i < chunks; i++)
+                {
+                    EntityList[level][i] = new ConcurrentBag<Entity>();
+                }
+            }
+        }
         
 
         /// <summary>
@@ -46,20 +56,17 @@ namespace drawedOut
         /// <param name="origin">the point of the top-left of the rectangle</param>
         /// <param name="width">width of the rectangle</param>
         /// <param name="height">height of the rectangle</param>
-        /// <param name="isPlayer">Is this entity the player </param>
-        public Entity(PointF origin, int width, int height, bool isPlayer = false, bool isMainPlat = false)
+        /// <param name="level">level which the Entity belongs to. (Default = 0: always loaded)</param>
+        /// <param name="chunk">chunk in the level which the entity belongs to. (default = 0: always loaded)</param>
+        public Entity(PointF origin, int width, int height, int level = 0, int chunk = 0)
         {
             Location = origin;
-            Width = width;
-            Height = height;
-            size = new Size( width, height);
+            Size = new Size( width, height);
             scaledSize = Size;
             Hitbox = new RectangleF(origin, Size); 
-            Center = new PointF (Hitbox.X + Width/2, Hitbox.Y + Height/2);
-            IsPlayer = isPlayer;
-            IsMainPlat = isMainPlat;
+            Center = new PointF (Hitbox.X + Size.Width/2, Hitbox.Y + Size.Height/2);
 
-            EntityList.Add(this);
+            EntityList[level][chunk].Add(this);
         }
 
         /// <summary>
@@ -105,7 +112,7 @@ namespace drawedOut
 
         public void scaleHitbox(float scaleF)
         {
-            scaledSize = new SizeF (this.Size.Width*scaleF, this.Size.Height*scaleF);
+            scaledSize = new SizeF (Size.Width*scaleF, Size.Height*scaleF);
             this.Hitbox = new RectangleF( Location, scaledSize );
         }
 
@@ -114,7 +121,5 @@ namespace drawedOut
             scaledSize = Size;
             this.Hitbox = new RectangleF( Location, scaledSize );
         }
-
-        public int GetChunksInLvl(int level) { return ChunksInLvl[level]; }
     }
 }

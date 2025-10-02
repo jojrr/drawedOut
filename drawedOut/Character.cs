@@ -1,13 +1,4 @@
-﻿using drawedOut;
-using System;
-using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace drawedOut
+﻿namespace drawedOut
 {
     internal class Character : Entity
     {
@@ -29,8 +20,8 @@ namespace drawedOut
         private double CoyoteTime;
         private const double Gravity = 9.8;
 
-        public RectangleF? xStickTarget { get; private set; }
-        public RectangleF? yStickTarget { get; private set; }
+        private RectangleF? xStickTarget; 
+        private RectangleF? yStickTarget;
         private Entity? xStickEntity;
         private Entity? yStickEntity;
 
@@ -75,8 +66,8 @@ namespace drawedOut
         /// <param name="xVelocity">default = 0</param>
         /// <param name="yVelocity">default = 0</param>
         /// <param name="flying">default = false</param>
-        public Character(Point origin, int width, int height, int LocatedLevel, int LocatedChunk, bool isPlayer, double xVelocity = 0, double yVelocity = 0, bool flying = false)
-            : base(origin: origin, width: width, height: height, isPlayer: isPlayer)
+        public Character(Point origin, int width, int height, int LocatedLevel, int LocatedChunk, double xVelocity = 0, double yVelocity = 0, bool flying = false)
+            : base(origin: origin, width: width, height: height, level: LocatedLevel, chunk: LocatedChunk)
         {
             this.xVelocity = xVelocity;
             this.yVelocity = yVelocity;

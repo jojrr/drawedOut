@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace drawedOut
+﻿namespace drawedOut
 {
     internal class Platform : Entity
     {
@@ -29,8 +23,8 @@ namespace drawedOut
 
 
 
-        public Platform(Point origin, int width, int height, int LocatedLevel, int LocatedChunk, bool isMainPlat=false)
-            : base(origin, width, height, isMainPlat: isMainPlat)
+        public Platform(Point origin, int width, int height, int LocatedLevel, int LocatedChunk)
+            : base(origin, width, height, LocatedLevel, LocatedChunk)
         {
             PlatformList[LocatedLevel][LocatedChunk].Add(this);
         } 

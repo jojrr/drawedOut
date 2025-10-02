@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Drawing.Text;
 namespace drawedOut
 {
     public partial class Form1 : Form
@@ -11,16 +10,14 @@ namespace drawedOut
             height: 50,
             LocatedLevel: 0,
             LocatedChunk: 0,
-            yVelocity: -0.2,
-            isPlayer: true);
+            yVelocity: -0.2);
 
         Platform box2 = new(
            origin: new Point(1, 650),
            width: 5400,
            height: 550,
            LocatedLevel: 0,
-           LocatedChunk: 0,
-           isMainPlat: true);
+           LocatedChunk: 0);
 
         Platform box3 = new(
            origin: new Point(300, 200),
@@ -44,9 +41,9 @@ namespace drawedOut
            LocatedChunk: 2);
 
         Entity chunkLoader1 = new Entity(
-            origin: new Point(2000, 0),
+            origin: new Point(1200, 0),
             width: 1,
-            height: 2000);
+            height: 1);
 
 
         Rectangle viewPort;
@@ -62,8 +59,9 @@ namespace drawedOut
         double xAccel = 10;
 
         int CurrentLevel;
-        List<int> LoadedChunks;
-        int AllChunks;
+        int[] LoadedChunks = new int[2];
+        List<int> UnLoadedChunks;
+        int TotalChunks;
 
 
 
@@ -73,7 +71,8 @@ namespace drawedOut
         Entity bulletOrigin = new Entity (
             origin: new PointF(800, 250),
             width: 1,
-            height: 1);
+            height: 1,
+            chunk: 1);
 
         // threading 
         CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
@@ -147,7 +146,6 @@ namespace drawedOut
             refreshRate = (int)(1000.0F / targetFrameRate);
             timer1.Interval = refreshRate;
             timer1.Enabled = true;
-
         }
 
 
@@ -156,7 +154,9 @@ namespace drawedOut
         {
             CurrentLevel = 0;
             LoadedChunks = [0, 1];
-            AllChunks = playerBox.GetChunksInLvl(CurrentLevel);
+            UnLoadedChunks = [2];
+            TotalChunks = LoadedChunks.Count() + UnLoadedChunks.Count();
+
             viewPort = new Rectangle(new Point(-5, 0), new Size(Width + 10, Height));
 
             bulletInterval = bulletCooldownS;
@@ -287,15 +287,20 @@ namespace drawedOut
                 bullet.moveProjectile(motionDT);
                 PointF bLoc = bullet.getCenter();
 
-                foreach (int i in LoadedChunks)
+                List<int> loadedChunks = LoadedChunks.ToList();
+                foreach (int i in loadedChunks)
                 { 
-                    foreach(Platform p in Platform.PlatformList[CurrentLevel][i])
+                    //List<Entity> list = Entity.EntityList[CurrentLevel][i];
+                    List<Entity> list = Entity.EntityList[CurrentLevel][i].ToList();
+
+                    foreach(Platform p in list.OfType<Platform>())
                     {
-                        if (p.getHitbox().IntersectsWith(bullet.getHitbox())) 
-                        {
-                            disposedProjectiles.Add(bullet); 
-                            break; 
-                        }
+                        if ( !( p.getHitbox().IntersectsWith(bullet.getHitbox()) ) )
+                            continue;
+
+                        disposedProjectiles.Add(bullet); 
+                        break; 
+
                     }
                     if (disposedProjectiles.Contains(bullet)) { break; }
                 }
@@ -388,17 +393,17 @@ namespace drawedOut
                 PointF rectangleOrigin = new PointF(hpBar.Origin.X + xOffset, hpBar.Origin.Y);
                 hpBar.HpRectangles[i] = new RectangleF(rectangleOrigin, hpBar.ElementSize);
 
-                if (tempHpStore >= 2)
+                switch (tempHpStore)
                 {
-                    hpBar.HpRecColours[i] = Brushes.Green;
-                }
-                else if (tempHpStore == 1)
-                {
-                    hpBar.HpRecColours[i] = Brushes.Orange;
-                }
-                else
-                {
-                    hpBar.HpRecColours[i] = Brushes.DimGray;
+                    case >= 2:
+                        hpBar.HpRecColours[i] = Brushes.Green;
+                        break;
+                    case 1:
+                        hpBar.HpRecColours[i] = Brushes.Orange;
+                        break;
+                    default:
+                        hpBar.HpRecColours[i] = Brushes.DimGray;
+                        break;
                 }
 
                 xOffset += hpIconOffset * hpBar.ScaleF;
@@ -521,36 +526,27 @@ namespace drawedOut
 
             void zoomObj(Entity obj)
             {
-                if (obj == playerBox.yStickEnt)
                 float XDiff = obj.getCenter().X - mcPrevCenter.X;
                 float YDiff = obj.getCenter().Y - mcPrevCenter.Y;
 
                 float newX = midX + XDiff * scaleF;
                 float newY = midY + YDiff * scaleF;
 
-                obj.updateCenter(newX, newY);
                 obj.scaleHitbox(scaleF);
+                obj.updateCenter(newX, newY);
                 this.Invalidate();
             }
 
+
             // calculates new position for each projectile based on distance from playerBox center and adjusts for Scale and the "screen" shifting to the center
-            foreach (Entity e in Entity.EntityList) 
-            { 
-                if (e.IsPlayer) { continue; }
-                // if (e.IsMainPlat)
-                // {
-                //     float YDiff = e.getHitbox().Top - playerBox.getHitbox().Bottom;
-
-                //     float newPlayerH = playerBox.Size.Height * scaleF;
-                //     float newY = midY + newPlayerH/2 + YDiff;
-                //     
-                //     e.updateLocation(e.getLocation().X, newY);
-
-                //     continue;
-                // }
-
-                zoomOrigins.Add(e,e.getCenter());
-                zoomObj(e); 
+            foreach (int chunk in LoadedChunks)
+            {
+                foreach (Entity e in Entity.EntityList[CurrentLevel][chunk])
+                { 
+                    if (e == playerBox ) { continue; }
+                    zoomOrigins.Add(e,e.getCenter());
+                    zoomObj(e); 
+                }
             }
 
             playerBox.updateCenter(midX, midY);
@@ -566,31 +562,14 @@ namespace drawedOut
 
             void unZoomObj(Entity obj, PointF point)
             {
-                // float XDiff = obj.getCenter().X - midX;
-                // float YDiff = obj.getCenter().Y - midY;
-
-                // float oldX = mcPrevCenter.X + XDiff / scaleF;
-                // float oldY = mcPrevCenter.Y + YDiff / scaleF;
-
                 obj.resetScale();
                 obj.updateCenter(point.X, point.Y);
             }
 
+
             foreach (KeyValuePair<Entity,PointF> EntityPoints in zoomOrigins)
-            {
-                // if (e.IsMainPlat)
-                // {
-                //     float YDiff = e.getHitbox().Top - playerBox.getHitbox().Bottom;
-
-                //     float oldPlayerH = playerBox.Size.Height;
-                //     float oldY = mcPrevCenter.Y + oldPlayerH / 2 + YDiff;
-
-                //     e.updateLocation(e.getLocation().X, oldY);
-
-                //     continue;
-                // }
                 unZoomObj(EntityPoints.Key, EntityPoints.Value);
-            }
+
             zoomOrigins.Clear();
 
             playerBox.updateCenter(mcPrevCenter.X, mcPrevCenter.Y);
@@ -601,15 +580,14 @@ namespace drawedOut
 
 
 
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) { threadTokenSrc.Cancel(); }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            threadTokenSrc.Cancel();
-        }
 
 
         private void movementTick()
         {
+            if (!LoadedChunks.Contains(0))
+                throw new ArgumentException("chunk zero not loaded");
 
             if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
             if (movingLeft) { playerBox.xVelocity -= xAccel; }
@@ -663,10 +641,8 @@ namespace drawedOut
 
                     foreach (int chunk2 in LoadedChunks)
                     {
-                        foreach (Platform plat in Platform.PlatformList[CurrentLevel][chunk2])
-                        {
+                        foreach (Platform plat in Entity.EntityList[CurrentLevel][chunk2].OfType<Platform>())
                             chara.CheckPlatformCollision(plat);
-                        }
                     }
 
                     chara.MoveCharacter(
@@ -677,39 +653,26 @@ namespace drawedOut
             }
 
 
-            if (playerBox.getCenter().X > chunkLoader1.getCenter().X)
-            {
-                if (LoadedChunks.Contains(1))
-                {
-                    LoadedChunks.Remove(1);
-                }
-            }
-            else
-                if (!LoadedChunks.Contains(1))
-            {
-                LoadedChunks.Add(1);
-            }
-
-
-            //label5.Text = (playerBox.CollisionState[0]).ToString();
-            //label4.Text = (playerBox.CollisionState[1]).ToString();
-
-            //string chunkStrings = "";
-            //foreach (int chunk in LoadedChunks)
-            //{
-            //    chunkStrings = chunkStrings + ($"{chunk}, ");
-            //}
-            //label2.Text = (chunkStrings).ToString();
-
-            //label1.Text = (playerBox.getCenter()).ToString();
-            //label3.Text = (onWorldBoundary).ToString();
+            if (playerBox.getCenter().X < chunkLoader1.getCenter().X) { tryLoadChunk(1); }
+            else { tryLoadChunk(2); }
         }
+
+
+        public void tryLoadChunk(int chunk)
+        {
+            if (LoadedChunks.Contains(chunk)) { return; }
+
+            UnLoadedChunks.Add(LoadedChunks[1]);
+            LoadedChunks[1] = chunk;
+            UnLoadedChunks.Remove(chunk);
+        }
+
 
 
 
         public void ScrollPlatform(int currentLevel, double velocity, double deltaTime)
         {
-            for (int i = 0; i < AllChunks; i++)
+            for (int i = 0; i < TotalChunks; i++)
             {
                 foreach (Platform plat in Platform.PlatformList[currentLevel][i])
                 {
@@ -723,19 +686,23 @@ namespace drawedOut
 
         public void ScrollEntities(int currentLevel, double velocity, double deltaTime)
         {
-            List<Entity> tempEList = new List<Entity>(Entity.EntityList);
+            //List<Entity>[][] tempEList = new List<Entity>(Entity.EntityList);
+            //foreach (Entity e in Entity.EntityList[CurrentLevel][LoadedChunks[0]])
+            
 
-            foreach (Entity e in tempEList)
+            for (int i = 0; i < TotalChunks; i++)
             {
-                if (e.IsPlayer) { continue; }
-                e.updateLocation(e.getLocation().X + velocity * deltaTime);
-
-                if (Entity.EntityList.Contains(e))
+                foreach( Entity e in Entity.EntityList[CurrentLevel][i])
                 {
-                    int tempIndex = Entity.EntityList.IndexOf(e);
-                    Entity.EntityList[tempIndex] = e;
-                } 
-                    
+                    if (e == playerBox) { continue; }
+                    e.updateLocation(e.getLocation().X + velocity * deltaTime);
+
+                    //if (Entity.EntityList.Contains(e))
+                    //{
+                    //    int tempIndex = Entity.EntityList.IndexOf(e);
+                    //    Entity.EntityList[tempIndex] = e;
+                    //} 
+                }
             }
         }
 
