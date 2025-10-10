@@ -18,7 +18,7 @@
         private const int MaxXVelocity = 60;
         private const int jumpVelocity = -150;
         private double CoyoteTime;
-        private const double Gravity = 9.8;
+        private const double Gravity = 67.42;
 
         private RectangleF? xStickTarget; 
         private RectangleF? yStickTarget;
@@ -230,7 +230,7 @@
             if (CurYColliderDirection != YColliders.bottom)
             {
                 IsOnFloor = false;
-                yVelocity += Gravity;
+                yVelocity += Gravity*dt;
 
                 // Terminal velocity -> only applies downwards
                 if (yVelocity > 0) { yVelocity = Math.Min(yVelocity, TerminalVelocity); }

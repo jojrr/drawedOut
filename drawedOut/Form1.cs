@@ -56,7 +56,7 @@ namespace drawedOut
         bool scrollRight = false;
         bool scrollLeft = false;
 
-        double xAccel = 10;
+        const double xAccel = 100;
 
         int CurrentLevel;
         int[] LoadedChunks = new int[2];
@@ -170,7 +170,7 @@ namespace drawedOut
             );
 
             currentHp = maxHp;
-            computeHP();
+            hpBar.computeHP(currentHp);
 
             playerBrush = Brushes.Blue;
 
@@ -185,7 +185,6 @@ namespace drawedOut
                 {
                     if (threadCT.IsCancellationRequested)
                         return;
-                    getDeltaTime();
                     Thread.Sleep(refreshRate / 4);
                 }
             });
@@ -198,21 +197,28 @@ namespace drawedOut
                         return;
                     if (isPaused)
                         continue;
-                    attackHandler();
                     Thread.Sleep(refreshRate / 4);
                 }
             });
 
             movementThread = new Thread(() =>
             {
+                double threadDelay = 0;
                 while (true)
                 {
                     if (threadCT.IsCancellationRequested)
                         return;
-                    if (isPaused)
-                        continue;
-                    movementTick();
-                    Thread.Sleep(refreshRate / 4);
+
+                    if (threadDelay <= 0)
+                    {
+                        threadDelay = (refreshRate / 4);
+                        getDeltaTime();
+                        if (isPaused)
+                            continue;
+                        movementTick();
+                        attackHandler();
+                    }
+                    --threadDelay;
                 }
             });
 
@@ -227,10 +233,9 @@ namespace drawedOut
 
         private void getDeltaTime()
         {
-            double currentTime = stopWatch.Elapsed.TotalSeconds;
-            deltaTime = (currentTime - prevTime) * 10;
+            double deltaTime = stopWatch.Elapsed.TotalSeconds * 10;
             motionDT = deltaTime;
-            prevTime = currentTime;
+            stopWatch.Restart();
 
             isPaused = false;
             if (freezeFrame > 0)
@@ -379,44 +384,10 @@ namespace drawedOut
             bullet.scaleHitbox(curZoom);
         }
 
-
-
-        const int hpIconOffset = 50;
-
-        private void computeHP()
-        {
-            float xOffset = 0;
-            int tempHpStore = currentHp;
-
-            for (int i = 0; i < hpBar.IconCount; i++)
-            {
-                PointF rectangleOrigin = new PointF(hpBar.Origin.X + xOffset, hpBar.Origin.Y);
-                hpBar.HpRectangles[i] = new RectangleF(rectangleOrigin, hpBar.ElementSize);
-
-                switch (tempHpStore)
-                {
-                    case >= 2:
-                        hpBar.HpRecColours[i] = Brushes.Green;
-                        break;
-                    case 1:
-                        hpBar.HpRecColours[i] = Brushes.Orange;
-                        break;
-                    default:
-                        hpBar.HpRecColours[i] = Brushes.DimGray;
-                        break;
-                }
-
-                xOffset += hpIconOffset * hpBar.ScaleF;
-                tempHpStore -= 2;
-            }
-        }
-
-
-
         private void doPlayerDamage(int amt)
         {
             currentHp -= amt;
-            computeHP();
+            hpBar.computeHP(currentHp);
             if (currentHp <= 0)
             {
                 togglePause(true);
@@ -590,8 +561,8 @@ namespace drawedOut
                 throw new ArgumentException("chunk zero not loaded");
 
             if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
-            if (movingLeft) { playerBox.xVelocity -= xAccel; }
-            if (movingRight) { playerBox.xVelocity += xAccel; }
+            if (movingLeft) { playerBox.xVelocity -= xAccel*motionDT; }
+            if (movingRight) { playerBox.xVelocity += xAccel*motionDT; }
 
             if ((!movingLeft && !movingRight) || (playerBox.CurXColliderDirection != null))
                 playerBox.IsMoving = false;
