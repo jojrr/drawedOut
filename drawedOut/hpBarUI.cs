@@ -4,25 +4,38 @@ namespace drawedOut
     {
         public RectangleF[] HpRectangles;
         public Brush[] HpRecColours;
-        public int IconCount { get; }
+        public int IconCount { get; private set; }
 
-        private const int baseIconOffset = 50;
-        public readonly float hpIconOffset;
+        private const int _baseIconOffset = 50;
+        private float _hpIconOffset;
 
-        public hpBarUI (PointF origin, float barWidth, float barHeight, int iconCount, float scaleF = 1, bool isVisible = true)
+        private int _maxHp;
+
+        public hpBarUI (PointF origin, float barWidth, float barHeight, int maxHp, float scaleF = 1, bool isVisible = true)
             :base( origin: origin, elementWidth: barWidth, elementHeight: barHeight, scaleF: scaleF , isVisible: isVisible) 
         {
-            HpRectangles = new RectangleF[iconCount];
-            HpRecColours = new Brush[iconCount];
-            IconCount = iconCount;
-            hpIconOffset = baseIconOffset*scaleF;
+            _hpIconOffset = _baseIconOffset*scaleF;
+
+            UpdateMaxHp(maxHp);
         }
 
-        public void computeHP(int currentHp)
+        public void UpdateMaxHp(int maxHp)
+        {
+            if (maxHp <= 0) throw new Exception("Max HP must be bigger than zero.");
+
+            _maxHp = maxHp;
+            IconCount = (int)Math.Ceiling(_maxHp / 2.0F);
+            ComputeHP(_maxHp);
+        }
+
+        public void ComputeHP(int currentHp)
         {
             float xOffset = 0;
 
-            for (int i = 0; i < this.IconCount; i++)
+            HpRectangles = new RectangleF[IconCount];
+            HpRecColours = new Brush[IconCount];
+
+            for (int i = 0; i < IconCount; i++)
             {
                 PointF rectangleOrigin = new PointF(this.Origin.X + xOffset, this.Origin.Y);
                 this.HpRectangles[i] = new RectangleF(rectangleOrigin, this.ElementSize);
@@ -40,7 +53,7 @@ namespace drawedOut
                         break;
                 }
 
-                xOffset += hpIconOffset * this.ScaleF;
+                xOffset += _hpIconOffset * this.ScaleF;
                 currentHp -= 2;
             }
         }

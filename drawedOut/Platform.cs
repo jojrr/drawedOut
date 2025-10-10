@@ -5,7 +5,7 @@
         /// <summary>
         /// 2D array: [level] [chunk]
         /// </summary>
-        public static List<Platform>[][] PlatformList = new List<Platform>[TotalLevels][];
+        public static List<Platform>[][] PlatformList = new List<Platform>[TotalLevels][]; // TODO: chunkloading code to be removed
 
         static Platform()
         {

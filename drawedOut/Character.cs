@@ -4,7 +4,10 @@
     {
         // list of all characters - [int: level][list: chunk][Character]
         // used for gametick
+        
+        // TODO: chunkloading code to be removed
         public static List<Character>[][] CharacterList = new List<Character>[TotalLevels][];
+
         public enum YColliders : int { bottom, top }
         public enum XColliders : int { right, left }
 
@@ -147,7 +150,7 @@
         /// <param name="y">bottom, top or null </param>
         /// <param name="targetHitbox"></param>
         /// <param name="collisionTarget"></param>
-        private void SetYCollider(YColliders? y, RectangleF? targetHitbox, Entity? collisionTarget)
+        public void SetYCollider(YColliders? y, RectangleF? targetHitbox, Entity? collisionTarget)
         {
             CurYColliderDirection = y;
             yStickTarget = targetHitbox;

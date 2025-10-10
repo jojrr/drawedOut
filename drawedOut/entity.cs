@@ -23,7 +23,7 @@ namespace drawedOut
         /// <returns>hitbox of type rectangle</returns>
         public RectangleF getHitbox() { return Hitbox; }
 
-
+        // TODO: chunk loading code to be removed
         protected const int TotalLevels = 1;
         protected static readonly int[] ChunksInLvl = { 3 };
 

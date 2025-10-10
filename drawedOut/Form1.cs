@@ -58,6 +58,7 @@ namespace drawedOut
 
         const double xAccel = 100;
 
+        // TODO: replace chunk logic with "Load if on screen" logic
         int CurrentLevel;
         int[] LoadedChunks = new int[2];
         List<int> UnLoadedChunks;
@@ -65,9 +66,10 @@ namespace drawedOut
 
 
 
-        Brush playerBrush;
+        Brush playerBrush; // TODO: remove when player sprites is added
 
         // point where bullets spawn
+        // TODO: remove when enemies are added
         Entity bulletOrigin = new Entity (
             origin: new PointF(800, 250),
             width: 1,
@@ -76,11 +78,15 @@ namespace drawedOut
 
         // threading 
         CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
-        Thread hitboxThread = new Thread(() => { });
-        Thread movementThread = new Thread(() => { });
-        Thread deltaThread = new Thread(() => { });
+        Thread gameTickThread = new Thread(() => { });
 
-        hpBarUI hpBar;
+        hpBarUI hpBar = new hpBarUI(
+                    origin: new PointF(70, 50),
+                    barWidth: 20,
+                    barHeight: 40,
+                    maxHp: 6
+            );
+
 
         Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();  
 
@@ -98,7 +104,7 @@ namespace drawedOut
             maxHp = 6,
             currentHp,
             targetFrameRate = 120,
-            refreshRate;
+            refreshDelay;
 
 
         const float
@@ -130,7 +136,7 @@ namespace drawedOut
             motionDT = 0,
             deltaTime = 0;
 
-        Stopwatch stopWatch = new Stopwatch();
+        Stopwatch deltaTimeSW = new Stopwatch();
 
         public Form1()
         {
@@ -138,14 +144,11 @@ namespace drawedOut
             this.DoubleBuffered = true;
 
             // set height and width of window
-            Width = 1660;
+            Width = 1860;
             Height = 770;
 
             // sets the refresh interval
-            targetFrameRate += 10;
-            refreshRate = (int)(1000.0F / targetFrameRate);
-            timer1.Interval = refreshRate;
-            timer1.Enabled = true;
+            refreshDelay = (int)(1000.0F / targetFrameRate);
         }
 
 
@@ -161,71 +164,40 @@ namespace drawedOut
 
             bulletInterval = bulletCooldownS;
 
-
-            hpBar = new hpBarUI(
-                    origin: new PointF(70, 50),
-                    barWidth: 20,
-                    barHeight: 40,
-                    iconCount: maxHp / 2
-            );
-
             currentHp = maxHp;
-            hpBar.computeHP(currentHp);
+            hpBar.UpdateMaxHp(maxHp);
 
             playerBrush = Brushes.Blue;
 
-            stopWatch.Start();
+            deltaTimeSW.Start();
             fpsTimer.Start();
-
+            Stopwatch threadDelaySW = Stopwatch.StartNew();
 
             CancellationToken threadCT = threadTokenSrc.Token;
-            deltaThread = new Thread(() =>
+
+            gameTickThread = new Thread(() =>
             {
                 while (true)
                 {
                     if (threadCT.IsCancellationRequested)
                         return;
-                    Thread.Sleep(refreshRate / 4);
-                }
-            });
 
-            hitboxThread = new Thread(() =>
-            {
-                while (true)
-                {
-                    if (threadCT.IsCancellationRequested)
-                        return;
-                    if (isPaused)
-                        continue;
-                    Thread.Sleep(refreshRate / 4);
-                }
-            });
-
-            movementThread = new Thread(() =>
-            {
-                double threadDelay = 0;
-                while (true)
-                {
-                    if (threadCT.IsCancellationRequested)
-                        return;
-
-                    if (threadDelay <= 0)
+                    if (threadDelaySW.Elapsed.TotalMilliseconds >= refreshDelay)
                     {
-                        threadDelay = (refreshRate / 4);
                         getDeltaTime();
-                        if (isPaused)
-                            continue;
+                        threadDelaySW.Restart();
+
+                        if (isPaused) continue;
+
                         movementTick();
                         attackHandler();
+                        Task.Run(renderGraphics);
                     }
-                    --threadDelay;
                 }
             });
 
 
-            deltaThread.Start();
-            hitboxThread.Start();
-            movementThread.Start();
+            gameTickThread.Start();
 
             togglePause(false);
         }
@@ -233,9 +205,9 @@ namespace drawedOut
 
         private void getDeltaTime()
         {
-            double deltaTime = stopWatch.Elapsed.TotalSeconds * 10;
+            double deltaTime = deltaTimeSW.Elapsed.TotalSeconds * 10;
             motionDT = deltaTime;
-            stopWatch.Restart();
+            deltaTimeSW.Restart();
 
             isPaused = false;
             if (freezeFrame > 0)
@@ -287,7 +259,7 @@ namespace drawedOut
 
 
 
-            foreach (Projectile bullet in Projectile.ProjectileList)
+            foreach (Projectile bullet in Projectile.ProjectileList) // NOTE: try add parallel foreach
             {
                 bullet.moveProjectile(motionDT);
                 PointF bLoc = bullet.getCenter();
@@ -387,7 +359,7 @@ namespace drawedOut
         private void doPlayerDamage(int amt)
         {
             currentHp -= amt;
-            hpBar.computeHP(currentHp);
+            hpBar.ComputeHP(currentHp);
             if (currentHp <= 0)
             {
                 togglePause(true);
@@ -430,19 +402,7 @@ namespace drawedOut
 
 
         // pause game
-        private void togglePause(bool pause)
-        {
-            if (pause)
-            {
-                isPaused = true;
-                timer1.Enabled = false;
-            }
-            else
-            {
-                isPaused = false;
-                timer1.Enabled = true;
-            }
-        }
+        private void togglePause(bool pause) => isPaused = !isPaused; 
 
 
 
@@ -453,8 +413,8 @@ namespace drawedOut
         double deltaFPSTime = 0;
         double prevFPSTime = 0;
 
-        // rendering timer
-        private void timer1_Tick(object sender, EventArgs e)
+        // rendering graphics method
+        private void renderGraphics()
         {
             if (slowFrame <= 0 && freezeFrame <= 0 && curZoom != 1)
             {
@@ -477,7 +437,6 @@ namespace drawedOut
             label1.Text = deltaFPSTime.ToString("F0");
 
             Refresh();
-            GC.Collect();
         }
 
 
@@ -550,14 +509,11 @@ namespace drawedOut
         }
 
 
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e) { threadTokenSrc.Cancel(); }
-
-
-
         private void movementTick()
         {
-            if (!LoadedChunks.Contains(0))
+            // TODO: functionize and optimise
+            
+            if (!LoadedChunks.Contains(0)) // NOTE: to be removed when chunk loading is replaced    
                 throw new ArgumentException("chunk zero not loaded");
 
             if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
@@ -570,7 +526,7 @@ namespace drawedOut
                 playerBox.IsMoving = true;
 
 
-            foreach (int chunk1 in LoadedChunks)
+            foreach (int chunk1 in LoadedChunks) // NOTE: try parallel foreach
             {
                 foreach (Character chara in Character.CharacterList[CurrentLevel][chunk1])
                 {
@@ -607,14 +563,18 @@ namespace drawedOut
                     bool isScrolling = (scrollRight || scrollLeft);
 
                     if (isScrolling)
-                        //ScrollPlatform(currentLevel: CurrentLevel, velocity: -chara.xVelocity, motionDT);
                         ScrollEntities(currentLevel: CurrentLevel, velocity: -chara.xVelocity, motionDT);
 
+                    bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
                     foreach (int chunk2 in LoadedChunks)
                     {
                         foreach (Platform plat in Entity.EntityList[CurrentLevel][chunk2].OfType<Platform>())
+                        {
                             chara.CheckPlatformCollision(plat);
+                            if (chara.getHitbox().IntersectsWith(plat.getHitbox())) colliding = true;
+                        }
                     }
+                    if (!colliding) chara.SetYCollider(null, null, null);
 
                     chara.MoveCharacter(
                         isScrolling: isScrolling,
@@ -623,13 +583,12 @@ namespace drawedOut
                 }
             }
 
-
-            if (playerBox.getCenter().X < chunkLoader1.getCenter().X) { tryLoadChunk(1); }
+            if (playerBox.getCenter().X < chunkLoader1.getCenter().X) { tryLoadChunk(1); } // NOTE: chunk loading to be removed
             else { tryLoadChunk(2); }
         }
 
 
-        public void tryLoadChunk(int chunk)
+        public void tryLoadChunk(int chunk) // NOTE: chunk loading to be removed
         {
             if (LoadedChunks.Contains(chunk)) { return; }
 
@@ -640,30 +599,14 @@ namespace drawedOut
 
 
 
-
-        public void ScrollPlatform(int currentLevel, double velocity, double deltaTime)
-        {
-            for (int i = 0; i < TotalChunks; i++)
-            {
-                foreach (Platform plat in Platform.PlatformList[currentLevel][i])
-                {
-                    plat.updateLocation(plat.getPoint().X + velocity * deltaTime, plat.getPoint().Y);
-                }
-            }
-            chunkLoader1.updateLocation(chunkLoader1.getLocation().X + velocity * deltaTime, chunkLoader1.getLocation().Y);
-        }
-
-
-
         public void ScrollEntities(int currentLevel, double velocity, double deltaTime)
         {
             //List<Entity>[][] tempEList = new List<Entity>(Entity.EntityList);
             //foreach (Entity e in Entity.EntityList[CurrentLevel][LoadedChunks[0]])
-            
 
             for (int i = 0; i < TotalChunks; i++)
             {
-                foreach( Entity e in Entity.EntityList[CurrentLevel][i])
+                foreach( Entity e in Entity.EntityList[CurrentLevel][i]) // NOTE: chunk loading to be removed
                 {
                     if (e == playerBox) { continue; }
                     e.updateLocation(e.getLocation().X + velocity * deltaTime);
@@ -678,7 +621,7 @@ namespace drawedOut
         }
 
 
-
+        // NOTE: chunk loading to be removed
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             foreach (int chunk in LoadedChunks)
@@ -699,13 +642,9 @@ namespace drawedOut
 
             for (int i = 0; i < hpBar.IconCount; i++)
             {
-                Brush colour = hpBar.HpRecColours[i];
-                RectangleF rec = hpBar.HpRectangles[i];
-                e.Graphics.FillRectangle(colour, rec);
+                e.Graphics.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
             }
         }
-
-
 
 
 
@@ -752,5 +691,8 @@ namespace drawedOut
                     break;
             }
         }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) { threadTokenSrc.Cancel(); }
+
     }
 }
