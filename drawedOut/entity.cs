@@ -23,7 +23,7 @@
         protected float Width { get => _scaledSize.Width;  }
         protected float Height { get => _scaledSize.Height;  }
 
-        protected RectangleF Hitbox;
+        protected RectangleF Hitbox { get; private set;}
 
         public static List<Entity> EntityList = new List<Entity>();
 
