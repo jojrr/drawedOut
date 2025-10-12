@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    partial class Form1
+    partial class Level0
     {
         /// <summary>
         ///  Required designer variable.

@@ -1,54 +1,31 @@
-﻿using System.Collections.Concurrent;
-
-namespace drawedOut 
+﻿namespace drawedOut 
 {
     /// <summary>
     /// produces the hitbox and responsible for collision detection
     /// </summary>
     internal class Entity
     {
+        private static int _loadInThreshold;
+        public static void setLoadInThreashold(int loadInThreshold) => _loadInThreshold = loadInThreshold;
 
-        protected PointF Location;
-        protected PointF Center;
+        private static PointF _centerOfScreen; 
+        public static void defineScreenCenter(PointF screenCenter) => _centerOfScreen = screenCenter;
 
-        protected SizeF scaledSize;
-        public SizeF Size { get;  protected set; }
-        protected float Width { get { return scaledSize.Width; } }
-        protected float Height { get { return scaledSize.Height; } }
+        protected PointF location;
+        protected PointF center;
+
+        public PointF Location {get;}
+        public PointF Center {get;}
+
+        private SizeF _scaledSize;
+        private readonly SizeF Size;
+
+        protected float Width { get => _scaledSize.Width;  }
+        protected float Height { get => _scaledSize.Height;  }
 
         protected RectangleF Hitbox;
-        /// <summary>
-        /// returns the hitbox as a rectangle
-        /// </summary>
-        /// <returns>hitbox of type rectangle</returns>
-        public RectangleF getHitbox() { return Hitbox; }
 
-        // TODO: chunk loading code to be removed
-        protected const int TotalLevels = 1;
-        protected static readonly int[] ChunksInLvl = { 3 };
-
-        public static ConcurrentBag<Entity>[][] EntityList = new ConcurrentBag<Entity>[TotalLevels][];
-
-
-        static Entity()
-        {
-            /*
-            Loops through all levels and looks at the number of chunks of each level stored in the array
-            [ChunksInLvl] at each according level and initalises the jagged array [CharacterList] accordingly
-            */
-            for (int level = 0; level < TotalLevels; level++)
-            {
-                int chunks = ChunksInLvl[level];
-                EntityList[level] = new ConcurrentBag<Entity>[chunks];
-
-                //loops through each chunk and adds the list into the dimension of said chunk
-                for (int i = 0; i < chunks; i++)
-                {
-                    EntityList[level][i] = new ConcurrentBag<Entity>();
-                }
-            }
-        }
-        
+        public static List<Entity> EntityList = new List<Entity>();
 
         /// <summary>
         /// Creates a hitbox at specified paramters
@@ -58,68 +35,94 @@ namespace drawedOut
         /// <param name="height">height of the rectangle</param>
         /// <param name="level">level which the Entity belongs to. (Default = 0: always loaded)</param>
         /// <param name="chunk">chunk in the level which the entity belongs to. (default = 0: always loaded)</param>
-        public Entity(PointF origin, int width, int height, int level = 0, int chunk = 0)
+        public Entity(PointF origin, int width, int height)
         {
-            Location = origin;
-            Size = new Size( width, height);
-            scaledSize = Size;
+            location = origin;
+            Size = new Size(width, height);
+            _scaledSize = Size;
             Hitbox = new RectangleF(origin, Size); 
-            Center = new PointF (Hitbox.X + Size.Width/2, Hitbox.Y + Size.Height/2);
+            center = new PointF (Hitbox.X + Size.Width/2, Hitbox.Y + Size.Height/2);
 
-            EntityList[level][chunk].Add(this);
+            EntityList.Add(this);
         }
+
+        /// <summary>
+        /// returns the hitbox as a rectangle
+        /// </summary>
+        /// <returns>hitbox of type rectangle</returns>
+        public RectangleF GetHitbox() 
+        {
+            Hitbox = new RectangleF( location, _scaledSize ); // WARNING: used to be calclated after moving every time - might break something havent tested yet.
+            return Hitbox; 
+        }
+
 
         /// <summary>
         /// Assigns a new position to the top-left of the hitbox
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public void updateLocation(double x, double y)
+        /// <param name="x">x position</param>
+        /// <param name="y">y position</param>
+        public void UpdateLocation(double x, double y)
         {
-            Location = new PointF((float)x, (float)y);
-            Center = new PointF (Location.X + Width/2, Location.Y + Height/2);
-            Hitbox = new RectangleF(Location, scaledSize);
-        }
-
-        public void updateLocation(double x)
-        {
-            Location.X = (float)x;
-            Center.X = (float)x;
-            Hitbox = new RectangleF(Location, scaledSize);
-        }
-
-        public void updateCenter(float x, float y)
-        {
-            Center = new PointF(x, y);
-            Location = new PointF (Center.X - Width/2, Center.Y - Height/2);
-            Hitbox = new RectangleF(Location, scaledSize);
+            location = new PointF((float)x, (float)y);
+            center = new PointF (location.X + Width/2, location.Y + Height/2);
         }
 
         /// <summary>
-        /// returns the point of the center
+        /// Assigns a new horizontal position to the top-left of the hitbox
         /// </summary>
-        /// <returns></returns>
-        public PointF getCenter()
+        /// <param name="x">x position</param>
+        public void UpdateLocation(double x)
         {
-            return Center;
+            location = new PointF((float)x, location.Y);
+            center = new PointF (location.X + Width/2, center.Y);
         }
 
         /// <summary>
-        /// returns the point of the top-left 
+        /// Assigns a new position to the center of the hitbox
         /// </summary>
-        /// <returns></returns>
-        public PointF getLocation() { return Location; }
-
-        public void scaleHitbox(float scaleF)
+        /// <param name="x">x position</param>
+        /// <param name="y">y position</param>
+        public void Updatecenter(float x, float y)
         {
-            scaledSize = new SizeF (Size.Width*scaleF, Size.Height*scaleF);
-            this.Hitbox = new RectangleF( Location, scaledSize );
+            center = new PointF(x, y);
+            location = new PointF (center.X - Width/2, center.Y - Height/2);
         }
 
-        public void resetScale()
+        /// <summary>
+        /// make the hitbox bigger by specified param
+        /// </summary>
+        /// <param name="scaleF"> scale to enlarge dimensions </param>
+        public void ScaleHitbox(float scaleF)
         {
-            scaledSize = Size;
-            this.Hitbox = new RectangleF( Location, scaledSize );
+            _scaledSize = new SizeF (Size.Width*scaleF, Size.Height*scaleF);
+        }
+
+        /// <summary>
+        /// return to original scaled size before zoom
+        /// </summary>
+        public void ResetScale()
+        {
+            _scaledSize = Size;
+        }
+
+        public void CheckActive(ref List<Entity> activeList, ref List<Entity> inactiveList, float curcenter)
+        {
+            float dist = Math.Abs(curcenter - center.X);
+
+            if (dist <= _loadInThreshold)
+            {
+                if (activeList.Contains(this)) return;
+
+                activeList.Add(this);
+                inactiveList.Remove(this);
+                return;
+            }
+
+            if (inactiveList.Contains(this)) return;
+
+            inactiveList.Add(this);
+            activeList.Add(this);
         }
     }
 }

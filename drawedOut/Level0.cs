@@ -1,15 +1,13 @@
 using System.Diagnostics;
 namespace drawedOut
 {
-    public partial class Form1 : Form
+    public partial class Level0 : Form
     {
 
         Character playerBox = new(
             origin: new Point(750, 250),
             width: 50,
             height: 50,
-            LocatedLevel: 0,
-            LocatedChunk: 0,
             yVelocity: -0.2);
 
         Platform box2 = new(
@@ -56,7 +54,7 @@ namespace drawedOut
         bool scrollRight = false;
         bool scrollLeft = false;
 
-        const double xAccel = 100;
+        const double xAccel = 100; // TODO: move to player/character
 
         // TODO: replace chunk logic with "Load if on screen" logic
         int CurrentLevel;
@@ -80,7 +78,7 @@ namespace drawedOut
         CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
         Thread gameTickThread = new Thread(() => { });
 
-        hpBarUI hpBar = new hpBarUI(
+        HpBarUI hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
                     barWidth: 20,
                     barHeight: 40,
@@ -103,13 +101,13 @@ namespace drawedOut
         int
             maxHp = 6,
             currentHp,
-            targetFrameRate = 120,
+            targetFrameRate = 60,
             refreshDelay;
 
 
         const float
             zoomFactor = 1.2F,
-            slowFactor = 2.5F,
+            slowFactor = 1.5F,
             slowDurationS = 0.35F,
 
             parryDurationS = 0.45F,
@@ -132,16 +130,18 @@ namespace drawedOut
             freezeFrame = 0;
 
         double
-            prevTime = 0,
             motionDT = 0,
             deltaTime = 0;
 
+        ParallelOptions threadSettings = new ParallelOptions();
         Stopwatch deltaTimeSW = new Stopwatch();
 
-        public Form1()
+        public Level0()
         {
             InitializeComponent();
             this.DoubleBuffered = true;
+
+            threadSettings.MaxDegreeOfParallelism = 4;
 
             // set height and width of window
             Width = 1860;
@@ -189,13 +189,12 @@ namespace drawedOut
 
                         if (isPaused) continue;
 
-                        movementTick();
-                        attackHandler();
-                        Task.Run(renderGraphics);
+                        Task.Run(movementTick)
+                        .ContinueWith(_ => Task.Run(attackHandler))
+                        .ContinueWith(_ => Task.Run(renderGraphics));
                     }
                 }
             });
-
 
             gameTickThread.Start();
 
@@ -247,9 +246,6 @@ namespace drawedOut
             setFreeze = false;
             freezeFrame = 0;
 
-            // checks if slowed
-            slowTime();
-
 
             if (endLagTime > 0)
             {
@@ -258,67 +254,63 @@ namespace drawedOut
             }
 
 
-
-            foreach (Projectile bullet in Projectile.ProjectileList) // NOTE: try add parallel foreach
+            Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
             {
                 bullet.moveProjectile(motionDT);
-                PointF bLoc = bullet.getCenter();
+                PointF bLoc = bullet.Center;
 
-                List<int> loadedChunks = LoadedChunks.ToList();
-                foreach (int i in loadedChunks)
-                { 
-                    //List<Entity> list = Entity.EntityList[CurrentLevel][i];
-                    List<Entity> list = Entity.EntityList[CurrentLevel][i].ToList();
+                foreach(Platform p in Platform.ActivePlatformList)
+                {
+                    if (disposedProjectiles.Contains(bullet)) break;
 
-                    foreach(Platform p in list.OfType<Platform>())
-                    {
-                        if ( !( p.getHitbox().IntersectsWith(bullet.getHitbox()) ) )
-                            continue;
+                    if ( !( p.GetHitbox().IntersectsWith(bullet.GetHitbox()) ) )
+                        continue;
 
-                        disposedProjectiles.Add(bullet); 
-                        break; 
+                    disposedProjectiles.Add(bullet); 
+                    break; 
 
-                    }
-                    if (disposedProjectiles.Contains(bullet)) { break; }
                 }
+
 
                 if ((bLoc.X<0) || (bLoc.Y<0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
-                { disposedProjectiles.Add(bullet); continue; }
-
-                if (playerBox.getHitbox().IntersectsWith(bullet.getHitbox()))
-                {
-                    if (isParrying)
-                    {
-                        bullet.rebound(playerBox.getCenter()); // required to prevent getting hit anyway when parrying
-
-                        // if the current parry has lasted for at most the perfectParryWindow
-                        if (parryWindow >= (parryDurationS - perfectParryWindowS) * 10)
-                        {
-                            //setFreeze = true;
-                            slowFrame = slowDurationS * 10;
-                            zoomScreen(zoomFactor);
-                            isParrying = false;
-                            endLagTime = 0;
-                            continue; // so that the projectile is not disposed of when rebounded
-                        }
-                    }
-                    else
-                    {
-                        playerIsHit = true;
-                        doPlayerDamage(1);
-                        setFreeze = true;
-                    }
-
-                    disposedProjectiles.Add(bullet);
-
+                { 
+                    disposedProjectiles.Add(bullet); 
+                    return; 
                 }
-            }
+
+                bool hitPlayer = playerBox.GetHitbox().IntersectsWith(bullet.GetHitbox());
+
+                if (!hitPlayer) return;
+
+                if (!isParrying)
+                {
+                    setFreeze = true;
+                    disposedProjectiles.Add(bullet);
+                    doPlayerDamage(1);
+                    return;
+                }
+
+                bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
+
+                // if the current parry has lasted for at most the perfectParryWindow
+                if (parryWindow >= (parryDurationS - perfectParryWindowS) * 10)
+                {
+                    //setFreeze = true;
+                    slowFrame = slowDurationS * 10;
+                    zoomScreen(zoomFactor);
+                    isParrying = false;
+                    endLagTime = 0;
+                }
+                else disposedProjectiles.Add(bullet);
+
+            });
+
+            foreach (Projectile p in disposedProjectiles)
+                Projectile.ProjectileList.Remove(p);
 
             if (setFreeze)
                 freezeFrame = freezeDuratonS * 10;
 
-            foreach (Projectile p in disposedProjectiles)
-                Projectile.ProjectileList.Remove(p);
 
             disposedProjectiles.Clear();
 
@@ -348,16 +340,17 @@ namespace drawedOut
         private void createBullet()
         {
             Projectile bullet = new Projectile
-                (origin: bulletOrigin.getLocation(),
+                (origin: bulletOrigin.Location,
                   width: 30,
                   height: 10,
                   velocity: 50,
-                  target: playerBox.getCenter());
-            bullet.scaleHitbox(curZoom);
+                  target: playerBox.Center);
+            bullet.ScaleHitbox(curZoom);
         }
 
         private void doPlayerDamage(int amt)
         {
+            playerIsHit = true;
             currentHp -= amt;
             hpBar.ComputeHP(currentHp);
             if (currentHp <= 0)
@@ -452,35 +445,33 @@ namespace drawedOut
             float midX = ClientSize.Width / 2;
             float midY = ClientSize.Height / 2;
 
-            mcPrevCenter = playerBox.getCenter();
+            mcPrevCenter = playerBox.Center;
 
             void zoomObj(Entity obj)
             {
-                float XDiff = obj.getCenter().X - mcPrevCenter.X;
-                float YDiff = obj.getCenter().Y - mcPrevCenter.Y;
+                float XDiff = obj.Center.X - mcPrevCenter.X;
+                float YDiff = obj.Center.Y - mcPrevCenter.Y;
 
                 float newX = midX + XDiff * scaleF;
                 float newY = midY + YDiff * scaleF;
 
-                obj.scaleHitbox(scaleF);
-                obj.updateCenter(newX, newY);
+                obj.ScaleHitbox(scaleF);
+                obj.UpdateCenter(newX, newY);
                 this.Invalidate();
             }
 
 
             // calculates new position for each projectile based on distance from playerBox center and adjusts for Scale and the "screen" shifting to the center
-            foreach (int chunk in LoadedChunks)
-            {
-                foreach (Entity e in Entity.EntityList[CurrentLevel][chunk])
-                { 
-                    if (e == playerBox ) { continue; }
-                    zoomOrigins.Add(e,e.getCenter());
-                    zoomObj(e); 
-                }
+            foreach (Entity e in Entity.EntityList)
+            { 
+                if (e == playerBox ) { continue; }
+                zoomOrigins.Add(e,e.Center);
+                zoomObj(e); 
             }
 
-            playerBox.updateCenter(midX, midY);
-            playerBox.scaleHitbox(scaleF);
+
+            playerBox.UpdateCenter(midX, midY);
+            playerBox.ScaleHitbox(scaleF);
         }
 
 
@@ -492,8 +483,8 @@ namespace drawedOut
 
             void unZoomObj(Entity obj, PointF point)
             {
-                obj.resetScale();
-                obj.updateCenter(point.X, point.Y);
+                obj.ResetScale();
+                obj.UpdateCenter(point.X, point.Y);
             }
 
 
@@ -502,8 +493,8 @@ namespace drawedOut
 
             zoomOrigins.Clear();
 
-            playerBox.updateCenter(mcPrevCenter.X, mcPrevCenter.Y);
-            playerBox.resetScale();
+            playerBox.UpdateCenter(mcPrevCenter.X, mcPrevCenter.Y);
+            playerBox.ResetScale();
 
             curZoom = 1; // screen is no longer scaled
         }
@@ -511,6 +502,9 @@ namespace drawedOut
 
         private void movementTick()
         {
+            // checks if slowed
+            slowTime();
+
             // TODO: functionize and optimise
             
             if (!LoadedChunks.Contains(0)) // NOTE: to be removed when chunk loading is replaced    
@@ -528,19 +522,19 @@ namespace drawedOut
 
             foreach (int chunk1 in LoadedChunks) // NOTE: try parallel foreach
             {
-                foreach (Character chara in Character.CharacterList[CurrentLevel][chunk1])
+                foreach (Character chara in Character.ActiveCharacters)
                 {
                     if (!playerBox.ShouldDoMove()) { break; }
 
                     if (playerBox.xVelocity != 0)
                     {
-                        if (viewPort.Left < box2.getHitbox().Left) { onWorldBoundary = "left"; }
-                        else if (viewPort.Right > box2.getHitbox().Right) { onWorldBoundary = "right"; }
+                        if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = "left"; }
+                        else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = "right"; }
                         else { onWorldBoundary = "null"; }
 
-                        if ((playerBox.getCenter().X < 500) && (playerBox.xVelocity < 0))
+                        if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0))
                         { scrollLeft = true; }
-                        else if ((playerBox.getCenter().X > 1300) && (playerBox.xVelocity > 0))
+                        else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0))
                         { scrollRight = true; }
                         else
                         {
@@ -568,10 +562,10 @@ namespace drawedOut
                     bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
                     foreach (int chunk2 in LoadedChunks)
                     {
-                        foreach (Platform plat in Entity.EntityList[CurrentLevel][chunk2].OfType<Platform>())
+                        foreach (Platform plat in Platform.ActivePlatformList)
                         {
                             chara.CheckPlatformCollision(plat);
-                            if (chara.getHitbox().IntersectsWith(plat.getHitbox())) colliding = true;
+                            if (chara.GetHitbox().IntersectsWith(plat.GetHitbox())) colliding = true;
                         }
                     }
                     if (!colliding) chara.SetYCollider(null, null, null);
@@ -583,7 +577,7 @@ namespace drawedOut
                 }
             }
 
-            if (playerBox.getCenter().X < chunkLoader1.getCenter().X) { tryLoadChunk(1); } // NOTE: chunk loading to be removed
+            if (playerBox.Center.X < chunkLoader1.Center.X) { tryLoadChunk(1); } // NOTE: chunk loading to be removed
             else { tryLoadChunk(2); }
         }
 
@@ -601,22 +595,10 @@ namespace drawedOut
 
         public void ScrollEntities(int currentLevel, double velocity, double deltaTime)
         {
-            //List<Entity>[][] tempEList = new List<Entity>(Entity.EntityList);
-            //foreach (Entity e in Entity.EntityList[CurrentLevel][LoadedChunks[0]])
-
-            for (int i = 0; i < TotalChunks; i++)
+            foreach( Entity e in Entity.EntityList)
             {
-                foreach( Entity e in Entity.EntityList[CurrentLevel][i]) // NOTE: chunk loading to be removed
-                {
-                    if (e == playerBox) { continue; }
-                    e.updateLocation(e.getLocation().X + velocity * deltaTime);
-
-                    //if (Entity.EntityList.Contains(e))
-                    //{
-                    //    int tempIndex = Entity.EntityList.IndexOf(e);
-                    //    Entity.EntityList[tempIndex] = e;
-                    //} 
-                }
+                if (e == playerBox) { continue; }
+                e.UpdateLocation(e.Location.X + velocity * deltaTime);
             }
         }
 
@@ -626,19 +608,19 @@ namespace drawedOut
         {
             foreach (int chunk in LoadedChunks)
             {
-                foreach (Character chara in Character.CharacterList[CurrentLevel][chunk])
+                foreach (Character chara in Character.ActiveCharacters)
                 {
-                    { e.Graphics.FillRectangle(playerBrush, chara.getHitbox()); }
+                    { e.Graphics.FillRectangle(playerBrush, chara.GetHitbox()); }
                 }
-                foreach (Platform plat in Platform.PlatformList[CurrentLevel][chunk])
+                foreach (Platform plat in Platform.ActivePlatformList)
                 {
                     using (Pen redPen = new Pen(Color.Red, 3))
-                    { e.Graphics.DrawRectangle(redPen, plat.getHitbox()); }
+                    { e.Graphics.DrawRectangle(redPen, plat.GetHitbox()); }
                 }
             }
 
             foreach (Projectile bullet in Projectile.ProjectileList)
-                e.Graphics.FillRectangle(Brushes.Red, bullet.getHitbox());
+                e.Graphics.FillRectangle(Brushes.Red, bullet.GetHitbox());
 
             for (int i = 0; i < hpBar.IconCount; i++)
             {
@@ -650,7 +632,7 @@ namespace drawedOut
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            RectangleF playerBoxHitbox = playerBox.getHitbox();
+            RectangleF playerBoxHitbox = playerBox.GetHitbox();
             switch (e.KeyCode)
             {
                 case Keys.A:
@@ -688,6 +670,10 @@ namespace drawedOut
 
                 case Keys.D:
                     movingRight = false;
+                    break;
+
+                case Keys.S:
+                    createBullet();
                     break;
             }
         }

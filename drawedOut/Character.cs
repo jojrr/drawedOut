@@ -5,8 +5,8 @@
         // list of all characters - [int: level][list: chunk][Character]
         // used for gametick
         
-        // TODO: chunkloading code to be removed
-        public static List<Character>[][] CharacterList = new List<Character>[TotalLevels][];
+        public static List<Character> ActiveCharacters = new List<Character>();
+        public static List<Character> InactiveCharacters = new List<Character>();
 
         public enum YColliders : int { bottom, top }
         public enum XColliders : int { right, left }
@@ -38,26 +38,6 @@
         public XColliders? CurXColliderDirection = null;
 
 
-        // Initalises the jagged array - adds this character to [level][chunk]
-        static Character()
-        {
-            /*
-            Loops through all levels and looks at the number of chunks of each level stored in the array
-            [ChunksInLvl] at each according level and initalises the jagged array [CharacterList] accordingly
-            */
-            for (int level = 0; level < TotalLevels; level++)
-            {
-                int chunks = ChunksInLvl[level];
-                CharacterList[level] = new List<Character>[chunks];
-
-                //loops through each chunk and adds the list into the dimension of said chunk
-                for (int i = 0; i < chunks; i++)
-                {
-                    CharacterList[level][i] = new List<Character>();
-                }
-            }
-        }
-
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
         /// </summary>
@@ -69,14 +49,14 @@
         /// <param name="xVelocity">default = 0</param>
         /// <param name="yVelocity">default = 0</param>
         /// <param name="flying">default = false</param>
-        public Character(Point origin, int width, int height, int LocatedLevel, int LocatedChunk, double xVelocity = 0, double yVelocity = 0, bool flying = false)
-            : base(origin: origin, width: width, height: height, level: LocatedLevel, chunk: LocatedChunk)
+        public Character(Point origin, int width, int height, double xVelocity = 0, double yVelocity = 0, bool flying = false)
+            : base(origin: origin, width: width, height: height )
         {
             this.xVelocity = xVelocity;
             this.yVelocity = yVelocity;
             HasGravity = !flying;
             SetOverShootRec();
-            CharacterList[LocatedLevel][LocatedChunk].Add(this);
+            InactiveCharacters.Add(this);
         }
 
 
@@ -90,8 +70,8 @@
         /// <returns>Rectangle: the collisionTarget's hitbox</returns>
         private RectangleF IsCollidingWith(Entity collisionTarget)
         {
-            RectangleF targetHitbox = collisionTarget.getHitbox();
-            PointF targetCenter = collisionTarget.getCenter();
+            RectangleF targetHitbox = collisionTarget.GetHitbox();
+            PointF targetCenter = collisionTarget.Center;
 
             // sets collision to null if not longer colliding with the previously colliding hitbox
             if (!Hitbox.IntersectsWith(targetHitbox))
@@ -196,7 +176,7 @@
                 // if platform is above -> set the location to 1 under the platform to prevent getting stuck
                 if (CurYColliderDirection == YColliders.top)
                 {
-                    Location.Y = yStickTarget.Value.Bottom + 1;
+                    location.Y = yStickTarget.Value.Bottom + 1;
                     yVelocity = 0;
                 }
 
@@ -204,7 +184,7 @@
                 else if (CurYColliderDirection == YColliders.bottom)
                 {
                     CoyoteTime = 10; // 100ms (on 10ms timer)
-                    Location.Y = yStickTarget.Value.Y - Height + 1;
+                    location.Y = yStickTarget.Value.Y - Height + 1;
                     yVelocity = Math.Min(yVelocity, 0);
                 }
             }
@@ -215,12 +195,12 @@
             {
                 if (CurXColliderDirection == XColliders.right)
                 {
-                    Location.X = xStickTarget.Value.Left - this.Width + 1;
+                    location.X = xStickTarget.Value.Left - this.Width + 1;
                     xVelocity = Math.Min(0, xVelocity);
                 }
                 else if (CurXColliderDirection == XColliders.left)
                 {
-                    Location.X = xStickTarget.Value.Right - 1;
+                    location.X = xStickTarget.Value.Right - 1;
                     xVelocity = Math.Max(0, xVelocity);
                 }
             }
@@ -267,9 +247,9 @@
             if (isScrolling)
             {
                 if (yStickEntity != null) { CheckPlatformCollision(yStickEntity); }
-                updateLocation(Location.X, Location.Y + (int)yVelocity*dt);
+                UpdateLocation(Location.X, Location.Y + (int)yVelocity*dt);
             }
-            else { updateLocation(Location.X + (int)xVelocity*dt, Location.Y + (int)yVelocity*dt); }
+            else { UpdateLocation(Location.X + (int)xVelocity*dt, Location.Y + (int)yVelocity*dt); }
 
 
             if (xVelocity == 0)

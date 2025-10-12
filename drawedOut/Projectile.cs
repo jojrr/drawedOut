@@ -63,11 +63,11 @@
             // moves backwards if rebounded
             if (isRebound)
             {
-                this.updateLocation( Location.X - xVelocity, Location.Y - yVelocity);
+                this.UpdateLocation( Location.X - xVelocity, Location.Y - yVelocity);
                 return;
             }
 
-            this.updateLocation( Location.X + xVelocity, Location.Y + yVelocity);
+            this.UpdateLocation( Location.X + xVelocity, Location.Y + yVelocity);
         }
 
 
@@ -102,7 +102,7 @@
             xDiff = Center.X - target.X;
             yDiff = Center.Y - target.Y;
 
-            this.updateLocation( Location.X + 2*xDiff, Location.Y + 2*yDiff);
+            this.UpdateLocation( Location.X + 2*xDiff, Location.Y + 2*yDiff);
         }
     }
 }

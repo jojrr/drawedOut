@@ -1,8 +1,8 @@
 ﻿namespace drawedOut 
 {
-    internal class gameUI 
+    internal class GameUI 
     {
-        public static List<gameUI> UiElements = new List<gameUI>();
+        public static List<GameUI> UiElements = new List<GameUI>();
 
         public PointF Origin { get; set; }
         public bool Visible { get; set; }
@@ -10,7 +10,7 @@
         public float ScaleF { get; }
 
 
-        public gameUI ( PointF origin, float elementWidth, float elementHeight, float scaleF = 1, bool isVisible = true)
+        public GameUI ( PointF origin, float elementWidth, float elementHeight, float scaleF = 1, bool isVisible = true)
         {
             Origin = new PointF(origin.X * scaleF, origin.Y * scaleF);
             ElementSize = new SizeF(elementWidth*scaleF, elementHeight*scaleF);

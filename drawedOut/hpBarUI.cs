@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    internal class hpBarUI: gameUI 
+    internal class HpBarUI: GameUI 
     {
         public RectangleF[] HpRectangles;
         public Brush[] HpRecColours;
@@ -11,7 +11,7 @@ namespace drawedOut
 
         private int _maxHp;
 
-        public hpBarUI (PointF origin, float barWidth, float barHeight, int maxHp, float scaleF = 1, bool isVisible = true)
+        public HpBarUI (PointF origin, float barWidth, float barHeight, int maxHp, float scaleF = 1, bool isVisible = true)
             :base( origin: origin, elementWidth: barWidth, elementHeight: barHeight, scaleF: scaleF , isVisible: isVisible) 
         {
             _hpIconOffset = _baseIconOffset*scaleF;
