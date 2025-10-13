@@ -83,7 +83,7 @@
         /// </summary>
         /// <param name="x">x position</param>
         /// <param name="y">y position</param>
-        public void Updatecenter(float x, float y)
+        public void UpdateCenter(float x, float y)
         {
             center = new PointF(x, y);
             location = new PointF (center.X - Width/2, center.Y - Height/2);

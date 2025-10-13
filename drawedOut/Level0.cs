@@ -4,81 +4,62 @@ namespace drawedOut
     public partial class Level0 : Form
     {
 
-        Character playerBox = new(
+        private static Character playerBox = new(
             origin: new Point(750, 250),
             width: 50,
             height: 50,
             yVelocity: -0.2);
 
-        Platform box2 = new(
+        private static Platform box2 = new(
            origin: new Point(1, 650),
            width: 5400,
            height: 550,
            LocatedLevel: 0,
            LocatedChunk: 0);
 
-        Platform box3 = new(
+         private static Platform box3 = new(
            origin: new Point(300, 200),
            width: 400,
            height: 175,
            LocatedLevel: 0,
            LocatedChunk: 1);
 
-        Platform box4 = new(
+         private static Platform box4 = new(
            origin: new Point(1000, 400),
            width: 200,
            height: 300,
            LocatedLevel: 0,
            LocatedChunk: 1);
 
-        Platform box5 = new(
+        private static Platform box5 = new(
            origin: new Point(1500, 400),
            width: 200,
            height: 300,
            LocatedLevel: 0,
            LocatedChunk: 2);
 
-        Entity chunkLoader1 = new Entity(
+        private static Entity chunkLoader1 = new Entity(
             origin: new Point(1200, 0),
             width: 1,
             height: 1);
 
 
         Rectangle viewPort;
-        string onWorldBoundary = "left";
+        private enum worldBound { left, right }
+        private static worldBound? onWorldBoundary = worldBound.left;
 
-        bool movingLeft = false;
-        bool movingRight = false;
-        bool jumping = false;
+        private const double xAccel = 100; // TODO: move to player/character
 
-        bool scrollRight = false;
-        bool scrollLeft = false;
-
-        const double xAccel = 100; // TODO: move to player/character
-
-        // TODO: replace chunk logic with "Load if on screen" logic
-        int CurrentLevel;
-        int[] LoadedChunks = new int[2];
-        List<int> UnLoadedChunks;
-        int TotalChunks;
-
-
-
-        Brush playerBrush; // TODO: remove when player sprites is added
+        private static Brush playerBrush; // TODO: remove when player sprites is added
 
         // point where bullets spawn
         // TODO: remove when enemies are added
-        Entity bulletOrigin = new Entity (
+        private static Entity bulletOrigin = new Entity(
             origin: new PointF(800, 250),
             width: 1,
-            height: 1,
-            chunk: 1);
+            height: 1);
 
-        // threading 
-        CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
-        Thread gameTickThread = new Thread(() => { });
-
-        HpBarUI hpBar = new HpBarUI(
+        private static HpBarUI hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
                     barWidth: 20,
                     barHeight: 40,
@@ -86,26 +67,33 @@ namespace drawedOut
             );
 
 
-        Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();  
+        private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();  
 
-        bool
+        private static bool
             playerIsHit = false,
 
             isParrying = false,
 
             setFreeze = false,
             isPaused = false,
-            slowedMov = false;
+            slowedMov = false,
+
+            movingLeft = false,
+            movingRight = false,
+            jumping = false,
+
+            scrollRight = false,
+            scrollLeft = false;
 
 
-        int
+        private static int
             maxHp = 6,
             currentHp,
             targetFrameRate = 60,
             refreshDelay;
 
 
-        const float
+        private const float
             zoomFactor = 1.2F,
             slowFactor = 1.5F,
             slowDurationS = 0.35F,
@@ -118,7 +106,7 @@ namespace drawedOut
 
             freezeDuratonS = 0.15F;
 
-        float
+        private static float
             bulletInterval,
 
             parryWindow,
@@ -129,12 +117,15 @@ namespace drawedOut
             slowFrame = 0,
             freezeFrame = 0;
 
-        double
+        private static double
             motionDT = 0,
             deltaTime = 0;
 
-        ParallelOptions threadSettings = new ParallelOptions();
-        Stopwatch deltaTimeSW = new Stopwatch();
+        // threading 
+        private static CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
+        private static Thread gameTickThread = new Thread(() => { });
+        private static ParallelOptions threadSettings = new ParallelOptions();
+        private static Stopwatch deltaTimeSW = new Stopwatch();
 
         public Level0()
         {
@@ -155,11 +146,6 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            CurrentLevel = 0;
-            LoadedChunks = [0, 1];
-            UnLoadedChunks = [2];
-            TotalChunks = LoadedChunks.Count() + UnLoadedChunks.Count();
-
             viewPort = new Rectangle(new Point(-5, 0), new Size(Width + 10, Height));
 
             bulletInterval = bulletCooldownS;
@@ -507,93 +493,73 @@ namespace drawedOut
 
             // TODO: functionize and optimise
             
-            if (!LoadedChunks.Contains(0)) // NOTE: to be removed when chunk loading is replaced    
-                throw new ArgumentException("chunk zero not loaded");
-
             if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
             if (movingLeft) { playerBox.xVelocity -= xAccel*motionDT; }
             if (movingRight) { playerBox.xVelocity += xAccel*motionDT; }
 
-            if ((!movingLeft && !movingRight) || (playerBox.CurXColliderDirection != null))
-                playerBox.IsMoving = false;
-            else
+            playerBox.IsMoving = false;
+            if ((movingLeft && movingRight) || (playerBox.CurXColliderDirection == null))
                 playerBox.IsMoving = true;
 
 
-            foreach (int chunk1 in LoadedChunks) // NOTE: try parallel foreach
+            foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
             {
-                foreach (Character chara in Character.ActiveCharacters)
+                if (!playerBox.ShouldDoMove()) { break; }
+
+                if (playerBox.xVelocity != 0)
                 {
-                    if (!playerBox.ShouldDoMove()) { break; }
+                    if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = "left"; }
+                    else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = "right"; }
+                    else { onWorldBoundary = null; }
 
-                    if (playerBox.xVelocity != 0)
+                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0))
+                    { scrollLeft = true; }
+                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0))
+                    { scrollRight = true; }
+                    else
                     {
-                        if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = "left"; }
-                        else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = "right"; }
-                        else { onWorldBoundary = "null"; }
+                        scrollLeft = false;
+                        scrollRight = false;
+                    }
 
-                        if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0))
-                        { scrollLeft = true; }
-                        else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0))
-                        { scrollRight = true; }
-                        else
-                        {
+
+                    switch (onWorldBoundary)
+                    {
+                        case worldBound.left:
                             scrollLeft = false;
+                            break;
+                        case worldBound.right:
                             scrollRight = false;
-                        }
-
-
-                        switch (onWorldBoundary)
-                        {
-                            case "left":
-                                scrollLeft = false;
-                                break;
-                            case "right":
-                                scrollRight = false;
-                                break;
-                        }
+                            break;
                     }
-
-                    bool isScrolling = (scrollRight || scrollLeft);
-
-                    if (isScrolling)
-                        ScrollEntities(currentLevel: CurrentLevel, velocity: -chara.xVelocity, motionDT);
-
-                    bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
-                    foreach (int chunk2 in LoadedChunks)
-                    {
-                        foreach (Platform plat in Platform.ActivePlatformList)
-                        {
-                            chara.CheckPlatformCollision(plat);
-                            if (chara.GetHitbox().IntersectsWith(plat.GetHitbox())) colliding = true;
-                        }
-                    }
-                    if (!colliding) chara.SetYCollider(null, null, null);
-
-                    chara.MoveCharacter(
-                        isScrolling: isScrolling,
-                        dt: motionDT
-                    );
                 }
+
+                bool isScrolling = (scrollRight || scrollLeft);
+
+                if (isScrolling)
+                    ScrollEntities( velocity: -chara.xVelocity, motionDT);
+
+                bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
+
+                foreach (Platform plat in Platform.ActivePlatformList)
+                {
+                    chara.CheckPlatformCollision(plat);
+                    if (chara.GetHitbox().IntersectsWith(plat.GetHitbox())) colliding = true;
+                }
+
+                if (!colliding) chara.SetYCollider(null, null, null);
+
+                chara.MoveCharacter(
+                    isScrolling: isScrolling,
+                    dt: motionDT
+                );
             }
-
-            if (playerBox.Center.X < chunkLoader1.Center.X) { tryLoadChunk(1); } // NOTE: chunk loading to be removed
-            else { tryLoadChunk(2); }
-        }
-
-
-        public void tryLoadChunk(int chunk) // NOTE: chunk loading to be removed
-        {
-            if (LoadedChunks.Contains(chunk)) { return; }
-
-            UnLoadedChunks.Add(LoadedChunks[1]);
-            LoadedChunks[1] = chunk;
-            UnLoadedChunks.Remove(chunk);
         }
 
 
 
-        public void ScrollEntities(int currentLevel, double velocity, double deltaTime)
+
+        public void ScrollEntities( double velocity, double deltaTime)
         {
             foreach( Entity e in Entity.EntityList)
             {
@@ -606,17 +572,15 @@ namespace drawedOut
         // NOTE: chunk loading to be removed
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            foreach (int chunk in LoadedChunks)
+            foreach (Character chara in Character.ActiveCharacters)
             {
-                foreach (Character chara in Character.ActiveCharacters)
-                {
-                    { e.Graphics.FillRectangle(playerBrush, chara.GetHitbox()); }
-                }
-                foreach (Platform plat in Platform.ActivePlatformList)
-                {
-                    using (Pen redPen = new Pen(Color.Red, 3))
-                    { e.Graphics.DrawRectangle(redPen, plat.GetHitbox()); }
-                }
+                { e.Graphics.FillRectangle(playerBrush, chara.GetHitbox()); }
+            }
+
+            foreach (Platform plat in Platform.ActivePlatformList)
+            {
+                using (Pen redPen = new Pen(Color.Red, 3))
+                { e.Graphics.DrawRectangle(redPen, plat.GetHitbox()); }
             }
 
             foreach (Projectile bullet in Projectile.ProjectileList)
