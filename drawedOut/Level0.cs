@@ -1,4 +1,6 @@
 using System.Diagnostics;
+
+// TODO: move all const values into global
 namespace drawedOut
 {
     public partial class Level0 : Form
@@ -94,33 +96,34 @@ namespace drawedOut
             gameTickInterval;
 
 
-        private const float
-            zoomFactor = 1.2F,
-            slowFactor = 1.5F,
-            slowDurationS = 0.35F,
+        private const float 
+            ZOOM_FACTOR = 1.2F,
+            SLOW_FACTOR = 1.5F,
+            SLOW_DURATION_S = 0.35F,
 
-            parryDurationS = 0.45F,
-            perfectParryWindowS = 0.05F,
-            parryEndlagS = 0.2F,
+            FREEZE_DURATION_S = 0.15F,
 
-            bulletCooldownS = 0.5F,
+            PARRY_DURATION_S = 0.45F,
+            PERFECT_PARRY_WINDOW_S = 0.05F,
+            PARRY_ENDLAG_S = 0.2F,
 
-            freezeDuratonS = 0.15F;
+            bulletCooldownS = 0.5F, // NOTE: remove when enemy code added
+
+            LEVEL_BASE_SCALE = 1F;
 
         private static float
             bulletInterval,
 
-            parryWindow,
+            parryWindowS,
             endLagTime,
 
             curZoom = 1,
 
-            slowFrame = 0,
-            freezeFrame = 0;
+            // TODO: redo freeze and slow logic
+            slowTimeS = 0,
+            freezeTimeS = 0; 
 
-        private static double
-            motionDT = 0,
-            deltaTime = 0;
+        private static double motionDT = 0; // TODO: get rid of this bruhv lowk useless like wth
 
         // threading 
         // used for closing the thread
@@ -132,6 +135,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
+            this.KeyPreview = true;
             this.DoubleBuffered = true;
 
             threadSettings.MaxDegreeOfParallelism = 4;
@@ -139,28 +143,12 @@ namespace drawedOut
             // set height and width of window
             Width = 1860;
             Height = 770;
+            viewPort = new Rectangle(new Point(-5, 0), new Size(Width + 10, Height));
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
-        }
 
-
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            viewPort = new Rectangle(new Point(-5, 0), new Size(Width + 10, Height));
-
-            bulletInterval = bulletCooldownS;
-
-            currentHp = maxHp;
-            hpBar.UpdateMaxHp(maxHp);
-
-            playerBrush = Brushes.Blue;
-
-            deltaTimeSW.Start();
-            fpsTimer.Start();
             Stopwatch threadDelaySW = Stopwatch.StartNew();
-
             CancellationToken threadCT = cancelTokenSrc.Token;
 
             gameTickThread = new Thread(() =>
@@ -172,80 +160,94 @@ namespace drawedOut
 
                     if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
                     {
-                        getDeltaTime();
+                        double deltaTime = getDeltaTime();
                         threadDelaySW.Restart();
 
                         if (isPaused) continue;
 
-                        Task.Run(movementTick)
-                        .ContinueWith(_ => Task.Run(attackHandler))
-                        .ContinueWith(_ => // render graphics
-                        {
-                            try { Invoke(renderGraphics); } 
-                            catch (ObjectDisposedException) { return; }
-                        }
-                        );
+                        // TODO: review delta time logic
+                        movementTick(deltaTime);
+                        attackHandler(deltaTime); 
+
+                        try { Invoke(renderGraphics); } 
+                        catch (ObjectDisposedException) { return; }
                     }
                 }
             });
 
+        }
+
+
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            bulletInterval = bulletCooldownS;
+
+            currentHp = maxHp;
+            hpBar.UpdateMaxHp(maxHp);
+
+            playerBrush = Brushes.Blue;
+
+            deltaTimeSW.Start();
+            fpsTimer.Start();
             gameTickThread.Start();
 
             togglePause(false);
         }
 
 
-        private void getDeltaTime()
+        private double getDeltaTime()
         {
-            double deltaTime = deltaTimeSW.Elapsed.TotalSeconds * 10;
-            motionDT = deltaTime;
+            double deltaTime = deltaTimeSW.Elapsed.TotalSeconds;
             deltaTimeSW.Restart();
 
             isPaused = false;
-            if (freezeFrame > 0)
+            if (freezeTimeS > 0)
             {
-                freezeFrame -= (float)deltaTime;
+                freezeTimeS -= (float)deltaTime;
                 isPaused = true;
             }
+            return deltaTime;
         }
 
 
-        private void slowTime()
+        private void slowTime(double deltaTime)
         {
-            if (slowFrame > 0) // todo: functionize all the slow logic
+            if (slowTimeS > 0)
             {
                 slowedMov = true;
 
-                if (zoomFactor <= 1)
-                    throw new ArgumentException("zoomFactor must be bigger than 1");
+                if (ZOOM_FACTOR <= 1)
+                    throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
 
-                slowFrame -= (float)deltaTime;
+                slowTimeS -= (float)deltaTime;
 
-                deltaTime /= slowFactor;
-                motionDT = (zoomFactor * deltaTime);
+                deltaTime /= SLOW_FACTOR;
+                motionDT = (ZOOM_FACTOR * deltaTime);
             }
-            else if (slowedMov) // keeps the player in motion when in slow 
+            else 
             {
-                movingLeft = false;
-                movingRight = false;
-                slowedMov = false;
+                slowTimeS = 0;
+                if (slowedMov) // keeps the player in motion when in slow 
+                {
+                    movingLeft = false;
+                    movingRight = false;
+                    slowedMov = false;
+                }
             }
         }
 
 
-        private void attackHandler()
+        private void attackHandler(double deltaTime)
         {
             playerIsHit = false;
-            freezeFrame = 0;
-
+            freezeTimeS = 0;
 
             if (endLagTime > 0)
             {
                 endLagTime -= (float)deltaTime;
                 isParrying = false;
             }
-
-            bool setFreeze = false;
 
             Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
             {
@@ -277,7 +279,7 @@ namespace drawedOut
 
                 if (!isParrying)
                 {
-                    setFreeze = true;
+                    freezeTimeS = FREEZE_DURATION_S * 10;
                     disposedProjectiles.Add(bullet);
                     doPlayerDamage(1);
                     return;
@@ -286,10 +288,10 @@ namespace drawedOut
                 bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
 
                 // if the current parry has lasted for at most the perfectParryWindow
-                if (parryWindow >= (parryDurationS - perfectParryWindowS) * 10)
+                if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
                 {
-                    slowFrame = slowDurationS * 10;
-                    zoomScreen(zoomFactor);
+                    slowTimeS = SLOW_DURATION_S * 10;
+                    zoomScreen(ZOOM_FACTOR);
                     isParrying = false;
                     endLagTime = 0;
                 }
@@ -300,12 +302,7 @@ namespace drawedOut
             foreach (Projectile p in disposedProjectiles)
                 Projectile.ProjectileList.Remove(p);
 
-            if (setFreeze)
-                freezeFrame = freezeDuratonS * 10;
-
-
             disposedProjectiles.Clear();
-
 
             if ((bulletInterval > 0) || (deltaTime == 0))
                 bulletInterval -= (float)deltaTime;
@@ -317,13 +314,15 @@ namespace drawedOut
 
 
             // ticks down the parry window
-            if (isParrying && parryWindow > 0)
-                parryWindow -= (float)deltaTime;
-            if (parryWindow < 0)
+            if (isParrying && parryWindowS > 0)
+                parryWindowS -= (float)deltaTime;
+            if (parryWindowS < 0)
             {
-                endLagTime = parryEndlagS * 10;
-                parryWindow = 0;
+                endLagTime = PARRY_ENDLAG_S * 10;
+                parryWindowS = 0;
             }
+
+            if (currentHp > maxHp) currentHp = maxHp;
         }
 
 
@@ -363,7 +362,7 @@ namespace drawedOut
             {
                 if (endLagTime <= 0)
                 {
-                    parryWindow = (parryDurationS * 10);
+                    parryWindowS = (PARRY_DURATION_S * 10);
                     isParrying = true;
                 }
             }
@@ -378,7 +377,7 @@ namespace drawedOut
             {
                 if (isParrying)
                 {
-                    endLagTime = parryEndlagS * 10;
+                    endLagTime = PARRY_ENDLAG_S * 10;
                     isParrying = false;
                 }
             }
@@ -399,9 +398,9 @@ namespace drawedOut
         // rendering graphics method
         private void renderGraphics()
         {
-            if (slowFrame <= 0 && freezeFrame <= 0 && curZoom != 1)
+            if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
-                unZoomScreen(zoomFactor);
+                unZoomScreen(ZOOM_FACTOR);
                 curZoom = 1;
             }
 
@@ -490,16 +489,15 @@ namespace drawedOut
         }
 
 
-        private void movementTick()
+        private void movementTick(double deltaTime)
         {
-            // checks if slowed
-            slowTime();
+            slowTime(deltaTime);
 
             // TODO: functionize and optimise
             
             if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
-            if (movingLeft) { playerBox.xVelocity -= xAccel*motionDT; }
-            if (movingRight) { playerBox.xVelocity += xAccel*motionDT; }
+            if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
+            if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
 
             playerBox.IsMoving = false;
             if ((movingLeft && movingRight) || (playerBox.CurXColliderDirection == null))
@@ -541,7 +539,7 @@ namespace drawedOut
                 bool isScrolling = (scrollRight || scrollLeft);
 
                 if (isScrolling)
-                    ScrollEntities( velocity: -chara.xVelocity, motionDT);
+                    ScrollEntities( velocity: -chara.xVelocity, deltaTime);
 
                 bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
 
@@ -555,7 +553,7 @@ namespace drawedOut
 
                 chara.MoveCharacter(
                     isScrolling: isScrolling,
-                    dt: motionDT
+                    dt: deltaTime
                 );
             }
         }
@@ -622,7 +620,7 @@ namespace drawedOut
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (slowFrame > 0)
+            if (slowTimeS > 0)
                 return;
 
             switch (e.KeyCode)
