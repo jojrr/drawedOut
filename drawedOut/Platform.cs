@@ -10,7 +10,7 @@
 
 
         public Platform(Point origin, int width, int height, int LocatedLevel, int LocatedChunk)
-            : base(origin, width, height, LocatedLevel, LocatedChunk)
+            : base(origin, width, height)
         {
             InactivePlatformList.Add(this);
         } 

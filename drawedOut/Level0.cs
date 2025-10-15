@@ -59,6 +59,7 @@ namespace drawedOut
             width: 1,
             height: 1);
 
+
         private static HpBarUI hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
                     barWidth: 20,
@@ -67,30 +68,30 @@ namespace drawedOut
             );
 
 
-        private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();  
+        private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
 
         private static bool
-            playerIsHit = false,
-
-            isParrying = false,
-
-            setFreeze = false,
-            isPaused = false,
-            slowedMov = false,
+            gameTickEnabled = true,
 
             movingLeft = false,
             movingRight = false,
             jumping = false,
 
             scrollRight = false,
-            scrollLeft = false;
+            scrollLeft = false,
+
+            playerIsHit = false,
+            isParrying = false,
+
+            isPaused = false,
+            slowedMov = false;
 
 
         private static int
             maxHp = 6,
             currentHp,
-            targetFrameRate = 60,
-            refreshDelay;
+            gameTickFreq = 60,
+            gameTickInterval;
 
 
         private const float
@@ -122,7 +123,8 @@ namespace drawedOut
             deltaTime = 0;
 
         // threading 
-        private static CancellationTokenSource threadTokenSrc = new CancellationTokenSource(); // used for closing the thread
+        // used for closing the thread
+        private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
         private static Thread gameTickThread = new Thread(() => { });
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
@@ -139,7 +141,7 @@ namespace drawedOut
             Height = 770;
 
             // sets the refresh interval
-            refreshDelay = (int)(1000.0F / targetFrameRate);
+            gameTickInterval = (int)(1000.0F / gameTickFreq);
         }
 
 
@@ -159,16 +161,16 @@ namespace drawedOut
             fpsTimer.Start();
             Stopwatch threadDelaySW = Stopwatch.StartNew();
 
-            CancellationToken threadCT = threadTokenSrc.Token;
+            CancellationToken threadCT = cancelTokenSrc.Token;
 
             gameTickThread = new Thread(() =>
             {
-                while (true)
+                while (gameTickEnabled)
                 {
                     if (threadCT.IsCancellationRequested)
                         return;
 
-                    if (threadDelaySW.Elapsed.TotalMilliseconds >= refreshDelay)
+                    if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
                     {
                         getDeltaTime();
                         threadDelaySW.Restart();
@@ -177,7 +179,12 @@ namespace drawedOut
 
                         Task.Run(movementTick)
                         .ContinueWith(_ => Task.Run(attackHandler))
-                        .ContinueWith(_ => Task.Run(renderGraphics));
+                        .ContinueWith(_ => // render graphics
+                        {
+                            try { Invoke(renderGraphics); } 
+                            catch (ObjectDisposedException) { return; }
+                        }
+                        );
                     }
                 }
             });
@@ -229,7 +236,6 @@ namespace drawedOut
         private void attackHandler()
         {
             playerIsHit = false;
-            setFreeze = false;
             freezeFrame = 0;
 
 
@@ -239,6 +245,7 @@ namespace drawedOut
                 isParrying = false;
             }
 
+            bool setFreeze = false;
 
             Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
             {
@@ -281,7 +288,6 @@ namespace drawedOut
                 // if the current parry has lasted for at most the perfectParryWindow
                 if (parryWindow >= (parryDurationS - perfectParryWindowS) * 10)
                 {
-                    //setFreeze = true;
                     slowFrame = slowDurationS * 10;
                     zoomScreen(zoomFactor);
                     isParrying = false;
@@ -379,18 +385,16 @@ namespace drawedOut
         }
 
 
-
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
 
 
-
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
-        List<Projectile> disposedProjectiles = new List<Projectile>();
+        private static List<Projectile> disposedProjectiles = new List<Projectile>();
 
-        Stopwatch fpsTimer = new Stopwatch();
-        double deltaFPSTime = 0;
-        double prevFPSTime = 0;
+        private static Stopwatch fpsTimer = new Stopwatch();
+        private static double deltaFPSTime = 0;
+        private static double prevFPSTime = 0;
 
         // rendering graphics method
         private void renderGraphics()
@@ -508,8 +512,8 @@ namespace drawedOut
 
                 if (playerBox.xVelocity != 0)
                 {
-                    if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = "left"; }
-                    else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = "right"; }
+                    if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = worldBound.left; }
+                    else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = worldBound.right; }
                     else { onWorldBoundary = null; }
 
                     if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0))
@@ -642,7 +646,10 @@ namespace drawedOut
             }
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e) { threadTokenSrc.Cancel(); }
-
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            gameTickEnabled = false;    
+            cancelTokenSrc.Cancel();
+        }
     }
 }
