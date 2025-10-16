@@ -46,9 +46,9 @@ namespace drawedOut
             height: 1);
 
 
-        Rectangle viewPort;
-        private enum worldBound { left, right }
-        private static worldBound? onWorldBoundary = worldBound.left;
+        private enum xDirections { left, right }
+        private static xDirections? onWorldBoundary = xDirections.left;
+        private static xDirections? scrollDirection = null;
 
         private const double xAccel = 100; // TODO: move to player/character
 
@@ -78,9 +78,6 @@ namespace drawedOut
             movingLeft = false,
             movingRight = false,
             jumping = false,
-
-            scrollRight = false,
-            scrollLeft = false,
 
             playerIsHit = false,
             isParrying = false,
@@ -112,7 +109,7 @@ namespace drawedOut
             LEVEL_BASE_SCALE = 1F;
 
         private static float
-            bulletInterval,
+            bulletInterval, // TODO: move into enemy class
 
             parryWindowS,
             endLagTime,
@@ -143,7 +140,6 @@ namespace drawedOut
             // set height and width of window
             Width = 1860;
             Height = 770;
-            viewPort = new Rectangle(new Point(-5, 0), new Size(Width + 10, Height));
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -509,33 +505,21 @@ namespace drawedOut
 
                 if (playerBox.xVelocity != 0)
                 {
-                    if (viewPort.Left < box2.GetHitbox().Left) { onWorldBoundary = worldBound.left; }
-                    else if (viewPort.Right > box2.GetHitbox().Right) { onWorldBoundary = worldBound.right; }
-                    else { onWorldBoundary = null; }
-
-                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0))
-                    { scrollLeft = true; }
-                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0))
-                    { scrollRight = true; }
-                    else
-                    {
-                        scrollLeft = false;
-                        scrollRight = false;
-                    }
+                    if (0 < box2.GetHitbox().Left) onWorldBoundary = xDirections.left; 
+                    else if (Width > box2.GetHitbox().Right) onWorldBoundary = xDirections.right;
+                    else onWorldBoundary = null;
 
 
-                    switch (onWorldBoundary)
-                    {
-                        case worldBound.left:
-                            scrollLeft = false;
-                            break;
-                        case worldBound.right:
-                            scrollRight = false;
-                            break;
-                    }
+                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0)) scrollDirection = xDirections.left;
+                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0)) scrollDirection = xDirections.right;
+                    else scrollDirection = null;
+
+
+
+                    if (onWorldBoundary == scrollDirection) scrollDirection = null;
                 }
 
-                bool isScrolling = (scrollRight || scrollLeft);
+                bool isScrolling = (scrollDirection is not null);
 
                 if (isScrolling)
                     ScrollEntities( velocity: -chara.xVelocity, deltaTime);
