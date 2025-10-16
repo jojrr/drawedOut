@@ -107,7 +107,7 @@ namespace drawedOut
             PERFECT_PARRY_WINDOW_S = 0.05F,
             PARRY_ENDLAG_S = 0.2F,
 
-            bulletCooldownS = 0.5F, // NOTE: remove when enemy code added
+            //bulletCooldownS = 0.5F, // NOTE: remove when enemy code added
 
             LEVEL_BASE_SCALE = 1F;
 
@@ -354,7 +354,6 @@ namespace drawedOut
 
 
 
-
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
             // if Not parrying then resets parrywindow and sets to parrying
@@ -470,7 +469,7 @@ namespace drawedOut
             float midX = this.Width / 2;
             float midY = this.Height / 2;
 
-            void unZoomObj(Entity obj, PointF point)
+            static void unZoomObj(Entity obj, PointF point)
             {
                 obj.ResetScale();
                 obj.UpdateCenter(point.X, point.Y);

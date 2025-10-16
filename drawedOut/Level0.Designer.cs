@@ -45,8 +45,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Controls.Add(label1);
-            Name = "Form1";
-            Text = "Form1";
+            Name = "Level0";
+            Text = "Level0";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             Paint += Form1_Paint;

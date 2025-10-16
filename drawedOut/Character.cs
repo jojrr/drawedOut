@@ -11,24 +11,26 @@
         public enum YColliders : int { bottom, top }
         public enum XColliders : int { right, left }
 
-        public double xVelocity;
-        public double yVelocity;
-        public bool IsMoving = false;
-        public bool IsOnFloor = false;
-        public bool HasGravity;
+        public double xVelocity, yVelocity;
+        public bool 
+            IsMoving = false,
+            IsOnFloor = false;
 
-        private const int TerminalVelocity = 130;
-        private const int MaxXVelocity = 60;
-        private const int jumpVelocity = -150;
+        private bool HasGravity;
+
+        private const int 
+            TerminalVelocity = 130,
+            MaxXVelocity = 60,
+            jumpVelocity = -150;
+
         private double CoyoteTime;
         private const double Gravity = 67.42;
 
-        private RectangleF? xStickTarget; 
-        private RectangleF? yStickTarget;
-        private Entity? xStickEntity;
-        private Entity? yStickEntity;
-
+        private RectangleF? xStickTarget, yStickTarget;
         private RectangleF OverShootRec;
+
+        private Entity? xStickEntity, yStickEntity;
+
 
         /// <summary>
         /// Array that stores the current collision state of this character.
