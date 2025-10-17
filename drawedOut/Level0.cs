@@ -136,6 +136,7 @@ namespace drawedOut
             this.DoubleBuffered = true;
 
             threadSettings.MaxDegreeOfParallelism = 4;
+            threadSettings.CancellationToken = cancelTokenSrc.Token;
 
             // set height and width of window
             Width = 1860;
@@ -245,55 +246,59 @@ namespace drawedOut
                 isParrying = false;
             }
 
-            Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
+            try // TODO: remove the 999999 nested br
             {
-                bullet.moveProjectile(motionDT);
-                PointF bLoc = bullet.Center;
-
-                foreach(Platform p in Platform.ActivePlatformList)
+                Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
                 {
-                    if (disposedProjectiles.Contains(bullet)) break;
+                    bullet.moveProjectile(motionDT);
+                    PointF bLoc = bullet.Center;
 
-                    if ( !( p.Hitbox.IntersectsWith(bullet.Hitbox) ) )
-                        continue;
+                    foreach (Platform p in Platform.ActivePlatformList)
+                    {
+                        if (disposedProjectiles.Contains(bullet)) break;
 
-                    disposedProjectiles.Add(bullet); 
-                    break; 
+                        if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
+                            continue;
 
-                }
+                        disposedProjectiles.Add(bullet);
+                        break;
+
+                    }
 
 
-                if ((bLoc.X<0) || (bLoc.Y<0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
-                { 
-                    disposedProjectiles.Add(bullet); 
-                    return; 
-                }
+                    if ((bLoc.X < 0) || (bLoc.Y < 0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
+                    {
+                        disposedProjectiles.Add(bullet);
+                        return;
+                    }
 
-                bool hitPlayer = playerBox.Hitbox.IntersectsWith(bullet.Hitbox);
+                    bool hitPlayer = playerBox.Hitbox.IntersectsWith(bullet.Hitbox);
 
-                if (!hitPlayer) return;
+                    if (!hitPlayer) return;
 
-                if (!isParrying)
-                {
-                    freezeTimeS = FREEZE_DURATION_S * 10;
-                    disposedProjectiles.Add(bullet);
-                    doPlayerDamage(1);
-                    return;
-                }
+                    if (!isParrying)
+                    {
+                        freezeTimeS = FREEZE_DURATION_S * 10;
+                        disposedProjectiles.Add(bullet);
+                        doPlayerDamage(1);
+                        return;
+                    }
 
-                bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
+                    bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
 
-                // if the current parry has lasted for at most the perfectParryWindow
-                if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
-                {
-                    slowTimeS = SLOW_DURATION_S * 10;
-                    zoomScreen(ZOOM_FACTOR);
-                    isParrying = false;
-                    endLagTime = 0;
-                }
-                else disposedProjectiles.Add(bullet);
+                    // if the current parry has lasted for at most the perfectParryWindow
+                    if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
+                    {
+                        slowTimeS = SLOW_DURATION_S * 10;
+                        zoomScreen(ZOOM_FACTOR);
+                        isParrying = false;
+                        endLagTime = 0;
+                    }
+                    else disposedProjectiles.Add(bullet);
 
-            });
+                });
+            }
+            catch (OperationCanceledException) { return; }
 
             foreach (Projectile p in disposedProjectiles)
                 Projectile.ProjectileList.Remove(p);
@@ -494,13 +499,14 @@ namespace drawedOut
             if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
             if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
 
-            playerBox.IsMoving = false;
+            playerBox.IsMoving = false; // TODO: move into player class
             if ((movingLeft && movingRight) || (playerBox.CurXColliderDirection == null))
                 playerBox.IsMoving = true;
 
 
             foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
             {
+                // TODO: move all the player dependent code into player class
                 if (!playerBox.ShouldDoMove()) { break; }
 
                 if (playerBox.xVelocity != 0)
@@ -509,20 +515,16 @@ namespace drawedOut
                     else if (Width > box2.Hitbox.Right) onWorldBoundary = xDirections.right;
                     else onWorldBoundary = null;
 
-
                     if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0)) scrollDirection = xDirections.left;
                     else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0)) scrollDirection = xDirections.right;
                     else scrollDirection = null;
-
-
 
                     if (onWorldBoundary == scrollDirection) scrollDirection = null;
                 }
 
                 bool isScrolling = (scrollDirection is not null);
 
-                if (isScrolling)
-                    ScrollEntities( velocity: -chara.xVelocity, deltaTime);
+                if (isScrolling) ScrollEntities( velocity: -chara.xVelocity, deltaTime);
 
                 bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
 
@@ -549,7 +551,7 @@ namespace drawedOut
             foreach( Entity e in Entity.EntityList)
             {
                 if (e == playerBox) { continue; }
-                e.UpdateX(e.Location.X + velocity * deltaTime);
+                e.UpdateX(velocity * deltaTime);
             }
         }
 
