@@ -254,7 +254,7 @@ namespace drawedOut
                 {
                     if (disposedProjectiles.Contains(bullet)) break;
 
-                    if ( !( p.GetHitbox().IntersectsWith(bullet.GetHitbox()) ) )
+                    if ( !( p.Hitbox.IntersectsWith(bullet.Hitbox) ) )
                         continue;
 
                     disposedProjectiles.Add(bullet); 
@@ -269,7 +269,7 @@ namespace drawedOut
                     return; 
                 }
 
-                bool hitPlayer = playerBox.GetHitbox().IntersectsWith(bullet.GetHitbox());
+                bool hitPlayer = playerBox.Hitbox.IntersectsWith(bullet.Hitbox);
 
                 if (!hitPlayer) return;
 
@@ -440,7 +440,7 @@ namespace drawedOut
                 float newY = midY + YDiff * scaleF;
 
                 obj.ScaleHitbox(scaleF);
-                obj.UpdateCenter(newX, newY);
+                obj.Center = new PointF (newX, newY);
                 this.Invalidate();
             }
 
@@ -454,7 +454,7 @@ namespace drawedOut
             }
 
 
-            playerBox.UpdateCenter(midX, midY);
+            playerBox.Center = new PointF (midX, midY);
             playerBox.ScaleHitbox(scaleF);
         }
 
@@ -468,7 +468,7 @@ namespace drawedOut
             static void unZoomObj(Entity obj, PointF point)
             {
                 obj.ResetScale();
-                obj.UpdateCenter(point.X, point.Y);
+                obj.Center = new PointF (point.X, point.Y);
             }
 
 
@@ -477,7 +477,7 @@ namespace drawedOut
 
             zoomOrigins.Clear();
 
-            playerBox.UpdateCenter(mcPrevCenter.X, mcPrevCenter.Y);
+            playerBox.Center = new PointF (mcPrevCenter.X, mcPrevCenter.Y);
             playerBox.ResetScale();
 
             curZoom = 1; // screen is no longer scaled
@@ -505,8 +505,8 @@ namespace drawedOut
 
                 if (playerBox.xVelocity != 0)
                 {
-                    if (0 < box2.GetHitbox().Left) onWorldBoundary = xDirections.left; 
-                    else if (Width > box2.GetHitbox().Right) onWorldBoundary = xDirections.right;
+                    if (0 < box2.Hitbox.Left) onWorldBoundary = xDirections.left; 
+                    else if (Width > box2.Hitbox.Right) onWorldBoundary = xDirections.right;
                     else onWorldBoundary = null;
 
 
@@ -529,7 +529,7 @@ namespace drawedOut
                 foreach (Platform plat in Platform.ActivePlatformList)
                 {
                     chara.CheckPlatformCollision(plat);
-                    if (chara.GetHitbox().IntersectsWith(plat.GetHitbox())) colliding = true;
+                    if (chara.Hitbox.IntersectsWith(plat.Hitbox)) colliding = true;
                 }
 
                 if (!colliding) chara.SetYCollider(null, null, null);
@@ -549,7 +549,7 @@ namespace drawedOut
             foreach( Entity e in Entity.EntityList)
             {
                 if (e == playerBox) { continue; }
-                e.UpdateLocation(e.Location.X + velocity * deltaTime);
+                e.UpdateX(e.Location.X + velocity * deltaTime);
             }
         }
 
@@ -559,17 +559,17 @@ namespace drawedOut
         {
             foreach (Character chara in Character.ActiveCharacters)
             {
-                { e.Graphics.FillRectangle(playerBrush, chara.GetHitbox()); }
+                { e.Graphics.FillRectangle(playerBrush, chara.Hitbox); }
             }
 
             foreach (Platform plat in Platform.ActivePlatformList)
             {
                 using (Pen redPen = new Pen(Color.Red, 3))
-                { e.Graphics.DrawRectangle(redPen, plat.GetHitbox()); }
+                { e.Graphics.DrawRectangle(redPen, plat.Hitbox); }
             }
 
             foreach (Projectile bullet in Projectile.ProjectileList)
-                e.Graphics.FillRectangle(Brushes.Red, bullet.GetHitbox());
+                e.Graphics.FillRectangle(Brushes.Red, bullet.Hitbox);
 
             for (int i = 0; i < hpBar.IconCount; i++)
             {
@@ -581,7 +581,7 @@ namespace drawedOut
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            RectangleF playerBoxHitbox = playerBox.GetHitbox();
+            RectangleF playerBoxHitbox = playerBox.Hitbox;
             switch (e.KeyCode)
             {
                 case Keys.A:
