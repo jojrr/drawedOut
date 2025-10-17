@@ -186,8 +186,9 @@ namespace drawedOut
             playerBrush = Brushes.Blue;
 
             deltaTimeSW.Start();
-            fpsTimer.Start();
             gameTickThread.Start();
+
+            fpsTimer.Start();
 
             togglePause(false);
         }
@@ -235,6 +236,9 @@ namespace drawedOut
         }
 
 
+        // stores projectiles to be disposed of (as list cannot be altered mid-loop)
+        private static List<Projectile> disposedProjectiles = new List<Projectile>();
+
         private void attackHandler(double deltaTime)
         {
             playerIsHit = false;
@@ -272,9 +276,8 @@ namespace drawedOut
                         return;
                     }
 
-                    bool hitPlayer = playerBox.Hitbox.IntersectsWith(bullet.Hitbox);
-
-                    if (!hitPlayer) return;
+                    if (!playerBox.GetHitbox().IntersectsWith(bullet.GetHitbox())) 
+                        return;
 
                     if (!isParrying)
                     {
@@ -388,12 +391,7 @@ namespace drawedOut
         private void togglePause(bool pause) => isPaused = !isPaused; 
 
 
-        // stores projectiles to be disposed of (as list cannot be altered mid-loop)
-        private static List<Projectile> disposedProjectiles = new List<Projectile>();
-
         private static Stopwatch fpsTimer = new Stopwatch();
-        private static double deltaFPSTime = 0;
-        private static double prevFPSTime = 0;
 
         // rendering graphics method
         private void renderGraphics()
@@ -414,8 +412,8 @@ namespace drawedOut
                 playerBrush = Brushes.Blue;
 
 
-            deltaFPSTime = 1/(fpsTimer.Elapsed.TotalSeconds - prevFPSTime);
-            prevFPSTime = fpsTimer.Elapsed.TotalSeconds;
+            float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
+            fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
 
             Refresh();
