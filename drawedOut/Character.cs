@@ -72,7 +72,7 @@
         /// <returns>Rectangle: the collisionTarget's hitbox</returns>
         private RectangleF IsCollidingWith(Entity collisionTarget)
         {
-            RectangleF targetHitbox = collisionTarget.GetHitbox();
+            RectangleF targetHitbox = collisionTarget.Hitbox;
             PointF targetCenter = collisionTarget.Center;
 
             // sets collision to null if not longer colliding with the previously colliding hitbox
@@ -178,7 +178,7 @@
                 // if platform is above -> set the location to 1 under the platform to prevent getting stuck
                 if (CurYColliderDirection == YColliders.top)
                 {
-                    location.Y = yStickTarget.Value.Bottom + 1;
+                    LocationY = yStickTarget.Value.Bottom + 1;
                     yVelocity = 0;
                 }
 
@@ -186,7 +186,7 @@
                 else if (CurYColliderDirection == YColliders.bottom)
                 {
                     CoyoteTime = 10; // 100ms (on 10ms timer)
-                    location.Y = yStickTarget.Value.Y - Height + 1;
+                    LocationY = yStickTarget.Value.Y - Height + 1;
                     yVelocity = Math.Min(yVelocity, 0);
                 }
             }
@@ -197,12 +197,12 @@
             {
                 if (CurXColliderDirection == XColliders.right)
                 {
-                    location.X = xStickTarget.Value.Left - this.Width + 1;
+                    LocationX = xStickTarget.Value.Left - this.Width + 1;
                     xVelocity = Math.Min(0, xVelocity);
                 }
                 else if (CurXColliderDirection == XColliders.left)
                 {
-                    location.X = xStickTarget.Value.Right - 1;
+                    LocationX = xStickTarget.Value.Right - 1;
                     xVelocity = Math.Max(0, xVelocity);
                 }
             }
@@ -249,9 +249,9 @@
             if (isScrolling)
             {
                 if (yStickEntity != null) { CheckPlatformCollision(yStickEntity); }
-                UpdateLocation(Location.X, Location.Y + (int)yVelocity*dt);
+                Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
             }
-            else { UpdateLocation(Location.X + (int)xVelocity*dt, Location.Y + (int)yVelocity*dt); }
+            else { Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); }
 
 
             if (xVelocity == 0)
