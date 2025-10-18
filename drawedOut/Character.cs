@@ -80,8 +80,8 @@
             // sets collision to null if not longer colliding with the previously colliding hitbox
             if (!Hitbox.IntersectsWith(targetHitbox))
             {
-                if (collisionTarget == _xStickEntity) { SetXCollider(null, null, null); }
-                if (collisionTarget == _yStickEntity) { SetYCollider(null, null, null); }
+                if (collisionTarget == _xStickEntity)  SetXCollider(null, null, null); 
+                if (collisionTarget == _yStickEntity)  SetYCollider(null, null, null); 
             }
             else
             {
@@ -92,7 +92,7 @@
                     if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
                     {
                         // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
-                        if (!IsOnFloor) { yVelocity = Math.Min(yVelocity, 0); }
+                        if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
                         SetYCollider(YColliders.bottom, targetHitbox, collisionTarget);
                     }
                     // Checks if there is a platform above the player
@@ -103,12 +103,9 @@
                 }
 
                 if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
-                {
                     SetXCollider(null, null, collisionTarget);
-                }
                 else
                 {
-
                     if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
                     {
                         if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
@@ -162,10 +159,8 @@
         /// <returns>boolean: default true</returns>
         public bool ShouldDoMove()
         {
-            if (CurYColliderDirection == YColliders.bottom)
-            {
-                if ((yVelocity == 0) && (xVelocity == 0)) { return false; }
-            }
+            if (CurYColliderDirection != YColliders.bottom) return true;
+            if ((yVelocity == 0) && (xVelocity == 0)) return false; 
             return true;
         }
 
@@ -219,7 +214,7 @@
                 yVelocity += GRAVITY*dt;
 
                 // Terminal velocity -> only applies downwards
-                if (yVelocity > 0) { yVelocity = Math.Min(yVelocity, TERMINAL_VELOCITY); }
+                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, TERMINAL_VELOCITY); 
             }
 
             // Coyote time ticks down 
@@ -245,26 +240,23 @@
             if (_hasGravity) DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0) { yVelocity = -JUMP_VELOCITY/6; }
+            if (Location.Y < 0)  yVelocity = -JUMP_VELOCITY/6; 
 
             if (isScrolling)
             {
-                if (_yStickEntity != null) { CheckPlatformCollision(_yStickEntity); }
+                if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
                 Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
             }
-            else { Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); }
+            else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
-
-            if (xVelocity == 0)
-                return;
-
+            if (xVelocity == 0) return;
 
             xVelocity = Math.Min(Math.Abs(xVelocity), MAX_X_VELOCITY) * Math.Sign(xVelocity); // stops the player from achieving lightspeed
 
             if (!IsMoving) // if not moving horizontally -> gradually decrease horizontal velocity
             {
-                if (Math.Abs(xVelocity) > 0.01) { xVelocity *= 0.85; }
-                else { xVelocity = 0; }
+                if (Math.Abs(xVelocity) > 0.01)  xVelocity *= 0.85; 
+                else  xVelocity = 0; 
             }
         }
 
@@ -273,7 +265,7 @@
         /// Rectangle is the size of the player (effectively doubling the player's height)
         /// Only used to detect overshoot incase the player clips into the ground.
         /// </summary>
-        private void SetOverShootRec() { _overShootRec = new RectangleF(Location.X, Location.Y - Height, Width, Height); }
+        private void SetOverShootRec() => _overShootRec = new RectangleF(Location.X, Location.Y - Height, Width, Height); 
 
     }
 }
