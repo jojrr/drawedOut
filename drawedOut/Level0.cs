@@ -125,7 +125,7 @@ namespace drawedOut
         // threading 
         // used for closing the thread
         private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
-        private static Thread gameTickThread = new Thread(() => { });
+        private static Thread gameTickThread;
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
 
@@ -186,6 +186,8 @@ namespace drawedOut
             playerBrush = Brushes.Blue;
 
             deltaTimeSW.Start();
+
+            if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
 
             fpsTimer.Start();
@@ -396,12 +398,13 @@ namespace drawedOut
         // rendering graphics method
         private void renderGraphics()
         {
+            if (playerBrush is null) throw new Exception("playerBrush is not defined");
+
             if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
                 unZoomScreen(ZOOM_FACTOR);
                 curZoom = 1;
             }
-
 
             // debugging/visual indicator for parry
             if (isParrying)
