@@ -423,27 +423,24 @@ namespace drawedOut
         }
 
 
-
-        PointF mcPrevCenter; // previous center position of playerBox
-
-
         private void zoomScreen(float scaleF)
         {
             curZoom = scaleF;
 
             // gets center of screen
-            float midX = ClientSize.Width / 2;
-            float midY = ClientSize.Height / 2;
+            float _midX = this.ClientRectangle.Width / 2;
+            float _midY = this.ClientRectangle.Height / 2;
 
-            mcPrevCenter = playerBox.Center;
+            float playerX = playerBox.Center.X;
+            float playerY = playerBox.Center.Y;
 
             void zoomObj(Entity obj)
             {
-                float XDiff = obj.Center.X - mcPrevCenter.X;
-                float YDiff = obj.Center.Y - mcPrevCenter.Y;
+                float _xDiff = obj.Center.X - playerX;
+                float _yDiff = obj.Center.Y - playerY;
 
-                float newX = midX + XDiff * scaleF;
-                float newY = midY + YDiff * scaleF;
+                float newX = _midX + _xDiff * scaleF;
+                float newY = _midY + _yDiff * scaleF;
 
                 obj.ScaleHitbox(scaleF);
                 obj.Center = new PointF (newX, newY);
@@ -453,23 +450,24 @@ namespace drawedOut
 
             // calculates new position for each projectile based on distance from playerBox center and adjusts for Scale and the "screen" shifting to the center
             foreach (Entity e in Entity.EntityList)
-            { 
-                if (e == playerBox ) { continue; }
+            {
                 zoomOrigins.Add(e,e.Center);
+                if (e == playerBox)
+                {
+                    playerBox.Center = new PointF (_midX, _midY);
+                    playerBox.ScaleHitbox(scaleF);
+                    continue;
+                }
                 zoomObj(e); 
             }
-
-
-            playerBox.Center = new PointF (midX, midY);
-            playerBox.ScaleHitbox(scaleF);
         }
 
 
 
         private void unZoomScreen(float scaleF)
         {
-            float midX = this.Width / 2;
-            float midY = this.Height / 2;
+            float midX = this.ClientRectangle.Width / 2;
+            float midY = this.ClientRectangle.Height / 2;
 
             static void unZoomObj(Entity obj, PointF point)
             {
@@ -478,14 +476,11 @@ namespace drawedOut
             }
 
 
-            foreach (KeyValuePair<Entity,PointF> EntityPoints in zoomOrigins)
-                unZoomObj(EntityPoints.Key, EntityPoints.Value);
+            foreach (KeyValuePair<Entity, PointF> EntityPoints in zoomOrigins)
+            { unZoomObj(EntityPoints.Key, EntityPoints.Value); }
 
-            zoomOrigins.Clear();
-
-            playerBox.Center = new PointF (mcPrevCenter.X, mcPrevCenter.Y);
             playerBox.ResetScale();
-
+            zoomOrigins.Clear();
             curZoom = 1; // screen is no longer scaled
         }
 
