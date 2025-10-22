@@ -63,11 +63,11 @@
             // moves backwards if rebounded
             if (isRebound)
             {
-                this.UpdateLocation( Location.X - xVelocity, Location.Y - yVelocity);
+                this.Location = new PointF(Location.X-xVelocity, Location.Y-yVelocity);
                 return;
             }
 
-            this.UpdateLocation( Location.X + xVelocity, Location.Y + yVelocity);
+            this.Location = new PointF(Location.X+xVelocity, Location.Y+yVelocity);
         }
 
 
@@ -102,7 +102,7 @@
             xDiff = Center.X - target.X;
             yDiff = Center.Y - target.Y;
 
-            this.UpdateLocation( Location.X + 2*xDiff, Location.Y + 2*yDiff);
+            this.Location = new PointF( Location.X + 2*xDiff, Location.Y + 2*yDiff);
         }
     }
 }

@@ -8,9 +8,6 @@
         public static List<Character> ActiveCharacters = new List<Character>();
         public static List<Character> InactiveCharacters = new List<Character>();
 
-        public enum YColliders : int { bottom, top }
-        public enum XColliders : int { right, left }
-
         public double xVelocity, yVelocity; // TODO: make private
         private bool 
             _isMoving = false,
@@ -38,8 +35,8 @@
         /// Array that stores the current collision state of this character.
         /// format [X, Y]
         /// </summary>
-        public YColliders? CurYColliderDirection = null;
-        public XColliders? CurXColliderDirection = null;
+        public Global.YDirections? CurYColliderDirection = null;
+        public Global.XDirections? CurXColliderDirection = null;
 
 
         /// <summary>
@@ -93,12 +90,12 @@
                     {
                         // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
                         if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
-                        SetYCollider(YColliders.bottom, targetHitbox, collisionTarget);
+                        SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
                     }
                     // Checks if there is a platform above the player
                     else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (yVelocity < 0))
                     {
-                        SetYCollider(YColliders.top, targetHitbox, collisionTarget);
+                        SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
                     }
                 }
 
@@ -109,12 +106,12 @@
                     if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
                     {
                         if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
-                        SetXCollider(XColliders.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
+                        SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
                     }
                     else if (Center.X > targetHitbox.Right)
                     {
                         if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
-                        SetXCollider(XColliders.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
+                        SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
                     }
 
                 }
@@ -131,7 +128,7 @@
         /// <param name="y">bottom, top or null </param>
         /// <param name="targetHitbox"></param>
         /// <param name="collisionTarget"></param>
-        public void SetYCollider(YColliders? y, RectangleF? targetHitbox, Entity? collisionTarget)
+        public void SetYCollider(Global.YDirections? y, RectangleF? targetHitbox, Entity? collisionTarget)
         {
             CurYColliderDirection = y;
             _yStickTarget = targetHitbox;
@@ -145,7 +142,7 @@
         /// <param name="x">right, left or null</param>
         /// <param name="targetHitbox">The hitbox of the X collider</param>
         /// <param name="collisionTarget">The reference to the entity that the player is colliding with horizontally</param>
-        private void SetXCollider(XColliders? x, RectangleF? targetHitbox, Entity? collisionTarget)
+        private void SetXCollider(Global.XDirections? x, RectangleF? targetHitbox, Entity? collisionTarget)
         {
             CurXColliderDirection = x;
             _xStickTarget = targetHitbox;
@@ -159,7 +156,7 @@
         /// <returns>boolean: default true</returns>
         public bool ShouldDoMove()
         {
-            if (CurYColliderDirection != YColliders.bottom) return true;
+            if (CurYColliderDirection != Global.YDirections.bottom) return true;
             if ((yVelocity == 0) && (xVelocity == 0)) return false; 
             return true;
         }
@@ -172,14 +169,14 @@
             if (_yStickTarget != null)
             {
                 // if platform is above -> set the location to 1 under the platform to prevent getting stuck
-                if (CurYColliderDirection == YColliders.top)
+                if (CurYColliderDirection == Global.YDirections.top)
                 {
                     LocationY = _yStickTarget.Value.Bottom + 1;
                     yVelocity = 0;
                 }
 
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
-                else if (CurYColliderDirection == YColliders.bottom)
+                else if (CurYColliderDirection == Global.YDirections.bottom)
                 {
                     _coyoteTime = 10; // 100ms (on 10ms timer)
                     LocationY = _yStickTarget.Value.Y - Height + 1;
@@ -191,12 +188,12 @@
 
             if (_xStickTarget != null)
             {
-                if (CurXColliderDirection == XColliders.right)
+                if (CurXColliderDirection == Global.XDirections.right)
                 {
                     LocationX = _xStickTarget.Value.Left - this.Width + 1;
                     xVelocity = Math.Min(0, xVelocity);
                 }
-                else if (CurXColliderDirection == XColliders.left)
+                else if (CurXColliderDirection == Global.XDirections.left)
                 {
                     LocationX = _xStickTarget.Value.Right - 1;
                     xVelocity = Math.Max(0, xVelocity);
@@ -208,7 +205,7 @@
         private void DoGravTick(double dt)
         {
             // if there is no floor beneath -> gravity occurs
-            if (CurYColliderDirection != YColliders.bottom)
+            if (CurYColliderDirection != Global.YDirections.bottom)
             {
                 IsOnFloor = false;
                 yVelocity += GRAVITY*dt;

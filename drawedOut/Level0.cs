@@ -46,9 +46,8 @@ namespace drawedOut
             height: 1);
 
 
-        private enum xDirections { left, right }
-        private static xDirections? onWorldBoundary = xDirections.left;
-        private static xDirections? scrollDirection = null;
+        private static Global.XDirections? onWorldBoundary = Global.XDirections.left;
+        private static Global.XDirections? scrollDirection = null;
 
         private const double xAccel = 100; // TODO: move to player/character
 
@@ -74,6 +73,7 @@ namespace drawedOut
 
         private static bool
             gameTickEnabled = true,
+            showHitbox = true,
 
             movingLeft = false,
             movingRight = false,
@@ -102,11 +102,9 @@ namespace drawedOut
 
             PARRY_DURATION_S = 0.45F,
             PERFECT_PARRY_WINDOW_S = 0.05F,
-            PARRY_ENDLAG_S = 0.2F,
+            PARRY_ENDLAG_S = 0.2F;
 
             //bulletCooldownS = 0.5F, // NOTE: remove when enemy code added
-
-            LEVEL_BASE_SCALE = 1F;
 
         private static float
             bulletInterval, // TODO: move into enemy class
@@ -115,10 +113,11 @@ namespace drawedOut
             endLagTime,
 
             curZoom = 1,
-
+            MidX,
+            MidY,
             // TODO: redo freeze and slow logic
             slowTimeS = 0,
-            freezeTimeS = 0; 
+            freezeTimeS = 0;
 
         private static double motionDT = 0; // TODO: get rid of this bruhv lowk useless like wth
 
@@ -139,8 +138,8 @@ namespace drawedOut
             threadSettings.CancellationToken = cancelTokenSrc.Token;
 
             // set height and width of window
-            Width = 1860;
-            Height = 770;
+            Width = (int)(Global.BaseSize.Width*Global.LevelBaseScale);
+            Height = (int)(Global.BaseSize.Height*Global.LevelBaseScale);
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -278,7 +277,7 @@ namespace drawedOut
                         return;
                     }
 
-                    if (!playerBox.GetHitbox().IntersectsWith(bullet.GetHitbox())) 
+                    if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
                         return;
 
                     if (!isParrying)
@@ -402,7 +401,7 @@ namespace drawedOut
 
             if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
-                unZoomScreen(ZOOM_FACTOR);
+                unZoomScreen();
                 curZoom = 1;
             }
 
@@ -423,13 +422,10 @@ namespace drawedOut
         }
 
 
+
         private void zoomScreen(float scaleF)
         {
             curZoom = scaleF;
-
-            // gets center of screen
-            float _midX = this.ClientRectangle.Width / 2;
-            float _midY = this.ClientRectangle.Height / 2;
 
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
@@ -439,8 +435,8 @@ namespace drawedOut
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = _midX + _xDiff * scaleF;
-                float newY = _midY + _yDiff * scaleF;
+                float newX = MidX + _xDiff * scaleF;
+                float newY = MidY + _yDiff * scaleF;
 
                 obj.ScaleHitbox(scaleF);
                 obj.Center = new PointF (newX, newY);
@@ -454,7 +450,7 @@ namespace drawedOut
                 zoomOrigins.Add(e,e.Center);
                 if (e == playerBox)
                 {
-                    playerBox.Center = new PointF (_midX, _midY);
+                    playerBox.Center = new PointF (MidX, MidY);
                     playerBox.ScaleHitbox(scaleF);
                     continue;
                 }
@@ -464,20 +460,15 @@ namespace drawedOut
 
 
 
-        private void unZoomScreen(float scaleF)
+        private void unZoomScreen()
         {
-            float midX = this.ClientRectangle.Width / 2;
-            float midY = this.ClientRectangle.Height / 2;
-
-            static void unZoomObj(Entity obj, PointF point)
-            {
-                obj.ResetScale();
-                obj.Center = new PointF (point.X, point.Y);
-            }
-
-
             foreach (KeyValuePair<Entity, PointF> EntityPoints in zoomOrigins)
-            { unZoomObj(EntityPoints.Key, EntityPoints.Value); }
+            { 
+                Entity obj = EntityPoints.Key;
+                PointF point = EntityPoints.Value;
+                obj.ResetScale();
+                obj.Center = point;
+            }
 
             playerBox.ResetScale();
             zoomOrigins.Clear();
@@ -491,7 +482,7 @@ namespace drawedOut
 
             // TODO: functionize and optimise
             
-            if (playerBox.IsOnFloor && jumping) { playerBox.doJump(); }
+            if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
             if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
             if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
 
@@ -507,12 +498,12 @@ namespace drawedOut
 
                 if (playerBox.xVelocity != 0)
                 {
-                    if (0 < box2.Hitbox.Left) onWorldBoundary = xDirections.left; 
-                    else if (Width > box2.Hitbox.Right) onWorldBoundary = xDirections.right;
+                    if (0 < box2.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
+                    else if (Width > box2.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
                     else onWorldBoundary = null;
 
-                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0)) scrollDirection = xDirections.left;
-                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0)) scrollDirection = xDirections.right;
+                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0)) scrollDirection = Global.XDirections.left;
+                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0)) scrollDirection = Global.XDirections.right;
                     else scrollDirection = null;
 
                     if (onWorldBoundary == scrollDirection) scrollDirection = null;
@@ -542,7 +533,7 @@ namespace drawedOut
 
 
 
-        public void ScrollEntities( double velocity, double deltaTime)
+        public void ScrollEntities(double velocity, double deltaTime)
         {
             foreach( Entity e in Entity.EntityList)
             {
@@ -552,26 +543,24 @@ namespace drawedOut
         }
 
 
-        // NOTE: chunk loading to be removed
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            foreach (Character chara in Character.ActiveCharacters)
+            if (showHitbox)
             {
-                { e.Graphics.FillRectangle(playerBrush, chara.Hitbox); }
-            }
+                foreach (Character chara in Character.ActiveCharacters)
+                    e.Graphics.FillRectangle(playerBrush, chara.Hitbox);
 
-            foreach (Platform plat in Platform.ActivePlatformList)
-            {
-                using (Pen redPen = new Pen(Color.Red, 3))
-                { e.Graphics.DrawRectangle(redPen, plat.Hitbox); }
-            }
+                foreach (Platform plat in Platform.ActivePlatformList)
+                {
+                    using (Pen redPen = new Pen(Color.Red, 3))
+                    { e.Graphics.DrawRectangle(redPen, plat.Hitbox); }
+                }
 
-            foreach (Projectile bullet in Projectile.ProjectileList)
-                e.Graphics.FillRectangle(Brushes.Red, bullet.Hitbox);
+                foreach (Projectile bullet in Projectile.ProjectileList)
+                    e.Graphics.FillRectangle(Brushes.Red, bullet.Hitbox);
 
-            for (int i = 0; i < hpBar.IconCount; i++)
-            {
-                e.Graphics.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
+                for (int i = 0; i < hpBar.IconCount; i++)
+                    e.Graphics.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
             }
         }
 
@@ -579,7 +568,6 @@ namespace drawedOut
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            RectangleF playerBoxHitbox = playerBox.Hitbox;
             switch (e.KeyCode)
             {
                 case Keys.A:
