@@ -5,6 +5,7 @@
     /// </summary>
     internal class Entity
     {
+        // TODO: move loadin and centreofscreen to global
         private static int _loadInThreshold;
         public static void setLoadInThreashold(int loadInThreshold) => _loadInThreshold = loadInThreshold;
 
@@ -23,15 +24,15 @@
                 _center = new PointF(value.X + _scaledSize.Width/2, value.Y + _scaledSize.Height/2);
             }
         }
-        protected float LocationX
+        public float LocationX
         {
             get => _location.X;
-            set => _location.X = value;
+            protected set => _location.X = value;
         }
-        protected float LocationY
+        public float LocationY
         {
             get => _location.Y;
-            set => _location.Y = value;
+            protected set => _location.Y = value;
         }
 
 
@@ -99,18 +100,18 @@
         /// make the hitbox bigger by specified param
         /// </summary>
         /// <param name="scaleF"> scale to enlarge dimensions </param>
-        public void ScaleHitbox(float scaleF)
-        {
-            _scaledSize = new SizeF (_baseSize.Width*scaleF, _baseSize.Height*scaleF);
-        }
+        public void ScaleHitbox(float scaleF) => _scaledSize = new SizeF (_baseSize.Width*scaleF, _baseSize.Height*scaleF);
 
         /// <summary>
         /// return to original scaled size before zoom
         /// </summary>
         public void ResetScale() => _scaledSize = _baseSize; 
 
-        public void CheckActive(ref List<Entity> activeList, ref List<Entity> inactiveList, float curCenter)
+        public virtual void CheckActive()
         {
+            throw new exception($"CheckActive is not implemented in {this.GetType()}");
+            
+            /*
             float dist = Math.Abs(curCenter - _center.X);
 
             if (dist <= _loadInThreshold)
@@ -126,6 +127,7 @@
 
             inactiveList.Add(this);
             activeList.Add(this);
+            */
         }
     }
 }

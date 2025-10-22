@@ -423,13 +423,13 @@ namespace drawedOut
         }
 
 
+
+        // gets center of screen
+        float _midX = this.ClientRectangle.Width / 2;
+        float _midY = this.ClientRectangle.Height / 2;
         private void zoomScreen(float scaleF)
         {
             curZoom = scaleF;
-
-            // gets center of screen
-            float _midX = this.ClientRectangle.Width / 2;
-            float _midY = this.ClientRectangle.Height / 2;
 
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
@@ -464,20 +464,13 @@ namespace drawedOut
 
 
 
-        private void unZoomScreen(float scaleF)
+        private void unZoomScreen()
         {
-            float midX = this.ClientRectangle.Width / 2;
-            float midY = this.ClientRectangle.Height / 2;
-
-            static void unZoomObj(Entity obj, PointF point)
-            {
+            foreach (KeyValuePair<Entity, PointF> EntityPoints in zoomOrigins)
+            { 
                 obj.ResetScale();
                 obj.Center = new PointF (point.X, point.Y);
             }
-
-
-            foreach (KeyValuePair<Entity, PointF> EntityPoints in zoomOrigins)
-            { unZoomObj(EntityPoints.Key, EntityPoints.Value); }
 
             playerBox.ResetScale();
             zoomOrigins.Clear();
@@ -542,7 +535,7 @@ namespace drawedOut
 
 
 
-        public void ScrollEntities( double velocity, double deltaTime)
+        public void ScrollEntities(double velocity, double deltaTime)
         {
             foreach( Entity e in Entity.EntityList)
             {
@@ -557,7 +550,7 @@ namespace drawedOut
         {
             foreach (Character chara in Character.ActiveCharacters)
             {
-                { e.Graphics.FillRectangle(playerBrush, chara.Hitbox); }
+                e.Graphics.FillRectangle(playerBrush, chara.Hitbox);
             }
 
             foreach (Platform plat in Platform.ActivePlatformList)
@@ -579,7 +572,6 @@ namespace drawedOut
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            RectangleF playerBoxHitbox = playerBox.Hitbox;
             switch (e.KeyCode)
             {
                 case Keys.A:
