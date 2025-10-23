@@ -8,7 +8,11 @@
         public static List<Character> ActiveCharacters = new List<Character>();
         public static List<Character> InactiveCharacters = new List<Character>();
 
-        public double xVelocity, yVelocity; // TODO: make private
+        public enum YColliders : int { bottom, top }
+        public enum XColliders : int { right, left }
+
+        private double _xVelocity=0, _yVelocity=0;
+
         private bool 
             _isMoving = false,
             _isOnFloor,
@@ -30,7 +34,6 @@
 
         private Entity? _xStickEntity, _yStickEntity;
 
-
         /// <summary>
         /// Array that stores the current collision state of this character.
         /// format [X, Y]
@@ -47,15 +50,9 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        /// <param name="xVelocity">default = 0</param>
-        /// <param name="yVelocity">default = 0</param>
-        /// <param name="flying">default = false</param>
-        public Character(Point origin, int width, int height, double xVelocity = 0, double yVelocity = 0, bool flying = false)
+        public Character(Point origin, int width, int height)
             : base(origin: origin, width: width, height: height )
         {
-            this.xVelocity = xVelocity;
-            this.yVelocity = yVelocity;
-            _hasGravity = !flying;
             SetOverShootRec();
             InactiveCharacters.Add(this);
         }
@@ -89,11 +86,11 @@
                     if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
                     {
                         // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
-                        if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
+                        if (!IsOnFloor) _yVelocity = Math.Min(_yVelocity, 0); 
                         SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
                     }
                     // Checks if there is a platform above the player
-                    else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (yVelocity < 0))
+                    else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
                     {
                         SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
                     }
@@ -105,12 +102,12 @@
                 {
                     if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
                     {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
+                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
                         SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
                     }
                     else if (Center.X > targetHitbox.Right)
                     {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
+                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
                         SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
                     }
 
@@ -157,7 +154,7 @@
         public bool ShouldDoMove()
         {
             if (CurYColliderDirection != Global.YDirections.bottom) return true;
-            if ((yVelocity == 0) && (xVelocity == 0)) return false; 
+            if ((_yVelocity == 0) && (_xVelocity == 0)) return false; 
             return true;
         }
 
@@ -172,7 +169,7 @@
                 if (CurYColliderDirection == Global.YDirections.top)
                 {
                     LocationY = _yStickTarget.Value.Bottom + 1;
-                    yVelocity = 0;
+                    _yVelocity = 0;
                 }
 
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
@@ -180,7 +177,7 @@
                 {
                     _coyoteTime = 10; // 100ms (on 10ms timer)
                     LocationY = _yStickTarget.Value.Y - Height + 1;
-                    yVelocity = Math.Min(yVelocity, 0);
+                    _yVelocity = Math.Min(_yVelocity, 0);
                 }
             }
 
@@ -191,12 +188,12 @@
                 if (CurXColliderDirection == Global.XDirections.right)
                 {
                     LocationX = _xStickTarget.Value.Left - this.Width + 1;
-                    xVelocity = Math.Min(0, xVelocity);
+                    _xVelocity = Math.Min(0, _xVelocity);
                 }
                 else if (CurXColliderDirection == Global.XDirections.left)
                 {
                     LocationX = _xStickTarget.Value.Right - 1;
-                    xVelocity = Math.Max(0, xVelocity);
+                    _xVelocity = Math.Max(0, _xVelocity);
                 }
             }
         }
@@ -208,10 +205,10 @@
             if (CurYColliderDirection != Global.YDirections.bottom)
             {
                 IsOnFloor = false;
-                yVelocity += GRAVITY*dt;
+                _yVelocity += GRAVITY*dt;
 
                 // Terminal velocity -> only applies downwards
-                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, TERMINAL_VELOCITY); 
+                if (_yVelocity > 0) _yVelocity = Math.Min(_yVelocity, TERMINAL_VELOCITY); 
             }
 
             // Coyote time ticks down 
@@ -223,37 +220,40 @@
         }
 
 
-        public void DoJump() => yVelocity = JUMP_VELOCITY; 
+        public void DoJump() => _yVelocity = JUMP_VELOCITY; 
 
 
         /// <summary>
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, bool isScrolling = false)
+        public void MoveCharacter(double acceleration, double dt, bool isScrolling = false)
         {
             SetOverShootRec();
 
             if (_hasGravity) DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0)  yVelocity = -JUMP_VELOCITY/6; 
+            if (Location.Y < 0)  _yVelocity = -JUMP_VELOCITY/6; 
+
+            _xVelocity += acceleration;
 
             if (isScrolling)
             {
                 if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
-                Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
+                Location = new PointF(Location.X, Location.Y + (float)(_yVelocity * dt));
             }
-            else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
+            else Location = new PointF(Location.X + (float)(_xVelocity * dt), Location.Y + (float)(_yVelocity * dt)); 
 
-            if (xVelocity == 0) return;
+            if (_xVelocity == 0) return;
 
-            xVelocity = Math.Min(Math.Abs(xVelocity), MAX_X_VELOCITY) * Math.Sign(xVelocity); // stops the player from achieving lightspeed
+            _xVelocity = Math.Min(Math.Abs(_xVelocity), MAX_X_VELOCITY) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
 
-            if (!IsMoving) // if not moving horizontally -> gradually decrease horizontal velocity
+            // if not moving horizontally -> gradually decrease horizontal velocity
+            if (acceleration == 0) 
             {
-                if (Math.Abs(xVelocity) > 0.01)  xVelocity *= 0.85; 
-                else  xVelocity = 0; 
+                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity *= 0.85; 
+                else _xVelocity = 0; 
             }
         }
 

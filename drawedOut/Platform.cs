@@ -15,5 +15,22 @@
             InactivePlatformList.Add(this);
         } 
 
+        public override void CheckActive()
+        {
+            if (Math.Abs(this.DistToMid) > Global.EntityLoadThreshold)
+            {
+                if (!IsActive) return;
+
+                IsActive = false;
+                InactivePlatformList.Add(this);
+                ActivePlatformList.Remove(this);
+            }
+
+            if (IsActive) return;
+                
+            IsActive = true;
+            ActivePlatformList.Add(this);
+            InactivePlatformList.Remove(this);
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace drawedOut
     public static class Global
     {
         private static float _levelBaseScale = 1F;
-        public static float LevelBaseScale 
+        public static float BaseScale 
         {
             get => _levelBaseScale;
             set 
@@ -23,15 +23,26 @@ namespace drawedOut
         private static int _entityLoadThreshold = 1000;
         public static int EntityLoadThreshold
         {
-            get => (int)(_entityLoadThreshold*LevelBaseScale);
+            get => (int)(_entityLoadThreshold*BaseScale);
         }
 
 
         public static Size _baseSize = new Size(1860, 770);
         public static Size BaseSize { get => _baseSize; }
-        public static PointF CentreOfScreen
+
+        private static Point _centerOfScreen;
+        public static Point CenterOfScreen
         {
-            get => new Point((int)(_baseSize.Width/2*LevelBaseScale), (int)(_baseSize.Height/2*LevelBaseScale));
+            get => _centerOfScreen;
+            private set => value = _centerOfScreen;
+        }
+
+        public static void CalcNewCenter()
+        {
+
+            CenterOfScreen = new Point(
+                    (int)(_baseSize.Width/2*BaseScale), 
+                    (int)(_baseSize.Height/2*BaseScale));
         }
 
         public enum XDirections { left, right }

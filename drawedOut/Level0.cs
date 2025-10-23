@@ -138,8 +138,8 @@ namespace drawedOut
             threadSettings.CancellationToken = cancelTokenSrc.Token;
 
             // set height and width of window
-            Width = (int)(Global.BaseSize.Width*Global.LevelBaseScale);
-            Height = (int)(Global.BaseSize.Height*Global.LevelBaseScale);
+            Width = (int)(Global.BaseSize.Width*Global.BaseScale);
+            Height = (int)(Global.BaseSize.Height*Global.BaseScale);
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -486,9 +486,6 @@ namespace drawedOut
             if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
             if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
 
-            playerBox.IsMoving = false; // TODO: move into player class
-            if ((movingLeft && movingRight) || (playerBox.CurXColliderDirection == null))
-                playerBox.IsMoving = true;
 
 
             foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
