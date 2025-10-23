@@ -11,7 +11,7 @@
         public enum YColliders : int { bottom, top }
         public enum XColliders : int { right, left }
 
-        public double xVelocity, yVelocity; // TODO: make private
+        private double _xVelocity=0, _yVelocity=0;
         private bool 
             _isMoving = false,
             _isOnFloor,
@@ -33,7 +33,6 @@
 
         private Entity? _xStickEntity, _yStickEntity;
 
-
         /// <summary>
         /// Array that stores the current collision state of this character.
         /// format [X, Y]
@@ -50,15 +49,9 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        /// <param name="xVelocity">default = 0</param>
-        /// <param name="yVelocity">default = 0</param>
-        /// <param name="flying">default = false</param>
-        public Character(Point origin, int width, int height, double xVelocity = 0, double yVelocity = 0, bool flying = false)
+        public Character(Point origin, int width, int height)
             : base(origin: origin, width: width, height: height )
         {
-            this.xVelocity = xVelocity;
-            this.yVelocity = yVelocity;
-            _hasGravity = !flying;
             SetOverShootRec();
             InactiveCharacters.Add(this);
         }
@@ -108,12 +101,12 @@
                 {
                     if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
                     {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
+                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
                         SetXCollider(XColliders.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
                     }
                     else if (Center.X > targetHitbox.Right)
                     {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { xVelocity = 0; }
+                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
                         SetXCollider(XColliders.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
                     }
 
@@ -160,7 +153,7 @@
         public bool ShouldDoMove()
         {
             if (CurYColliderDirection != YColliders.bottom) return true;
-            if ((yVelocity == 0) && (xVelocity == 0)) return false; 
+            if ((yVelocity == 0) && (_xVelocity == 0)) return false; 
             return true;
         }
 
@@ -194,12 +187,12 @@
                 if (CurXColliderDirection == XColliders.right)
                 {
                     LocationX = _xStickTarget.Value.Left - this.Width + 1;
-                    xVelocity = Math.Min(0, xVelocity);
+                    _xVelocity = Math.Min(0, _xVelocity);
                 }
                 else if (CurXColliderDirection == XColliders.left)
                 {
                     LocationX = _xStickTarget.Value.Right - 1;
-                    xVelocity = Math.Max(0, xVelocity);
+                    _xVelocity = Math.Max(0, _xVelocity);
                 }
             }
         }
@@ -233,7 +226,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, bool isScrolling = false)
+        public void MoveCharacter(double acceleration, double dt, bool isScrolling = false)
         {
             SetOverShootRec();
 
@@ -242,21 +235,23 @@
             // stops the player going above the screen
             if (Location.Y < 0)  yVelocity = -JUMP_VELOCITY/6; 
 
+            _xVelocity += accleration;
+
             if (isScrolling)
             {
                 if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
                 Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
             }
-            else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
+            else Location = new PointF(Location.X + (float)(_xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
-            if (xVelocity == 0) return;
+            if (_xVelocity == 0) return;
 
-            xVelocity = Math.Min(Math.Abs(xVelocity), MAX_X_VELOCITY) * Math.Sign(xVelocity); // stops the player from achieving lightspeed
+            _xVelocity = Math.Min(Math.Abs(_xVelocity), MAX_X_VELOCITY) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
 
-            if (!IsMoving) // if not moving horizontally -> gradually decrease horizontal velocity
+            if (accleration == 0) // if not moving horizontally -> gradually decrease horizontal velocity
             {
-                if (Math.Abs(xVelocity) > 0.01)  xVelocity *= 0.85; 
-                else  xVelocity = 0; 
+                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity *= 0.85; 
+                else _xVelocity = 0; 
             }
         }
 

@@ -488,9 +488,6 @@ namespace drawedOut
             if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
             if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
 
-            playerBox.IsMoving = false; // TODO: move into player class
-            if ((movingLeft && movingRight) || (playerBox.CurXColliderDirection == null))
-                playerBox.IsMoving = true;
 
 
             foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
