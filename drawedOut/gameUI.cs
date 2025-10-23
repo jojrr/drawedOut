@@ -15,7 +15,5 @@
             Visible = isVisible; 
             UiElements.Add(this);
         }
-
-
     }
 }

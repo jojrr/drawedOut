@@ -5,13 +5,6 @@
     /// </summary>
     internal class Entity
     {
-        // TODO: move loadin and centreofscreen to global
-        private static int _loadInThreshold;
-        public static void setLoadInThreashold(int loadInThreshold) => _loadInThreshold = loadInThreshold;
-
-        private static PointF _centerOfScreen; 
-        public static void defineScreenCenter(PointF screenCenter) => _centerOfScreen = screenCenter;
-
         private PointF _location;
         private PointF _center;
 
@@ -22,17 +15,28 @@
             {
                 _location = value;
                 _center = new PointF(value.X + _scaledSize.Width/2, value.Y + _scaledSize.Height/2);
+                _calcHitbox();
             }
         }
         public float LocationX
         {
             get => _location.X;
-            protected set => _location.X = value;
+            protected set 
+            {
+                _location.X = value;
+                _center = new PointF(value + _scaledSize.Width/2, _center.Y);
+                _calcHitbox();
+            }
         }
         public float LocationY
         {
             get => _location.Y;
-            protected set => _location.Y = value;
+            protected set 
+            {
+                _location.Y = value;
+                _center = new PointF(_center.X, value + _scaledSize.Height/2);
+                _calcHitbox();
+            }
         }
 
 
@@ -43,6 +47,7 @@
             {
                 _center = value;
                 _location = new PointF(value.X - _scaledSize.Width/2, value.Y - _scaledSize.Height/2);
+                _calcHitbox();
             }
         }
 
@@ -55,12 +60,7 @@
 
 
         private RectangleF _hitbox;
-        public RectangleF Hitbox
-        {
-            get => new RectangleF(_location, _scaledSize); 
-            private set => _hitbox = value;
-        }
-
+        public RectangleF Hitbox { get => _calcHitbox(); }
 
         public static List<Entity> EntityList = new List<Entity>();
 
@@ -75,11 +75,11 @@
         /// <param name="chunk">chunk in the level which the entity belongs to. (default = 0: always loaded)</param>
         public Entity(PointF origin, int width, int height)
         {
-            _location = origin;
-            _baseSize = new Size(width, height);
+            _location = new PointF(origin.X * Global.BaseScale, origin.Y * Global.BaseScale);
+            _baseSize = new SizeF(width*Global.BaseScale, height*Global.BaseScale);
             _scaledSize = _baseSize;
-            Hitbox = new RectangleF(origin, _baseSize); 
-            _center = new PointF (Hitbox.X + _baseSize.Width/2, Hitbox.Y + _baseSize.Height/2);
+            _hitbox = new RectangleF(_location, _scaledSize); 
+            _center = new PointF (_hitbox.X + _scaledSize.Width/2, _hitbox.Y + _scaledSize.Height/2);
 
             EntityList.Add(this);
         }
@@ -96,6 +96,12 @@
             _center.X += fltX;
         }
 
+        private RectangleF _calcHitbox() 
+        {
+            _hitbox = new RectangleF(_location, _scaleSize);
+            return _hitBox
+        }
+
         /// <summary>
         /// make the hitbox bigger by specified param
         /// </summary>
@@ -106,6 +112,8 @@
         /// return to original scaled size before zoom
         /// </summary>
         public void ResetScale() => _scaledSize = _baseSize; 
+
+        protected float DistToCenter() => Location.X - Global.Center.X;
 
         public virtual void CheckActive()
         {

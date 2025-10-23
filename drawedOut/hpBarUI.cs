@@ -14,7 +14,7 @@ namespace drawedOut
         public HpBarUI (PointF origin, float barWidth, float barHeight, int maxHp, float scaleF = 1, bool isVisible = true)
             :base( origin: origin, elementWidth: barWidth, elementHeight: barHeight, scaleF: scaleF , isVisible: isVisible) 
         {
-            _hpIconOffset = _baseIconOffset*scaleF;
+            _hpIconOffset = _baseIconOffset*Global.BaseScale;
 
             UpdateMaxHp(maxHp);
         }

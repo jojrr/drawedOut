@@ -15,5 +15,9 @@
             InactivePlatformList.Add(this);
         } 
 
+        public override void CheckActive()
+        {
+            if (Math.Abs(DistToCenter) < 
+
     }
 }

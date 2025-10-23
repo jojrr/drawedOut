@@ -248,7 +248,8 @@
 
             _xVelocity = Math.Min(Math.Abs(_xVelocity), MAX_X_VELOCITY) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
 
-            if (accleration == 0) // if not moving horizontally -> gradually decrease horizontal velocity
+            // if not moving horizontally -> gradually decrease horizontal velocity
+            if (accleration == 0) 
             {
                 if (Math.Abs(_xVelocity) > 0.01)  _xVelocity *= 0.85; 
                 else _xVelocity = 0; 
