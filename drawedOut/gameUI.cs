@@ -4,18 +4,15 @@
     {
         public static List<GameUI> UiElements = new List<GameUI>();
 
-        public PointF Origin { get; set; }
-        public bool Visible { get; set; }
-        public SizeF ElementSize { get; set; }
-        public float ScaleF { get; }
+        public PointF Origin { get; private set; }
+        public bool Visible { get; private set; }
+        public SizeF ElementSize { get; private set; }
 
-
-        public GameUI ( PointF origin, float elementWidth, float elementHeight, float scaleF = 1, bool isVisible = true)
+        public GameUI (PointF origin, float elementWidth, float elementHeight, bool isVisible = true)
         {
-            Origin = new PointF(origin.X * scaleF, origin.Y * scaleF);
-            ElementSize = new SizeF(elementWidth*scaleF, elementHeight*scaleF);
+            Origin = new PointF(origin.X * Global.BaseScale, origin.Y*Global.BaseScale);
+            ElementSize = new SizeF(elementWidth*Global.BaseScale, elementHeight*Global.BaseScale);
             Visible = isVisible; 
-            ScaleF = scaleF;
             UiElements.Add(this);
         }
 

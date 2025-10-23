@@ -12,6 +12,9 @@ namespace drawedOut
             PROJ_PATH = Global.GetProjFolder(),
             SPRITE_FOLDER = @"sprites\";
 
+        public int CurFrame { get => return _frameNo; }
+        public int Length { get => return _totalFrameCount; }
+
         ///<summary>
         ///initalises an animationPlayer object with the animation frames in the given folder
         ///</summary>
