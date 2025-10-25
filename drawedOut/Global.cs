@@ -5,16 +5,16 @@ namespace drawedOut
     ///</summary>
     public static class Global
     {
-        private static float _levelBaseScale = 1F;
+        private static float _baseScale = 1F;
         public static float BaseScale 
         {
-            get => _levelBaseScale;
+            get => _baseScale;
             set 
             {
                 if ((value != 0.5) || (value != 1.0) || (value != 1.5))
                     throw new Exception("scale must be 0.5, 1.0, 1.5");
 
-                _levelBaseScale = value;
+                _baseScale = value;
             }
         }
 
@@ -28,19 +28,18 @@ namespace drawedOut
 
 
         public static Size _baseSize = new Size(1860, 770);
-        public static Size BaseSize { get => _baseSize; }
+        public static Size LevelBaseSize { get => _baseSize; }
 
         private static Point _centerOfScreen;
         public static Point CenterOfScreen
         {
             get => _centerOfScreen;
-            private set => value = _centerOfScreen;
         }
 
         public static void CalcNewCenter()
         {
 
-            CenterOfScreen = new Point(
+            _centerOfScreen = new Point(
                     (int)(_baseSize.Width/2*BaseScale), 
                     (int)(_baseSize.Height/2*BaseScale));
         }

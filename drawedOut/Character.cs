@@ -8,9 +8,6 @@
         public static List<Character> ActiveCharacters = new List<Character>();
         public static List<Character> InactiveCharacters = new List<Character>();
 
-        public enum YColliders : int { bottom, top }
-        public enum XColliders : int { right, left }
-
         private double _xVelocity=0, _yVelocity=0;
 
         private bool 
@@ -21,16 +18,19 @@
         public bool IsMoving { get => _isMoving; protected set => _isMoving = value; }
         public bool IsOnFloor { get => _isOnFloor; protected set => _isOnFloor = value; }
 
-        private const int 
-            TERMINAL_VELOCITY = 130,
-            MAX_X_VELOCITY = 60,
-            JUMP_VELOCITY = -150;
-
+        private const int TERMINAL_VELOCITY = 130;
         private const double GRAVITY = 67.42;
+
+        private readonly int
+            _maxXVelocity = 60,
+            _jumpVelocity = -150;
+
+        protected int Hp;
+
         private double _coyoteTime;
 
         private RectangleF? _xStickTarget, _yStickTarget;
-        private RectangleF _overShootRec;
+        private RectangleF _overShootRec; // TODO: remove and see what happens
 
         private Entity? _xStickEntity, _yStickEntity;
 
@@ -220,7 +220,7 @@
         }
 
 
-        public void DoJump() => _yVelocity = JUMP_VELOCITY; 
+        public void DoJump() => _yVelocity = _jumpVelocity; 
 
 
         /// <summary>
@@ -234,7 +234,7 @@
             if (_hasGravity) DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0)  _yVelocity = -JUMP_VELOCITY/6; 
+            if (Location.Y < 0)  _yVelocity = -_jumpVelocity/6; 
 
             _xVelocity += acceleration;
 
@@ -247,7 +247,7 @@
 
             if (_xVelocity == 0) return;
 
-            _xVelocity = Math.Min(Math.Abs(_xVelocity), MAX_X_VELOCITY) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
+            _xVelocity = Math.Min(Math.Abs(_xVelocity), _maxXVelocity) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
 
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (acceleration == 0) 
@@ -263,6 +263,12 @@
         /// Only used to detect overshoot incase the player clips into the ground.
         /// </summary>
         private void SetOverShootRec() => _overShootRec = new RectangleF(Location.X, Location.Y - Height, Width, Height); 
+
+        public void DoDamage(int dmg)
+        {
+            if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI"); }
+            Hp -= dmg;
+        }
 
     }
 }

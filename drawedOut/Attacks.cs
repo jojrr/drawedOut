@@ -1,16 +1,43 @@
 namespace drawedOut
 {
-    internal class Attacks : Entity
+    internal class Attacks
     {
-        public static List<Attacks> AttacksList = new List<Attacks>();
+        Character _parent;
+        private float 
+            _xOffset,
+            _yOffset;
+        private int
+            _width,
+            _height;
 
-        public Attacks(Point origin, int width, int height)
-            :base(origin: origin, width: width, height: height)
+        public static List<Entity> AttacksList = new List<Entity>();
+        private List<Entity> _createdAttacks = new List<Entity>();
+
+        public Attacks(Character parent, float xOffset, float yOffset, int width, int height)
         {
-            AttacksList.Add(this);
+            _parent = parent;
+            _xOffset = xOffset;
+            _yOffset = yOffset;
+            _width = width;
+            _height = height;
         }
 
-        public void Dispose() => AttacksList.Remove(this);
+        public void Dispose()
+        {
+            foreach (Entity e in _createdAttacks)
+                AttacksList.Remove(e);
+            _createdAttacks.Clear();
+        }
+
+        public void CreateHitbox() 
+        {
+            Entity hitbox = new Entity(
+                    origin: _parent.Location,
+                    width: _width,
+                    height: _height);
+            _createdAttacks.Add(hitbox);
+            AttacksList.Add(hitbox);
+        }
     }
 }
 
