@@ -6,10 +6,23 @@ namespace drawedOut
         public bool _doingAttack { get; private set; }
 
         //private _curAnimation=Animations.IdleAnimation;
+        private Attacks
+            _curAttack,
+            _basic1,
+            _basic2;
+        private AnimationPlayer 
+            _idleAnim,
+            _runAnim,
+            _basic1Anim,
+            _basic2Anim,
+            _curAnimation;
+
+        private float _endLag = 0F;
         private int _energy;
-        private Attacks _curAttack;
+
         private Global.XDirections _curFacingDirection = Global.XDirections.left;
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
+
         public Player(Point origin, int width, int height, int attackPower, int energy)
             :base(origin: origin, width: width, height: height)
         {
@@ -19,26 +32,32 @@ namespace drawedOut
             _unlockedMoves.Add("move1", false);
             _unlockedMoves.Add("move2", false);
             _unlockedMoves.Add("move3", false);
+
+            initBasic1();
+            initBasic2();
         }
 
-        private class basicAttack : Attacks
+        private void initBasic1()
         {
-            private const int 
-                _xOffset = 50,
-                _yOffset = 0,
-                _width = 20,
-                _height = 20,
-                _atkFrame1 = 6,
-                _atkFrame2 = 12;
-
-
-            public basicAttack(PointF curCenter) 
-                : base(parentOrigin: curCenter, xOffset: _xOffset, yOffset: _yOffset, width: _width, height: _height)
-            { }
-
-            public 
+            _basic1 = new Attacks(
+                    parent: this,
+                    xOffset: 50,
+                    yOffset: 50,
+                    width: 50,
+                    height: 50,
+                    durationS: 0.2);
         }
 
+        private void initBasic2()
+        {
+            _basic2 = new Attacks(
+                    parent: this,
+                    xOffset: 50,
+                    yOffset: 50,
+                    width: 50,
+                    height: 50,
+                    durationS: 0.4);
+        }
 
         // public UnlockMoves() {}
 
@@ -51,29 +70,19 @@ namespace drawedOut
         public void DoBasicAttack()
         {
             float hitboxXOffset = 50*Global.BaseScale;
-            if (curFacingDirection == Global.XDirections.right)
+            if (_curFacingDirection == Global.XDirections.right)
                 hitboxXOffset = -hitboxXOffset;
 
             _doingAttack = true;
-            _curAttack = new Attacks(
-
             // curAnimation = Animation.PlayerIdle;
         }
 
-        public Image CycleAnimation() 
+        public Image NextAnimation() 
         {
-            if (_doingAttack)
-            {
-                switch (_curAttack.GetType)
-                {
-                    case 
-                if (curAnimation.CurFrame == curAnimation.Length-1)
-                {
-                    _doingAttack = false;
-                    _curAttack.Dispose();
-                }
-            }
-            // return curAnimation.NextFrame();
+            if ((_curAnimation.CurFrame == _curAnimation.LastFrame) && _doingAttack)
+                _curAnimation = _idleAnim;
+
+            return _curAnimation.NextFrame();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace drawedOut
             SPRITE_FOLDER = @"sprites\";
 
         public int CurFrame { get => _frameNo; }
-        public int Length { get => _totalFrameCount; }
+        public int LastFrame { get => _totalFrameCount-1; }
 
         ///<summary>
         ///initalises an animationPlayer object with the animation frames in the given folder
@@ -31,17 +31,15 @@ namespace drawedOut
 
             _animFrames = new Bitmap[_totalFrameCount];
 
-            for (int i = 0; i < _totalFrameCount; i++) { _animFrames[i] = new Bitmap(fileNames[i]); }
+            for (int i = 0; i < _totalFrameCount; i++) { _animFrames[i] = new Bitmap(fileNames[i]); } 
         }
 
 
-        public Bitmap NextFrame()
+        public Bitmap NextFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
             Bitmap img = _animFrames[_frameNo];
-            int size = img.Width / 10;
-
             if (++_frameNo >= _totalFrameCount) _frameNo = 0;
-
+            if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);
             return img;
         }
     }
