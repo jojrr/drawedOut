@@ -8,7 +8,7 @@
         public static List<Character> ActiveCharacters = new List<Character>();
         public static List<Character> InactiveCharacters = new List<Character>();
 
-        private double _xVelocity=0, _yVelocity=0;
+        private double _xVelocity=0, _yVelocity=0, _xAccel;
         protected double xVelocity { get; }
 
         private bool 
@@ -50,13 +50,14 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        public Character(Point origin, int width, int height, int hp, int _jumpVelocity = 150)
+        public Character(Point origin, int width, int height, int hp, double xAccel, int _jumpVelocity = 150)
             : base(origin: origin, width: width, height: height )
         {
             SetOverShootRec();
             InactiveCharacters.Add(this);
             MaxHp = hp;
             Hp = hp;
+            _xAccel = xAccel;
         }
 
 
@@ -184,7 +185,7 @@
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
                 else if (CurYColliderDirection == Global.YDirections.bottom)
                 {
-                    _coyoteTime = 10; // 100ms (on 10ms timer)
+                    _coyoteTimeS = 10; // 100ms (on 10ms timer)
                     LocationY = _yStickTarget.Value.Y - Height + 1;
                     _yVelocity = Math.Min(_yVelocity, 0);
                 }
@@ -221,9 +222,9 @@
             }
 
             // Coyote time ticks down 
-            if (_coyoteTime > 0)
+            if (_coyoteTimeS > 0)
             {
-                _coyoteTime -= dt*10;
+                _coyoteTimeS -= dt*10;
                 IsOnFloor = true; // allows for more responsive jumping
             }
         }
@@ -236,7 +237,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double acceleration, double dt, bool isScrolling = false)
+        public void MoveCharacter(double dt, Global.XDirections direction, bool isScrolling = false)
         {
             SetOverShootRec();
 
@@ -245,7 +246,14 @@
             // stops the player going above the screen
             if (Location.Y < 0)  _yVelocity = 25;
 
-            _xVelocity += acceleration;
+            double xAccel=0;
+
+            if (direction == Global.XDirections.left)
+                xAccel = -_xAccel;
+            if (direction == Global.XDirections.right)
+                xAccel = _xAccel;
+
+            _xVelocity += xAccel;
 
             if (isScrolling)
             {
@@ -277,7 +285,7 @@
 
         public void DoDamage(int dmg)
         {
-            if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI"); }
+            if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI as param"); }
             Hp -= dmg;
         }
 

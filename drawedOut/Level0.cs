@@ -5,7 +5,6 @@ namespace drawedOut
 {
     public partial class Level0 : Form
     {
-
         private static Player playerBox = new Player(
             origin: new Point(750, 250),
             width: 50,
@@ -67,7 +66,7 @@ namespace drawedOut
                     origin: new PointF(70, 50),
                     barWidth: 20,
                     barHeight: 40,
-                    maxHp: playerBox.maxHp);
+                    maxHp: 6);
 
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
@@ -176,7 +175,7 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            hpBar.UpdateMaxHp(playerBox.maxHp);
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
 
             playerBrush = Brushes.Blue;
 
@@ -279,7 +278,7 @@ namespace drawedOut
                     {
                         freezeTimeS = FREEZE_DURATION_S * 10;
                         disposedProjectiles.Add(bullet);
-                        doPlayerDamage(1);
+                        playerBox.DoDamage(1);
                         return;
                     }
 
@@ -377,7 +376,6 @@ namespace drawedOut
 
 
         private static Stopwatch fpsTimer = new Stopwatch();
-
         // rendering graphics method
         private void renderGraphics()
         {
@@ -467,31 +465,17 @@ namespace drawedOut
             // TODO: functionize and optimise
             
             if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            if (movingLeft) playerBox.MoveCharacter(-xAccel, deltaTime);
-            if (movingRight) playerBox.MoveCharacter(xAccel, deltaTime);
+            Global.XDirections? playerMovDir = null;
+            if (movingLeft) playerMovDir = Global.XDirections.left;
+            if (movingRight) playerMovDir = Global.XDirections.right;
 
+            playerBox.MoveCharacter(xAccel, playerMovDir.Value);
 
-            foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
+            if (playerBox.CheckScrolling(box2)) 
+                ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
+
+            foreach (Enemy enemy in Enemy.ActiveEnemies) // NOTE: try parallel foreach
             {
-                // TODO: move all the player dependent code into player class
-                if (!playerBox.ShouldDoMove()) { break; }
-
-                if (playerBox.ShouldDoMove())
-                {
-                    if (0 < box2.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
-                    else if (Width > box2.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
-                    else onWorldBoundary = null;
-
-                    if ((playerBox.Center.X < 500) && movingLeft) scrollDirection = Global.XDirections.left;
-                    else if ((playerBox.Center.X > 1300) && movingRight) scrollDirection = Global.XDirections.right;
-                    else scrollDirection = null;
-
-                    if (onWorldBoundary == scrollDirection) scrollDirection = null;
-                }
-
-                if (scrollDirection is not null) 
-                    ScrollEntities( velocity: playerBox.xVelocity, deltaTime);
-
                 bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
 
                 foreach (Platform plat in Platform.ActivePlatformList)
@@ -503,9 +487,8 @@ namespace drawedOut
                 if (!colliding) chara.SetYCollider(null, null, null);
 
                 chara.MoveCharacter(
-                    isScrolling: isScrolling,
-                    dt: deltaTime
-                );
+                    dt: deltaTime,
+                    isScrolling: isScrolling);
             }
         }
 

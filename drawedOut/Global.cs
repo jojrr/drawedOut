@@ -19,6 +19,12 @@ namespace drawedOut
         }
 
 
+        private static float _leftScrollBound = 500;
+        private static float _rightScrollBound = 1300;
+        public static float LeftScrollBound { get => _leftScrollBound * BaseScale; }
+        public static float RightScrollBound { get => _rightScrollBound * BaseScale; }
+
+
 
         private static int _entityLoadThreshold = 1000;
         public static int EntityLoadThreshold
@@ -27,8 +33,15 @@ namespace drawedOut
         }
 
 
-        public static Size _baseSize = new Size(1860, 770);
-        public static Size LevelBaseSize { get => _baseSize; }
+        private static Size _levelBaseSize = new Size(1860, 770);
+        public static Size LevelSize 
+        { 
+            get 
+            {
+                SizeF floatP = new SizeF (_levelBaseSize.Width*_baseScale, _levelBaseSize.Height*_baseScale); 
+                return Size.Truncate(floatP);
+            }
+        }
 
         private static Point _centerOfScreen;
         public static Point CenterOfScreen

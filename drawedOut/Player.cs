@@ -91,7 +91,32 @@ namespace drawedOut
             return _curAnimation.NextFrame(FacingDirection);
         }
 
-        if (currentHp > maxHp) currentHp = maxHp;
+        public void HealPlayer(int heal)
+        {
+            Hp += heal;
+            if (Hp > MaxHp) Hp = MaxHp;
+        }
+
+
+        public bool CheckScrolling(Platform baseBox)
+        {
+            Global.XDirections? onWorldBoundary = null;
+            Global.XDirections? scrollDirection = null;
+            bool doScroll = false;
+
+            if (!ShouldDoMove())  return false;
+            if (Global.LeftScrollBound<=Center.X && Center.X<=Global.LeftScrollBound) return false;
+
+            if (0 < baseBox.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
+            else if (Global.LevelSize.Width > baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
+            else onWorldBoundary = null;
+
+            if ((Center.X < 500) && xVelocity < 0) scrollDirection = Global.XDirections.left;
+            else if ((Center.X > 1300) && xVelocity > 0) scrollDirection = Global.XDirections.right;
+
+            if (onWorldBoundary == scrollDirection) scrollDirection = null;
+            return doScroll;
+        }
     }
 }
 
