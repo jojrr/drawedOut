@@ -9,6 +9,7 @@
         public static List<Character> InactiveCharacters = new List<Character>();
 
         private double _xVelocity=0, _yVelocity=0;
+        protected double xVelocity { get; }
 
         private bool 
             _isMoving = false,
@@ -23,24 +24,22 @@
 
         private readonly int
             _maxXVelocity = 60,
-            _jumpVelocity = -150;
+            _jumpVelocity;
 
-        protected int Hp;
+        public int Hp { get; protected set; }
+        public int MaxHp { get; private set; }
 
-        private double _coyoteTime;
+        private double 
+            _endLagS = 0F,
+            _coyoteTimeS;
 
         private RectangleF? _xStickTarget, _yStickTarget;
         private RectangleF _overShootRec; // TODO: remove and see what happens
 
         private Entity? _xStickEntity, _yStickEntity;
 
-        /// <summary>
-        /// Array that stores the current collision state of this character.
-        /// format [X, Y]
-        /// </summary>
         public Global.YDirections? CurYColliderDirection = null;
         public Global.XDirections? CurXColliderDirection = null;
-
 
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
@@ -50,22 +49,58 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        public Character(Point origin, int width, int height)
+        public Character(Point origin, int width, int height, int hp, int _jumpVelocity = 150)
             : base(origin: origin, width: width, height: height )
         {
             SetOverShootRec();
             InactiveCharacters.Add(this);
+            MaxHp = hp;
+            Hp = hp;
         }
 
 
+        /// <summary>
+        /// checks the Y direction for collision with platforms
+        /// </summary>
+        /// <param name="collisionTarget"> the <see cref="Entity" that is being checked </param>
+        private void checkYCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
+        {
+            // Checks if there is a platform below - considers overshoot
+            if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
+            {
+                // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
+                if (!IsOnFloor) _yVelocity = Math.Min(_yVelocity, 0); 
+                SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
+            }
+            // Checks if there is a platform above the player
+            else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
+                SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
+        }
 
         /// <summary>
-        /// Checks if the target's hitbox is colliding with this entity's hitbox. 
-        /// Returned position is relative to this Entity.
-        /// CollisionState[0] and [1] is the assigned Y and X collision value respectively.
+        /// checks the Y direction for collision with entities (mostly platforms)
+        /// </summary>
+        /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
+        private void checkXCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
+        {
+            if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
+            {
+                if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
+                SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
+            }
+            else if (Center.X > targetHitbox.Right)
+            {
+                if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
+                SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
+            }
+        }
+
+        /// <summary>
+        /// Checks if the target's hitbox is colliding with this entity's hitbox.<br/>
+        /// Returned position is relative to this Entity.<br/>
         /// </summary>
         /// <param name="collisionTarget"></param>
-        /// <returns>Rectangle: the collisionTarget's hitbox</returns>
+        /// <returns><see cref="Rectangle"/>: the collisionTarget's hitbox</returns>
         private RectangleF IsCollidingWith(Entity collisionTarget)
         {
             RectangleF targetHitbox = collisionTarget.Hitbox;
@@ -81,41 +116,14 @@
             {
                 // if this' center is between the left and the right of the hitbox 
                 if ((Center.X < targetHitbox.Right) && (Center.X > targetHitbox.Left))
-                {
-                    // Checks if there is a platform below - considers overshoot
-                    if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
-                    {
-                        // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
-                        if (!IsOnFloor) _yVelocity = Math.Min(_yVelocity, 0); 
-                        SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
-                    }
-                    // Checks if there is a platform above the player
-                    else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
-                    {
-                        SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
-                    }
-                }
+                    checkYCollider(targetHitbox, targetCenter, collisionTarget);
 
                 if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
                     SetXCollider(null, null, collisionTarget);
                 else
-                {
-                    if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
-                    {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
-                        SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
-                    }
-                    else if (Center.X > targetHitbox.Right)
-                    {
-                        if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
-                        SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
-                    }
-
-                }
+                    checkXCollider(targetHitbox, targetCenter, collisionTarget);
             }
-
             return targetHitbox;
-
         }
 
 
@@ -220,7 +228,7 @@
         }
 
 
-        public void DoJump() => _yVelocity = _jumpVelocity; 
+        public void DoJump() => _yVelocity = -_jumpVelocity; 
 
 
         /// <summary>
@@ -234,7 +242,7 @@
             if (_hasGravity) DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0)  _yVelocity = -_jumpVelocity/6; 
+            if (Location.Y < 0)  _yVelocity = 25;
 
             _xVelocity += acceleration;
 
@@ -258,8 +266,8 @@
         }
 
         /// <summary>
-        /// creates a new rectangle to detect for overshoot above the player's current location.
-        /// Rectangle is the size of the player (effectively doubling the player's height)
+        /// creates a new rectangle to detect for overshoot above the player's current location. <br/>
+        /// Rectangle is the size of the player (effectively doubling the player's height) <br/>
         /// Only used to detect overshoot incase the player clips into the ground.
         /// </summary>
         private void SetOverShootRec() => _overShootRec = new RectangleF(Location.X, Location.Y - Height, Width, Height); 

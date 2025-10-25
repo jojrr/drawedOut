@@ -41,10 +41,20 @@ namespace drawedOut
             AttacksList.Add(hitbox);
         }
 
-        public void UpdateHitbox(double dt)
+        /// <summary> Upadte the hitbox position </summary>
+        /// <param name="dt"> deltaTime </param>
+        /// <param name="direction">
+        /// The <seealso cref="Global.XDirections"/> that the parent is facing.
+        /// </param>
+        public void UpdateHitbox(double dt, Global.XDirections direction=Global.XDirections.right)
         {
             if (_createdAttack is null) return;
-             if (_durationS <= 0) this.Dispose();
+            if (_durationS <= 0) 
+            {
+                this.Dispose();
+                return;
+            }
+
             _createdAttack.Center = new PointF(_parent.Center.X + _xOffset, _parent.Center.Y + _yOffset);
             _durationS -= dt;
 

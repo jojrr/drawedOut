@@ -6,11 +6,13 @@ namespace drawedOut
     public partial class Level0 : Form
     {
 
-        private static Character playerBox = new(
+        private static Player playerBox = new Player(
             origin: new Point(750, 250),
             width: 50,
             height: 50,
-            yVelocity: -0.2);
+            attackPower: 1,
+            energy: 100,
+            maxHp: 6);
 
         private static Platform box2 = new(
            origin: new Point(1, 650),
@@ -65,8 +67,7 @@ namespace drawedOut
                     origin: new PointF(70, 50),
                     barWidth: 20,
                     barHeight: 40,
-                    maxHp: 6
-            );
+                    maxHp: playerBox.maxHp);
 
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
@@ -87,8 +88,6 @@ namespace drawedOut
 
 
         private static int
-            maxHp = 6,
-            currentHp,
             gameTickFreq = 60,
             gameTickInterval;
 
@@ -138,8 +137,8 @@ namespace drawedOut
             threadSettings.CancellationToken = cancelTokenSrc.Token;
 
             // set height and width of window
-            Width = (int)(Global.BaseSize.Width*Global.BaseScale);
-            Height = (int)(Global.BaseSize.Height*Global.BaseScale);
+            Width = (int)(Global.LevelBaseSize.Width*Global.BaseScale);
+            Height = (int)(Global.LevelBaseSize.Height*Global.BaseScale);
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -177,10 +176,7 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            bulletInterval = bulletCooldownS;
-
-            currentHp = maxHp;
-            hpBar.UpdateMaxHp(maxHp);
+            hpBar.UpdateMaxHp(playerBox.maxHp);
 
             playerBrush = Brushes.Blue;
 
@@ -251,23 +247,22 @@ namespace drawedOut
                 isParrying = false;
             }
 
-            try // TODO: remove the 999999 nested br
+            try 
             {
                 Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
                 {
                     bullet.moveProjectile(motionDT);
                     PointF bLoc = bullet.Center;
 
+                    if (disposedProjectiles.Contains(bullet)) return;
+
                     foreach (Platform p in Platform.ActivePlatformList)
                     {
-                        if (disposedProjectiles.Contains(bullet)) break;
-
                         if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
                             continue;
 
                         disposedProjectiles.Add(bullet);
                         break;
-
                     }
 
 
@@ -296,7 +291,7 @@ namespace drawedOut
                         slowTimeS = SLOW_DURATION_S * 10;
                         zoomScreen(ZOOM_FACTOR);
                         isParrying = false;
-                        endLagTime = 0;
+                        playerBox.EndLagTime = 0;
                     }
                     else disposedProjectiles.Add(bullet);
 
@@ -312,10 +307,8 @@ namespace drawedOut
             if ((bulletInterval > 0) || (deltaTime == 0))
                 bulletInterval -= (float)deltaTime;
             else
-            {
                 createBullet();
-                bulletInterval = bulletCooldownS * 10;
-            }
+
 
 
             // ticks down the parry window
@@ -327,9 +320,14 @@ namespace drawedOut
                 parryWindowS = 0;
             }
 
-            if (currentHp > maxHp) currentHp = maxHp;
-        }
 
+            if (playerBox.Hp <= 0)
+            {
+                togglePause(true);
+                MessageBox.Show("you are dead");
+                Application.Exit();
+            }
+        }
 
 
         // spawn bullet about a point
@@ -343,20 +341,6 @@ namespace drawedOut
                   target: playerBox.Center);
             bullet.ScaleHitbox(curZoom);
         }
-
-        private void doPlayerDamage(int amt)
-        {
-            playerIsHit = true;
-            currentHp -= amt;
-            hpBar.ComputeHP(currentHp);
-            if (currentHp <= 0)
-            {
-                togglePause(true);
-                MessageBox.Show("you are dead");
-                Application.Exit();
-            }
-        }
-
 
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
@@ -483,9 +467,8 @@ namespace drawedOut
             // TODO: functionize and optimise
             
             if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            if (movingLeft) { playerBox.xVelocity -= xAccel*deltaTime; }
-            if (movingRight) { playerBox.xVelocity += xAccel*deltaTime; }
-
+            if (movingLeft) playerBox.MoveCharacter(-xAccel, deltaTime);
+            if (movingRight) playerBox.MoveCharacter(xAccel, deltaTime);
 
 
             foreach (Character chara in Character.ActiveCharacters) // NOTE: try parallel foreach
@@ -493,22 +476,21 @@ namespace drawedOut
                 // TODO: move all the player dependent code into player class
                 if (!playerBox.ShouldDoMove()) { break; }
 
-                if (playerBox.xVelocity != 0)
+                if (playerBox.ShouldDoMove())
                 {
                     if (0 < box2.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
                     else if (Width > box2.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
                     else onWorldBoundary = null;
 
-                    if ((playerBox.Center.X < 500) && (playerBox.xVelocity < 0)) scrollDirection = Global.XDirections.left;
-                    else if ((playerBox.Center.X > 1300) && (playerBox.xVelocity > 0)) scrollDirection = Global.XDirections.right;
+                    if ((playerBox.Center.X < 500) && movingLeft) scrollDirection = Global.XDirections.left;
+                    else if ((playerBox.Center.X > 1300) && movingRight) scrollDirection = Global.XDirections.right;
                     else scrollDirection = null;
 
                     if (onWorldBoundary == scrollDirection) scrollDirection = null;
                 }
 
-                bool isScrolling = (scrollDirection is not null);
-
-                if (isScrolling) ScrollEntities( velocity: -chara.xVelocity, deltaTime);
+                if (scrollDirection is not null) 
+                    ScrollEntities( velocity: playerBox.xVelocity, deltaTime);
 
                 bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
 
@@ -535,7 +517,7 @@ namespace drawedOut
             foreach( Entity e in Entity.EntityList)
             {
                 if (e == playerBox) { continue; }
-                e.UpdateX(velocity * deltaTime);
+                e.UpdateX(-velocity * deltaTime);
             }
         }
 
