@@ -18,6 +18,7 @@
 
         public bool IsMoving { get => _isMoving; protected set => _isMoving = value; }
         public bool IsOnFloor { get => _isOnFloor; protected set => _isOnFloor = value; }
+        public Global.XDirections FacingDirection { get; private set; }
 
         private const int TERMINAL_VELOCITY = 130;
         private const double GRAVITY = 67.42;
@@ -255,8 +256,10 @@
 
             if (_xVelocity == 0) return;
 
-            _xVelocity = Math.Min(Math.Abs(_xVelocity), _maxXVelocity) * Math.Sign(_xVelocity); // stops the player from achieving lightspeed
+            _xVelocity = Math.Min(Math.Abs(_xVelocity), _maxXVelocity) * Math.Sign(_xVelocity); // clamp player speed
 
+            if (xVelocity > 0) FacingDirection = Global.XDirections.right;
+            if (xVelocity < 0) FacingDirection = Global.XDirections.left;
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (acceleration == 0) 
             {

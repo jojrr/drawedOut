@@ -22,7 +22,6 @@ namespace drawedOut
 
         private int _energy;
 
-        private Global.XDirections _facingDirection = Global.XDirections.left;
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
         private static Dictionary<Attacks, int> _atkSpawnFrames = new Dictionary<Attacks, int>();
 
@@ -89,7 +88,7 @@ namespace drawedOut
                     _curAttack.CreateHitbox();
             }
 
-            return _curAnimation.NextFrame(_facingDirection);
+            return _curAnimation.NextFrame(FacingDirection);
         }
 
         if (currentHp > maxHp) currentHp = maxHp;
