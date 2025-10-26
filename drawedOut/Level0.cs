@@ -18,38 +18,22 @@ namespace drawedOut
            origin: new Point(1, 650),
            width: 5400,
            height: 550,
-           LocatedLevel: 0,
-           LocatedChunk: 0);
+           isMainPlat: true);
 
          private static Platform box3 = new(
            origin: new Point(300, 200),
            width: 400,
-           height: 175,
-           LocatedLevel: 0,
-           LocatedChunk: 1);
+           height: 175);
 
          private static Platform box4 = new(
            origin: new Point(1000, 400),
            width: 200,
-           height: 300,
-           LocatedLevel: 0,
-           LocatedChunk: 1);
+           height: 300);
 
         private static Platform box5 = new(
            origin: new Point(1500, 400),
            width: 200,
-           height: 300,
-           LocatedLevel: 0,
-           LocatedChunk: 2);
-
-        private static Entity chunkLoader1 = new Entity(
-            origin: new Point(1200, 0),
-            width: 1,
-            height: 1);
-
-
-        private static Global.XDirections? onWorldBoundary = Global.XDirections.left;
-        private static Global.XDirections? scrollDirection = null;
+           height: 300);
 
         private static Brush playerBrush; // TODO: remove when player sprites is added
 
@@ -112,8 +96,6 @@ namespace drawedOut
             endLagTime,
 
             curZoom = 1,
-            MidX,
-            MidY,
             // TODO: redo freeze and slow logic
             slowTimeS = 0,
             freezeTimeS = 0;
@@ -276,7 +258,7 @@ namespace drawedOut
                     {
                         freezeTimeS = FREEZE_DURATION_S * 10;
                         disposedProjectiles.Add(bullet);
-                        playerBox.DoDamage(1);
+                        playerBox.DoDamage(1, ref hpBar);
                         return;
                     }
 
@@ -289,7 +271,7 @@ namespace drawedOut
                         slowTimeS = SLOW_DURATION_S * 10;
                         zoomScreen(ZOOM_FACTOR);
                         isParrying = false;
-                        playerBox.endLagTime = 0;
+                        //playerBox.endLagTime = 0;
                     }
                     else disposedProjectiles.Add(bullet);
 
@@ -302,10 +284,10 @@ namespace drawedOut
 
             disposedProjectiles.Clear();
 
-            if ((bulletInterval > 0) || (deltaTime == 0))
-                bulletInterval -= (float)deltaTime;
-            else
-                createBullet();
+            //if ((bulletInterval > 0) || (deltaTime == 0))
+            //    bulletInterval -= (float)deltaTime;
+            //else
+            //    createBullet();
 
 
 
@@ -411,13 +393,15 @@ namespace drawedOut
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
 
-            void zoomObj(Entity obj)
+            float midX = Global.CenterOfScreen.X;
+            float midY = Global.CenterOfScreen.Y;
+            void zoomObj(Entity obj, float x, float y)
             {
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = MidX + _xDiff * scaleF;
-                float newY = MidY + _yDiff * scaleF;
+                float newX = x + _xDiff * scaleF;
+                float newY = y + _yDiff * scaleF;
 
                 obj.ScaleHitbox(scaleF);
                 obj.Center = new PointF (newX, newY);
@@ -431,11 +415,11 @@ namespace drawedOut
                 zoomOrigins.Add(e,e.Center);
                 if (e == playerBox)
                 {
-                    playerBox.Center = new PointF (MidX, MidY);
+                    playerBox.Center = new PointF (Global.CenterOfScreen.X, Global.CenterOfScreen.Y);
                     playerBox.ScaleHitbox(scaleF);
                     continue;
                 }
-                zoomObj(e); 
+                zoomObj(e, midX, midY); 
             }
         }
 
@@ -478,13 +462,17 @@ namespace drawedOut
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
 
-            Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
+            try
+            {
+                Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
 
-                foreach (Platform plat in Platform.ActivePlatformList)
-                { enemy.CheckPlatformCollision(plat); }
+                        foreach (Platform plat in Platform.ActivePlatformList)
+                        { enemy.CheckPlatformCollision(plat); }
 
-                enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
-            });
+                        enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
+                        });
+            }
+            catch (OperationCanceledException) { return; }
         }
 
 
@@ -504,8 +492,8 @@ namespace drawedOut
         {
             if (showHitbox)
             {
-                foreach (Character chara in Character.ActiveCharacterList)
-                    e.Graphics.FillRectangle(playerBrush, chara.Hitbox);
+                //foreach (Enemy e in Enemy.ActiveEnemyList)
+                e.Graphics.FillRectangle(playerBrush, playerBox.Hitbox);
 
                 foreach (Platform plat in Platform.ActivePlatformList)
                 {

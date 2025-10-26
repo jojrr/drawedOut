@@ -9,12 +9,12 @@
         public bool IsOnFloor { get; protected set; }
         public Global.XDirections FacingDirection { get; private set; }
 
-        private const int TERMINAL_VELOCITY = 130;
-        private const double GRAVITY = 67.42;
+        private const int TERMINAL_VELOCITY = 2300;
+        private const double GRAVITY = 4000;
 
         private readonly int
-            _maxXVelocity = 60,
-            _jumpVelocity;
+            _maxXVelocity = 600,
+            _jumpVelocity = 1500;
 
         public int Hp { get; protected set; }
         public int MaxHp { get; private set; }
@@ -38,7 +38,7 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        public Character(Point origin, int width, int height, int hp, double xAccel, int jumpVelocity=150)
+        public Character(Point origin, int width, int height, int hp, double xAccel)
             : base(origin: origin, width: width, height: height )
         {
             SetOverShootRec();
@@ -46,7 +46,6 @@
             Hp = hp;
             IsMoving = false;
             IsOnFloor = false;
-            _jumpVelocity = jumpVelocity;
             _xAccel = xAccel;
         }
 
@@ -266,7 +265,7 @@
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (xAccel == 0) 
             {
-                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity -= _xVelocity * (0.85*dt); 
+                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity -= _xVelocity * (8*dt); 
                 else _xVelocity = 0; 
             }
         }

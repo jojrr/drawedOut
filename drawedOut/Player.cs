@@ -11,12 +11,12 @@ namespace drawedOut
         private Attacks
             _basic1,
             _basic2;
-        private AnimationPlayer 
-            _idleAnim,
-            _runAnim,
-            _basic1Anim,
-            _basic2Anim,
-            _curAnimation;
+        //private AnimationPlayer 
+        //    _idleAnim,
+        //    _runAnim,
+        //    _basic1Anim,
+        //    _basic2Anim,
+        //    _curAnimation;
 
         private int _energy;
 
@@ -76,18 +76,18 @@ namespace drawedOut
             // curAnimation = Animation.PlayerIdle;
         }
 
-        public Image NextAnimation() 
-        {
-            if (_curAttack is not null)
-            {
-                if (_curAnimation.CurFrame == _curAnimation.LastFrame)
-                    _curAnimation = _idleAnim;
-                if (_curAnimation.CurFrame == _atkSpawnFrames[_curAttack])
-                    _curAttack.CreateHitbox();
-            }
+        // public Image NextAnimation() 
+        // {
+        //     if (_curAttack is not null)
+        //     {
+        //         if (_curAnimation.CurFrame == _curAnimation.LastFrame)
+        //             _curAnimation = _idleAnim;
+        //         if (_curAnimation.CurFrame == _atkSpawnFrames[_curAttack])
+        //             _curAttack.CreateHitbox();
+        //     }
 
-            return _curAnimation.NextFrame(FacingDirection);
-        }
+        //     return _curAnimation.NextFrame(FacingDirection);
+        // }
 
         public void HealPlayer(int heal)
         {
@@ -123,7 +123,6 @@ namespace drawedOut
         {
             if (IsActive) return;
             IsActive = true;
-            ActiveCharacterList.Add(this);
         }
     }
 }
