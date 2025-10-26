@@ -13,8 +13,7 @@
 
         private bool 
             _isMoving = false,
-            _isOnFloor,
-            _hasGravity;
+            _isOnFloor;
 
         public bool IsMoving { get => _isMoving; protected set => _isMoving = value; }
         public bool IsOnFloor { get => _isOnFloor; protected set => _isOnFloor = value; }
@@ -169,6 +168,12 @@
         }
 
 
+        /// <summary>
+        /// set the Y velocity to go 1 if character is still in the middle of a jumo and stop jumping
+        /// </summary>
+        public void StopJump() => _yVelocity = (_yVelocity < 0) ? 1 : _yVelocity; 
+
+
         public void CheckPlatformCollision(Entity target)
         {
             RectangleF targetHitbox = IsCollidingWith(target);
@@ -237,11 +242,10 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections direction, bool isScrolling = false)
+        public void MoveCharacter(double dt, Global.XDirections? direction, bool doScroll)
         {
             SetOverShootRec();
-
-            if (_hasGravity) DoGravTick(dt);
+            DoGravTick(dt);
 
             // stops the player going above the screen
             if (Location.Y < 0)  _yVelocity = 25;
@@ -255,7 +259,7 @@
 
             _xVelocity += xAccel;
 
-            if (isScrolling)
+            if (doScroll)
             {
                 if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
                 Location = new PointF(Location.X, Location.Y + (float)(_yVelocity * dt));
@@ -269,9 +273,9 @@
             if (xVelocity > 0) FacingDirection = Global.XDirections.right;
             if (xVelocity < 0) FacingDirection = Global.XDirections.left;
             // if not moving horizontally -> gradually decrease horizontal velocity
-            if (acceleration == 0) 
+            if (xAccel == 0) 
             {
-                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity *= 0.85; 
+                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity -= _xVelocity * (0.85*dt); 
                 else _xVelocity = 0; 
             }
         }

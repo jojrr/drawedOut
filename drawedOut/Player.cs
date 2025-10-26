@@ -4,9 +4,7 @@ namespace drawedOut
     {
         public int AttackPower { get; private set; }
         public double XVelocity { get => xVelocity; }
-        
         public bool IsHit;
-        private bool _doingAttack;
 
         //private _curAnimation=Animations.IdleAnimation;
         private Attacks? _curAttack;
@@ -25,8 +23,8 @@ namespace drawedOut
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
         private static Dictionary<Attacks, int> _atkSpawnFrames = new Dictionary<Attacks, int>();
 
-        public Player(Point origin, int width, int height, int attackPower, int energy, int maxHp)
-            :base(origin: origin, width: width, height: height, hp: maxHp)
+        public Player(Point origin, int width, int height, int attackPower, double accel, int energy, int maxHp)
+            :base(origin: origin, width: width, height: height, hp: maxHp, xAccel: accel)
         {
             AttackPower = attackPower;
             _energy = energy;
@@ -80,7 +78,7 @@ namespace drawedOut
 
         public Image NextAnimation() 
         {
-            if (_doingAttack)
+            if (_curAttack is not null)
             {
                 if (_curAnimation.CurFrame == _curAnimation.LastFrame)
                     _curAnimation = _idleAnim;
@@ -98,6 +96,10 @@ namespace drawedOut
         }
 
 
+        /// <summary>
+        /// Check if the level should scroll
+        /// </summary>
+        /// <param name="baseBox"> The base rectangle that defines the bounds of the level. </param>
         public bool CheckScrolling(Platform baseBox)
         {
             Global.XDirections? onWorldBoundary = null;
@@ -109,12 +111,11 @@ namespace drawedOut
 
             if (0 < baseBox.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
             else if (Global.LevelSize.Width > baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
-            else onWorldBoundary = null;
 
-            if ((Center.X < 500) && xVelocity < 0) scrollDirection = Global.XDirections.left;
-            else if ((Center.X > 1300) && xVelocity > 0) scrollDirection = Global.XDirections.right;
+            if (Center.X < 500 && xVelocity < 0) scrollDirection = Global.XDirections.left;
+            else if (Center.X > 1300 && xVelocity > 0) scrollDirection = Global.XDirections.right;
 
-            if (onWorldBoundary == scrollDirection) scrollDirection = null;
+            if (onWorldBoundary == scrollDirection) doScroll = false;
             return doScroll;
         }
     }

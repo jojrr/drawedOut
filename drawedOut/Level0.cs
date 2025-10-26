@@ -71,6 +71,8 @@ namespace drawedOut
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
 
+        private static Keys? prevLeftRight;
+
         private static bool
             gameTickEnabled = true,
             showHitbox = true,
@@ -468,11 +470,13 @@ namespace drawedOut
             Global.XDirections? playerMovDir = null;
             if (movingLeft) playerMovDir = Global.XDirections.left;
             if (movingRight) playerMovDir = Global.XDirections.right;
+            
+            bool isScrolling = playerBox.CheckScrolling(box2);
 
-            playerBox.MoveCharacter(xAccel, playerMovDir.Value);
-
-            if (playerBox.CheckScrolling(box2)) 
+            if (isScrolling) 
                 ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
+
+            playerBox.MoveCharacter(xAccel, playerMovDir, doScroll: isScrolling);
 
             foreach (Enemy enemy in Enemy.ActiveEnemies) // NOTE: try parallel foreach
             {
@@ -480,15 +484,13 @@ namespace drawedOut
 
                 foreach (Platform plat in Platform.ActivePlatformList)
                 {
-                    chara.CheckPlatformCollision(plat);
-                    if (chara.Hitbox.IntersectsWith(plat.Hitbox)) colliding = true;
+                    enemy.CheckPlatformCollision(plat);
+                    if (enemy.Hitbox.IntersectsWith(plat.Hitbox)) colliding = true;
                 }
 
-                if (!colliding) chara.SetYCollider(null, null, null);
+                if (!colliding) enemy.SetYCollider(null, null, null);
 
-                chara.MoveCharacter(
-                    dt: deltaTime,
-                    isScrolling: isScrolling);
+                enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
             }
         }
 
@@ -533,12 +535,20 @@ namespace drawedOut
             switch (e.KeyCode)
             {
                 case Keys.A:
-                    movingRight = false;
+                    if (movingRight && !movingLeft && prevLeftRight is null)
+                    {
+                        prevLeftRight = Keys.D;
+                        movingRight = false;
+                    }
                     movingLeft = true;
                     break;
 
                 case Keys.D:
-                    movingLeft = false;
+                    if (movingLeft && !movingRight && prevLeftRight is null)
+                    {
+                        prevLeftRight = Keys.A;
+                        movingLeft = false;
+                    }
                     movingRight = true;
                     break;
 
@@ -558,14 +568,16 @@ namespace drawedOut
             {
                 case Keys.W:
                     jumping = false;
-                    if (playerBox.yVelocity < 0) { playerBox.yVelocity = 1; }
+                    playerBox.StopJump();
                     break;
 
                 case Keys.A:
+                    prevLeftRight = null;
                     movingLeft = false;
                     break;
 
                 case Keys.D:
+                    prevLeftRight = null;
                     movingRight = false;
                     break;
 
