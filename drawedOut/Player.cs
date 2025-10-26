@@ -33,6 +33,8 @@ namespace drawedOut
             _unlockedMoves.Add("move2", false);
             _unlockedMoves.Add("move3", false);
 
+            IsActive = true;
+
             initBasics();
             initAtkSpawnFrames();
         }
@@ -119,11 +121,7 @@ namespace drawedOut
             return doScroll;
         }
 
-        public override void CheckActive() 
-        {
-            if (IsActive) return;
-            IsActive = true;
-        }
+        public override void CheckActive() { }
     }
 }
 

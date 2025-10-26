@@ -37,14 +37,6 @@ namespace drawedOut
 
         private static Brush playerBrush; // TODO: remove when player sprites is added
 
-        // point where bullets spawn
-        // TODO: remove when enemies are added
-        private static Entity bulletOrigin = new Entity(
-            origin: new PointF(800, 250),
-            width: 1,
-            height: 1);
-
-
         private static HpBarUI hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
                     barWidth: 20,
@@ -87,10 +79,7 @@ namespace drawedOut
             PERFECT_PARRY_WINDOW_S = 0.05F,
             PARRY_ENDLAG_S = 0.2F;
 
-            //bulletCooldownS = 0.5F, // NOTE: remove when enemy code added
-
         private static float
-            bulletInterval, // TODO: move into enemy class
 
             parryWindowS,
             endLagTime,
@@ -226,57 +215,7 @@ namespace drawedOut
                 isParrying = false;
             }
 
-            try 
-            {
-                Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
-                {
-                    bullet.moveProjectile(deltaTime);
-                    PointF bLoc = bullet.Center;
-
-                    if (disposedProjectiles.Contains(bullet)) return;
-
-                    foreach (Platform p in Platform.ActivePlatformList)
-                    {
-                        if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
-                            continue;
-
-                        disposedProjectiles.Add(bullet);
-                        break;
-                    }
-
-
-                    if ((bLoc.X < 0) || (bLoc.Y < 0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
-                    {
-                        disposedProjectiles.Add(bullet);
-                        return;
-                    }
-
-                    if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
-                        return;
-
-                    if (!isParrying)
-                    {
-                        freezeTimeS = FREEZE_DURATION_S * 10;
-                        disposedProjectiles.Add(bullet);
-                        playerBox.DoDamage(1, ref hpBar);
-                        return;
-                    }
-
-                    bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
-
-                    // TODO: move into player
-                    // if the current parry has lasted for at most the perfectParryWindow
-                    if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
-                    {
-                        slowTimeS = SLOW_DURATION_S * 10;
-                        zoomScreen(ZOOM_FACTOR);
-                        isParrying = false;
-                        //playerBox.endLagTime = 0;
-                    }
-                    else disposedProjectiles.Add(bullet);
-
-                });
-            }
+            try { CheckProjectileCollisions(deltaTime); }
             catch (OperationCanceledException) { return; }
 
             foreach (Projectile p in disposedProjectiles)
@@ -310,16 +249,57 @@ namespace drawedOut
         }
 
 
-        // spawn bullet about a point
-        private void createBullet()
+        private void CheckProjectileCollisions(double dt)
         {
-            Projectile bullet = new Projectile
-                (origin: bulletOrigin.Location,
-                  width: 30,
-                  height: 10,
-                  velocity: 50,
-                  target: playerBox.Center);
-            bullet.ScaleHitbox(curZoom);
+            if (Projectile.ProjectileList.Count == 0) return;
+            Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
+            {
+                bullet.moveProjectile(dt);
+                PointF bLoc = bullet.Center;
+
+                if (disposedProjectiles.Contains(bullet)) return;
+
+                foreach (Platform p in Platform.ActivePlatformList)
+                {
+                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
+                    continue;
+
+                    disposedProjectiles.Add(bullet);
+                    break;
+                }
+
+
+                if ((bLoc.X < 0) || (bLoc.Y < 0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
+                {
+                    disposedProjectiles.Add(bullet);
+                    return;
+                }
+
+                if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
+                    return;
+
+                if (!isParrying)
+                {
+                    freezeTimeS = FREEZE_DURATION_S * 10;
+                    disposedProjectiles.Add(bullet);
+                    playerBox.DoDamage(1, ref hpBar);
+                    return;
+                }
+
+                bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
+
+                // TODO: move into player
+                // if the current parry has lasted for at most the perfectParryWindow
+                if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
+                {
+                    slowTimeS = SLOW_DURATION_S * 10;
+                    zoomScreen(ZOOM_FACTOR);
+                    isParrying = false;
+                    //playerBox.endLagTime = 0; //TODO: parry endlag
+                }
+                else disposedProjectiles.Add(bullet);
+
+            });
         }
 
 
@@ -445,7 +425,8 @@ namespace drawedOut
         {
             slowTime(deltaTime);
 
-            // TODO: functionize and optimise
+            foreach (Entity e in Entity.EntityList)
+                e.CheckActive();
             
             if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
             Global.XDirections? playerMovDir = null;
@@ -560,10 +541,6 @@ namespace drawedOut
                 case Keys.D:
                     prevLeftRight = null;
                     movingRight = false;
-                    break;
-
-                case Keys.S:
-                    createBullet();
                     break;
             }
         }
