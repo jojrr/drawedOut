@@ -69,7 +69,7 @@
         }
 
         /// <summary>
-        /// checks the Y direction for collision with entities (mostly platforms)
+        /// checks the X direction for collision with entities (mostly platforms)
         /// </summary>
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkXCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
@@ -90,9 +90,9 @@
         /// Checks if the target's hitbox is colliding with this entity's hitbox.<br/>
         /// Returned position is relative to this Entity.<br/>
         /// </summary>
-        /// <param name="collisionTarget"></param>
+        /// <param name="collisionTarget">The target to check for collision with</param>
         /// <returns><see cref="Rectangle"/>: the collisionTarget's hitbox</returns>
-        private RectangleF IsCollidingWith(Entity collisionTarget)
+        private RectangleF? IsCollidingWith(Entity collisionTarget)
         {
             RectangleF targetHitbox = collisionTarget.Hitbox;
             PointF targetCenter = collisionTarget.Center;
@@ -102,18 +102,18 @@
             {
                 if (collisionTarget == _xStickEntity)  SetXCollider(null, null, null); 
                 if (collisionTarget == _yStickEntity)  SetYCollider(null, null, null); 
+                return null;
             }
-            else
-            {
-                // if this' center is between the left and the right of the hitbox 
-                if ((Center.X < targetHitbox.Right) && (Center.X > targetHitbox.Left))
-                    checkYCollider(targetHitbox, targetCenter, collisionTarget);
 
-                if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
-                    SetXCollider(null, null, collisionTarget);
-                else
-                    checkXCollider(targetHitbox, targetCenter, collisionTarget);
-            }
+            // if this' center is between the left and the right of the hitbox 
+            if ((Center.X < targetHitbox.Right) && (Center.X > targetHitbox.Left))
+                checkYCollider(targetHitbox, targetCenter, collisionTarget);
+
+            if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
+                SetXCollider(null, null, null);
+            else
+                checkXCollider(targetHitbox, targetCenter, collisionTarget);
+
             return targetHitbox;
         }
 
@@ -124,7 +124,7 @@
         /// <param name="y">bottom, top or null </param>
         /// <param name="targetHitbox"></param>
         /// <param name="collisionTarget"></param>
-        public void SetYCollider(Global.YDirections? y, RectangleF? targetHitbox, Entity? collisionTarget)
+        private void SetYCollider(Global.YDirections? y, RectangleF? targetHitbox, Entity? collisionTarget)
         {
             CurYColliderDirection = y;
             _yStickTarget = targetHitbox;
@@ -166,9 +166,11 @@
 
         public void CheckPlatformCollision(Entity target)
         {
-            RectangleF targetHitbox = IsCollidingWith(target);
+            RectangleF? targetHitbox = IsCollidingWith(target);
 
-            if (_yStickTarget != null)
+            if (targetHitbox is null) return;
+
+            if (_yStickTarget is not null)
             {
                 // if platform is above -> set the location to 1 under the platform to prevent getting stuck
                 if (CurYColliderDirection == Global.YDirections.top)
@@ -180,24 +182,23 @@
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
                 else if (CurYColliderDirection == Global.YDirections.bottom)
                 {
-                    _coyoteTimeS = 0.02; // 100ms (on 10ms timer)
+                    _coyoteTimeS = 0.05;
                     LocationY = _yStickTarget.Value.Y - Height + 1;
                     _yVelocity = Math.Min(_yVelocity, 0);
                 }
             }
 
 
-
-            if (_xStickTarget != null)
+            if (_xStickTarget is not null)
             {
                 if (CurXColliderDirection == Global.XDirections.right)
                 {
-                    LocationX = _xStickTarget.Value.Left - this.Width + 1;
+                    LocationX = _xStickTarget.Value.Left - this.Width - 1;
                     _xVelocity = Math.Min(0, _xVelocity);
                 }
                 else if (CurXColliderDirection == Global.XDirections.left)
                 {
-                    LocationX = _xStickTarget.Value.Right - 1;
+                    LocationX = _xStickTarget.Value.Right + 1;
                     _xVelocity = Math.Max(0, _xVelocity);
                 }
             }
@@ -268,6 +269,20 @@
                 if (Math.Abs(_xVelocity) > 0.01)  _xVelocity -= _xVelocity * (8*dt); 
                 else _xVelocity = 0; 
             }
+        }
+        
+        public string CollisionDebugX()
+        {
+            if (CurXColliderDirection == Global.XDirections.left) return ($"left {(_xStickEntity==_yStickEntity).ToString()}");
+            else if (CurXColliderDirection == Global.XDirections.right) return ($"right {(_xStickEntity==_yStickEntity).ToString()}");
+            return "null";
+        }
+            
+        public string CollisionDebugY()
+        {
+            if (CurYColliderDirection == Global.YDirections.top) return "top";
+            else if (CurYColliderDirection == Global.YDirections.bottom) return "bottom";
+            return "null";
         }
 
         /// <summary>

@@ -360,6 +360,8 @@ namespace drawedOut
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
             fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
+            label2.Text = playerBox.CollisionDebugX();
+            label3.Text = playerBox.CollisionDebugY();
 
             Refresh();
         }
@@ -435,13 +437,12 @@ namespace drawedOut
             
             bool isScrolling = playerBox.CheckScrolling(box2);
 
-            if (isScrolling) 
-                ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
+            if (isScrolling) ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
+
+            playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
 
             foreach (Platform plat in Platform.ActivePlatformList)
             { playerBox.CheckPlatformCollision(plat); }
-
-            playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
 
             try
             {
@@ -534,11 +535,13 @@ namespace drawedOut
                     break;
 
                 case Keys.A:
+                    if (prevLeftRight == Keys.D) movingRight = true;
                     prevLeftRight = null;
                     movingLeft = false;
                     break;
 
                 case Keys.D:
+                    if (prevLeftRight == Keys.A) movingLeft = true;
                     prevLeftRight = null;
                     movingRight = false;
                     break;
