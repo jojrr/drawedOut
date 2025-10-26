@@ -180,7 +180,7 @@
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
                 else if (CurYColliderDirection == Global.YDirections.bottom)
                 {
-                    _coyoteTimeS = 10; // 100ms (on 10ms timer)
+                    _coyoteTimeS = 0.02; // 100ms (on 10ms timer)
                     LocationY = _yStickTarget.Value.Y - Height + 1;
                     _yVelocity = Math.Min(_yVelocity, 0);
                 }
@@ -219,7 +219,7 @@
             // Coyote time ticks down 
             if (_coyoteTimeS > 0)
             {
-                _coyoteTimeS -= dt*10;
+                _coyoteTimeS -= dt;
                 IsOnFloor = true; // allows for more responsive jumping
             }
         }
@@ -238,7 +238,7 @@
             DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0)  _yVelocity = 25;
+            if (Location.Y < 0)  _yVelocity = 1000;
 
             double xAccel=0;
 

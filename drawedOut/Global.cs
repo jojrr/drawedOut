@@ -26,7 +26,7 @@ namespace drawedOut
 
 
 
-        private static int _entityLoadThreshold = 1000;
+        private static int _entityLoadThreshold = 1200;
         public static int EntityLoadThreshold
         {
             get => (int)(_entityLoadThreshold*BaseScale);
