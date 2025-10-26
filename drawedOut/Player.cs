@@ -118,6 +118,13 @@ namespace drawedOut
             if (onWorldBoundary == scrollDirection) doScroll = false;
             return doScroll;
         }
+
+        public override void CheckActive() 
+        {
+            if (IsActive) return;
+            IsActive = true;
+            ActiveCharacterList.Add(this);
+        }
     }
 }
 

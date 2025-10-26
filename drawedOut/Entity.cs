@@ -58,7 +58,7 @@
         ///Distance is scalar
         ///</summary>
         protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
-        protected bool IsActive;
+        protected bool IsActive = false;
 
         private SizeF _scaledSize;
         private readonly SizeF _baseSize;
@@ -120,27 +120,7 @@
         /// </summary>
         public void ResetScale() => _scaledSize = _baseSize; 
 
-        public virtual void CheckActive()
-        {
-            throw new Exception($"CheckActive is not implemented in {this.GetType()}");
-            
-            /*
-            float dist = Math.Abs(curCenter - _center.X);
+        public virtual void CheckActive() => throw new Exception($"CheckActive() is not implemented in {this.GetType()}");
 
-            if (dist <= _loadInThreshold)
-            {
-                if (activeList.Contains(this)) return;
-
-                activeList.Add(this);
-                inactiveList.Remove(this);
-                return;
-            }
-
-            if (inactiveList.Contains(this)) return;
-
-            inactiveList.Add(this);
-            activeList.Add(this);
-            */
-        }
     }
 }

@@ -11,7 +11,8 @@ namespace drawedOut
             height: 50,
             attackPower: 1,
             energy: 100,
-            maxHp: 6);
+            maxHp: 6,
+            accel: 100);
 
         private static Platform box2 = new(
            origin: new Point(1, 650),
@@ -49,8 +50,6 @@ namespace drawedOut
 
         private static Global.XDirections? onWorldBoundary = Global.XDirections.left;
         private static Global.XDirections? scrollDirection = null;
-
-        private const double xAccel = 100; // TODO: move to player/character
 
         private static Brush playerBrush; // TODO: remove when player sprites is added
 
@@ -119,8 +118,6 @@ namespace drawedOut
             slowTimeS = 0,
             freezeTimeS = 0;
 
-        private static double motionDT = 0; // TODO: get rid of this bruhv lowk useless like wth
-
         // threading 
         // used for closing the thread
         private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
@@ -138,8 +135,8 @@ namespace drawedOut
             threadSettings.CancellationToken = cancelTokenSrc.Token;
 
             // set height and width of window
-            Width = (int)(Global.LevelBaseSize.Width*Global.BaseScale);
-            Height = (int)(Global.LevelBaseSize.Height*Global.BaseScale);
+            Width = Global.LevelSize.Width;
+            Height = Global.LevelSize.Height;
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -219,7 +216,6 @@ namespace drawedOut
                 slowTimeS -= (float)deltaTime;
 
                 deltaTime /= SLOW_FACTOR;
-                motionDT = (ZOOM_FACTOR * deltaTime);
             }
             else 
             {
@@ -252,7 +248,7 @@ namespace drawedOut
             {
                 Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
                 {
-                    bullet.moveProjectile(motionDT);
+                    bullet.moveProjectile(deltaTime);
                     PointF bLoc = bullet.Center;
 
                     if (disposedProjectiles.Contains(bullet)) return;
@@ -286,13 +282,14 @@ namespace drawedOut
 
                     bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
 
+                    // TODO: move into player
                     // if the current parry has lasted for at most the perfectParryWindow
                     if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
                     {
                         slowTimeS = SLOW_DURATION_S * 10;
                         zoomScreen(ZOOM_FACTOR);
                         isParrying = false;
-                        playerBox.EndLagTime = 0;
+                        playerBox.endLagTime = 0;
                     }
                     else disposedProjectiles.Add(bullet);
 
@@ -476,22 +473,18 @@ namespace drawedOut
             if (isScrolling) 
                 ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
 
-            playerBox.MoveCharacter(xAccel, playerMovDir, doScroll: isScrolling);
+            foreach (Platform plat in Platform.ActivePlatformList)
+            { playerBox.CheckPlatformCollision(plat); }
 
-            foreach (Enemy enemy in Enemy.ActiveEnemies) // NOTE: try parallel foreach
-            {
-                bool colliding = false; // HACK: temporary solution - should remove when on-screen loading is implemented
+            playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
+
+            Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
 
                 foreach (Platform plat in Platform.ActivePlatformList)
-                {
-                    enemy.CheckPlatformCollision(plat);
-                    if (enemy.Hitbox.IntersectsWith(plat.Hitbox)) colliding = true;
-                }
-
-                if (!colliding) enemy.SetYCollider(null, null, null);
+                { enemy.CheckPlatformCollision(plat); }
 
                 enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
-            }
+            });
         }
 
 
@@ -511,7 +504,7 @@ namespace drawedOut
         {
             if (showHitbox)
             {
-                foreach (Character chara in Character.ActiveCharacters)
+                foreach (Character chara in Character.ActiveCharacterList)
                     e.Graphics.FillRectangle(playerBrush, chara.Hitbox);
 
                 foreach (Platform plat in Platform.ActivePlatformList)

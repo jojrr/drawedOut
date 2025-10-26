@@ -24,6 +24,7 @@ namespace drawedOut
             _height;
         private readonly double _durationS;
         protected double DurationS;
+        public int AtkDmg { get; private set; }
 
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
@@ -34,11 +35,16 @@ namespace drawedOut
         /// <param name="width"> The width of the hitbox </param>
         /// <param name="height"> The height of the hitbox </param>
         /// <param name="durationS"> The duration that the hitbox should last (in seconds)</param>
-        public Attacks(Character parent, float xOffset, float yOffset, int width, int height, double durationS)
+        /// <param name="dmg"> 
+        /// The damage of the attack.<br/>
+        /// Default = 1
+        /// </param>
+        public Attacks(Character parent, float xOffset, float yOffset, int width, int height, double durationS, int dmg=1)
         {
             Parent = parent;
             XOffset = xOffset;
             YOffset = yOffset;
+            AtkDmg = dmg;
             _width = width;
             _height = height;
             _durationS = durationS;

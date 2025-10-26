@@ -20,8 +20,7 @@
         private PointF Target;
 
         public static List<Projectile> ProjectileList = new List<Projectile>();
-
-
+        private static List<Projectile> _disposedProjectileList = new List<Projectile>();
 
         /// <summary>
         /// creates a projectile with the following parameters
@@ -103,6 +102,14 @@
             yDiff = Center.Y - target.Y;
 
             this.Location = new PointF( Location.X + 2*xDiff, Location.Y + 2*yDiff);
+        }
+
+        public void Dipose() => ProjectileList.Remove(this);
+
+        public override void CheckActive() 
+        {
+            if (Math.Abs(this.DistToMid) > Global.EntityLoadThreshold) return;
+            Dipose();
         }
     }
 }

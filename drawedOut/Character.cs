@@ -2,21 +2,11 @@
 {
     internal class Character : Entity
     {
-        // list of all characters - [int: level][list: chunk][Character]
-        // used for gametick
-        
-        public static List<Character> ActiveCharacters = new List<Character>();
-        public static List<Character> InactiveCharacters = new List<Character>();
-
         private double _xVelocity=0, _yVelocity=0, _xAccel;
         protected double xVelocity { get; }
 
-        private bool 
-            _isMoving = false,
-            _isOnFloor;
-
-        public bool IsMoving { get => _isMoving; protected set => _isMoving = value; }
-        public bool IsOnFloor { get => _isOnFloor; protected set => _isOnFloor = value; }
+        public bool IsMoving { get; protected set; }
+        public bool IsOnFloor { get; protected set; }
         public Global.XDirections FacingDirection { get; private set; }
 
         private const int TERMINAL_VELOCITY = 130;
@@ -29,9 +19,8 @@
         public int Hp { get; protected set; }
         public int MaxHp { get; private set; }
 
-        private double 
-            _endLagS = 0F,
-            _coyoteTimeS;
+        private double _coyoteTimeS;
+        protected double endlagS = 0;
 
         private RectangleF? _xStickTarget, _yStickTarget;
         private RectangleF _overShootRec; // TODO: remove and see what happens
@@ -49,13 +38,15 @@
         /// <param name="height"></param>
         /// <param name="LocatedLevel">The level that the character is located in</param>
         /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        public Character(Point origin, int width, int height, int hp, double xAccel, int _jumpVelocity = 150)
+        public Character(Point origin, int width, int height, int hp, double xAccel, int jumpVelocity=150)
             : base(origin: origin, width: width, height: height )
         {
             SetOverShootRec();
-            InactiveCharacters.Add(this);
             MaxHp = hp;
             Hp = hp;
+            IsMoving = false;
+            IsOnFloor = false;
+            _jumpVelocity = jumpVelocity;
             _xAccel = xAccel;
         }
 
@@ -293,5 +284,6 @@
             Hp -= dmg;
         }
 
+        public override void CheckActive(){}
     }
 }

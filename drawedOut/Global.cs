@@ -53,8 +53,8 @@ namespace drawedOut
         {
 
             _centerOfScreen = new Point(
-                    (int)(_baseSize.Width/2*BaseScale), 
-                    (int)(_baseSize.Height/2*BaseScale));
+                    (int)(_levelBaseSize.Width/2*BaseScale), 
+                    (int)(_levelBaseSize.Height/2*BaseScale));
         }
 
         public enum XDirections { left, right }
