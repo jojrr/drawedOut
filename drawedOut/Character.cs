@@ -54,7 +54,7 @@
         /// checks the Y direction for collision with platforms
         /// </summary>
         /// <param name="collisionTarget"> the <see cref="Entity" that is being checked </param>
-        private void checkYCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
+        private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
             // Checks if there is a platform below - considers overshoot
             if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
@@ -64,7 +64,7 @@
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
             }
             // Checks if there is a platform above the player
-            else if ((Center.Y >= targetCenter.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
+            else if ((Center.Y >= collisionTarget.Center.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
 
@@ -72,20 +72,18 @@
         /// checks the X direction for collision with entities (mostly platforms)
         /// </summary>
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
-        private void checkXCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
+        private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
-            if (Center.Y > targetHitbox.Y) return;
-            if (Center.X < targetHitbox.Left || Center.X < targetCenter.X)
+            if (Center.X < targetHitbox.Left)
                 // Checks if there is a platform to the left/right of the player
             {
-                if ((_xStickEntity == null)) { _xVelocity = 0; }
+                if (_xStickEntity is null && Center.Y > targetHitbox.Y) { _xVelocity = 0; }
                 // character is on the right of the hitbox
                 SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); 
-                throw new Exception("boom");
             }
-            else if (Center.X > targetHitbox.Right || Center.X > targetCenter.X)
+            else if (Center.X > targetHitbox.Right)
             {
-                if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
+                if (_xStickEntity is null && Center.Y > targetHitbox.Y) { _xVelocity = 0; }
                 // character is on the left of the hitbox
                 SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); 
             }
@@ -100,7 +98,6 @@
         private RectangleF? IsCollidingWith(Entity collisionTarget)
         {
             RectangleF targetHitbox = collisionTarget.Hitbox;
-            PointF targetCenter = collisionTarget.Center;
 
             // sets collision to null if not longer colliding with the previously colliding hitbox
             if (!Hitbox.IntersectsWith(targetHitbox))
@@ -112,12 +109,13 @@
 
             // if this' center is between the left and the right of the hitbox 
             if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left)
-                checkYCollider(targetHitbox, targetCenter, collisionTarget);
-
-            checkXCollider(targetHitbox, targetCenter, collisionTarget);
+                checkYCollider(targetHitbox, collisionTarget);
 
             if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
-                SetXCollider(null, null, null);
+                SetXCollider(null, null, collisionTarget);
+            else
+                checkXCollider(targetHitbox, collisionTarget);
+
 
             return targetHitbox;
         }
