@@ -64,7 +64,7 @@ namespace drawedOut
 
 
         private static int
-            gameTickFreq = 60,
+            gameTickFreq = 160,
             gameTickInterval;
 
 
@@ -303,34 +303,6 @@ namespace drawedOut
         }
 
 
-        private void Form1_MouseDown(object sender, MouseEventArgs e)
-        {
-            // if Not parrying then resets parrywindow and sets to parrying
-            if ((e.Button == MouseButtons.Right) && (!isParrying))
-            {
-                if (endLagTime <= 0)
-                {
-                    parryWindowS = (PARRY_DURATION_S * 10);
-                    isParrying = true;
-                }
-            }
-        }
-
-
-
-        private void Form1_MouseUp(object sender, MouseEventArgs e)
-        {
-            // stops parrying when mouseup but doesnt reset timer > only on mouse down 
-            if (e.Button == MouseButtons.Right)
-            {
-                if (isParrying)
-                {
-                    endLagTime = PARRY_ENDLAG_S * 10;
-                    isParrying = false;
-                }
-            }
-        }
-
 
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
@@ -360,8 +332,8 @@ namespace drawedOut
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
             fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
-            label2.Text = playerBox.CollisionDebugX();
-            label3.Text = playerBox.CollisionDebugY();
+            label2.Text = playerBox.CollisionDebugX().ToString();
+            label3.Text = playerBox.CollisionDebugY().ToString();
 
             Refresh();
         }
@@ -447,17 +419,13 @@ namespace drawedOut
             try
             {
                 Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
-
-                        foreach (Platform plat in Platform.ActivePlatformList)
-                        { enemy.CheckPlatformCollision(plat); }
-
-                        enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
-                        });
+                    enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
+                    foreach (Platform plat in Platform.ActivePlatformList)
+                    { enemy.CheckPlatformCollision(plat); }
+                });
             }
             catch (OperationCanceledException) { return; }
         }
-
-
 
 
         public void ScrollEntities(double velocity, double deltaTime)
@@ -545,6 +513,35 @@ namespace drawedOut
                     prevLeftRight = null;
                     movingRight = false;
                     break;
+            }
+        }
+
+
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // if Not parrying then resets parrywindow and sets to parrying
+            if ((e.Button == MouseButtons.Right) && (!isParrying))
+            {
+                if (endLagTime <= 0)
+                {
+                    parryWindowS = (PARRY_DURATION_S * 10);
+                    isParrying = true;
+                }
+            }
+        }
+
+
+
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            // stops parrying when mouseup but doesnt reset timer > only on mouse down 
+            if (e.Button == MouseButtons.Right)
+            {
+                if (isParrying)
+                {
+                    endLagTime = PARRY_ENDLAG_S * 10;
+                    isParrying = false;
+                }
             }
         }
 

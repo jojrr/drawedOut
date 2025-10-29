@@ -3,7 +3,7 @@
     internal class Character : Entity
     {
         private double _xVelocity=0, _yVelocity=0, _xAccel;
-        protected double xVelocity { get; }
+        protected double xVelocity { get => _xVelocity; }
 
         public bool IsMoving { get; protected set; }
         public bool IsOnFloor { get; protected set; }
@@ -74,15 +74,20 @@
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkXCollider(RectangleF targetHitbox, PointF targetCenter, Entity collisionTarget)
         {
-            if (Center.X < targetHitbox.Left) // Checks if there is a platform to the left/right of the player
+            if (Center.Y > targetHitbox.Y) return;
+            if (Center.X < targetHitbox.Left || Center.X < targetCenter.X)
+                // Checks if there is a platform to the left/right of the player
             {
-                if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
-                SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); // character is on the right of the hitbox
+                if ((_xStickEntity == null)) { _xVelocity = 0; }
+                // character is on the right of the hitbox
+                SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); 
+                throw new Exception("boom");
             }
-            else if (Center.X > targetHitbox.Right)
+            else if (Center.X > targetHitbox.Right || Center.X > targetCenter.X)
             {
                 if ((_xStickEntity == null) && (Center.Y > targetHitbox.Y)) { _xVelocity = 0; }
-                SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); // character is on the left of the hitbox
+                // character is on the left of the hitbox
+                SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); 
             }
         }
 
@@ -106,13 +111,13 @@
             }
 
             // if this' center is between the left and the right of the hitbox 
-            if ((Center.X < targetHitbox.Right) && (Center.X > targetHitbox.Left))
+            if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left)
                 checkYCollider(targetHitbox, targetCenter, collisionTarget);
+
+            checkXCollider(targetHitbox, targetCenter, collisionTarget);
 
             if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
                 SetXCollider(null, null, null);
-            else
-                checkXCollider(targetHitbox, targetCenter, collisionTarget);
 
             return targetHitbox;
         }
@@ -239,14 +244,16 @@
             DoGravTick(dt);
 
             // stops the player going above the screen
-            if (Location.Y < 0)  _yVelocity = 1000;
+            if (Location.Y <= 0)  
+            {
+                LocationY = 1;
+                _yVelocity = 0;
+            }
 
             double xAccel=0;
 
-            if (direction == Global.XDirections.left)
-                xAccel = -_xAccel;
-            if (direction == Global.XDirections.right)
-                xAccel = _xAccel;
+            if (direction == Global.XDirections.left) xAccel = -_xAccel;
+            if (direction == Global.XDirections.right) xAccel = _xAccel;
 
             _xVelocity += xAccel;
 
@@ -266,7 +273,7 @@
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (xAccel == 0) 
             {
-                if (Math.Abs(_xVelocity) > 0.01)  _xVelocity -= _xVelocity * (8*dt); 
+                if (Math.Abs(_xVelocity) > 1)  _xVelocity -= _xVelocity * (15*dt); 
                 else _xVelocity = 0; 
             }
         }

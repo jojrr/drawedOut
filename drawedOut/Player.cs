@@ -106,19 +106,21 @@ namespace drawedOut
         {
             Global.XDirections? onWorldBoundary = null;
             Global.XDirections? scrollDirection = null;
-            bool doScroll = false;
 
-            if (!ShouldDoMove())  return false;
-            if (Global.LeftScrollBound<=Center.X && Center.X<=Global.LeftScrollBound) return false;
+            //if (!ShouldDoMove())  return false;
+            //if (Global.LeftScrollBound<=Center.X && Center.X<=Global.RightScrollBound) return false;
 
             if (0 < baseBox.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
             else if (Global.LevelSize.Width > baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
 
-            if (Center.X < 500 && xVelocity < 0) scrollDirection = Global.XDirections.left;
-            else if (Center.X > 1300 && xVelocity > 0) scrollDirection = Global.XDirections.right;
+            if (Center.X < Global.LeftScrollBound && xVelocity < 0)
+                scrollDirection = Global.XDirections.left; 
+            else if (Center.X > Global.RightScrollBound && xVelocity > 0)
+                scrollDirection = Global.XDirections.right;
 
-            if (onWorldBoundary == scrollDirection) doScroll = false;
-            return doScroll;
+            if (onWorldBoundary == scrollDirection) return false;
+            if (scrollDirection is null) return false;
+            return true;
         }
 
         public override void CheckActive() { }
