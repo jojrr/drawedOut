@@ -16,7 +16,7 @@ namespace drawedOut
 
         public override void CheckActive()
         {
-            if (Math.Abs(this.DistToMid) > Global.EntityLoadThreshold)
+            if (DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;
 

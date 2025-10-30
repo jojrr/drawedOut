@@ -24,7 +24,7 @@
         public override void CheckActive()
         {
             if (_mainPlat) return;
-            if (Math.Abs(this.DistToMid) > Global.EntityLoadThreshold)
+            if (this.DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;
 

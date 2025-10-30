@@ -115,6 +115,7 @@ namespace drawedOut
             Stopwatch threadDelaySW = Stopwatch.StartNew();
             CancellationToken threadCT = cancelTokenSrc.Token;
 
+            int toGC = 0;
             gameTickThread = new Thread(() =>
             {
                 while (gameTickEnabled)
@@ -135,6 +136,15 @@ namespace drawedOut
 
                         try { Invoke(renderGraphics); } 
                         catch (ObjectDisposedException) { return; }
+
+                        // collects garbage every 10 seconds
+                        //
+                        // // collects garbage every 10 seconds
+                        if (++toGC == gameTickFreq*10)
+                        {
+                            GC.Collect();
+                            toGC=0;
+                        }
                     }
                 }
             });
@@ -218,16 +228,10 @@ namespace drawedOut
             try { CheckProjectileCollisions(deltaTime); }
             catch (OperationCanceledException) { return; }
 
-            foreach (Projectile p in disposedProjectiles)
-                Projectile.ProjectileList.Remove(p);
-
-            disposedProjectiles.Clear();
-
             //if ((bulletInterval > 0) || (deltaTime == 0))
             //    bulletInterval -= (float)deltaTime;
             //else
             //    createBullet();
-
 
 
             // ticks down the parry window
@@ -299,6 +303,13 @@ namespace drawedOut
                 }
                 else disposedProjectiles.Add(bullet);
 
+                if (disposedProjectiles.Count == 0) return;
+                foreach (Projectile p in disposedProjectiles)
+                    Projectile.ProjectileList.Remove(p);
+
+                disposedProjectiles.Clear();
+
+
             });
         }
 
@@ -363,7 +374,6 @@ namespace drawedOut
             }
 
 
-            // calculates new position for each projectile based on distance from playerBox center and adjusts for Scale and the "screen" shifting to the center
             foreach (Entity e in Entity.EntityList)
             {
                 zoomOrigins.Add(e,e.Center);

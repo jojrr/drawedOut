@@ -75,7 +75,7 @@ namespace drawedOut
         /// <summary>
         /// Update the hitbox' location
         /// </summary>
-        public void UpdateHitboxLocation( float x, float y )
+        public void UpdateHitboxCenter( float x, float y )
         {
             if (Hitbox is null) throw new Exception($"{this} is in AttackList but null");
             Hitbox.Center = new PointF(x,y);
@@ -97,12 +97,12 @@ namespace drawedOut
                 PointF parentCentre = atk.Parent.Center;
                 float xOffset;
 
+                xOffset = atk.XOffset;
+
                 if (atk.Parent.FacingDirection == Global.XDirections.left)
                     xOffset = -atk.XOffset;
-                else
-                    xOffset = atk.XOffset;
 
-                atk.UpdateHitboxLocation( 
+                atk.UpdateHitboxCenter( 
                         x: parentCentre.X + xOffset,
                         y: parentCentre.Y + atk.YOffset);
 
