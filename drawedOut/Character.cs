@@ -81,7 +81,8 @@
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
             }
             // Checks if there is a platform above the player
-            else if ((Center.Y >= collisionTarget.Center.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
+            //else if ((Center.Y >= collisionTarget.Center.Y + targetHitbox.Height / 2 - Height / 4) && (_yVelocity < 0))
+            else if (collisionTarget.Center.Y < Hitbox.Top)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
 

@@ -5,7 +5,7 @@ namespace drawedOut
         public static List<Enemy> ActiveEnemyList = new List<Enemy>();
         public static List<Enemy> InactiveEnemyList = new List<Enemy>();
 
-        public Enemy(Point origin, int width, int height, int hp, double xAccel)
+        public Enemy(Point origin, int width, int height, int hp, int xAccel)
             : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel)
         {
             InactiveEnemyList.Add(this);
