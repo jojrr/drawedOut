@@ -64,7 +64,7 @@ namespace drawedOut
 
 
         private static int
-            gameTickFreq = 160,
+            gameTickFreq = 150,
             gameTickInterval;
 
 
@@ -80,7 +80,6 @@ namespace drawedOut
             PARRY_ENDLAG_S = 0.2F;
 
         private static float
-
             parryWindowS,
             endLagTime,
 
@@ -137,10 +136,8 @@ namespace drawedOut
                         try { Invoke(renderGraphics); } 
                         catch (ObjectDisposedException) { return; }
 
-                        // collects garbage every 10 seconds
-                        //
-                        // // collects garbage every 10 seconds
-                        if (++toGC == gameTickFreq*10)
+                        // collects garbage every 1000 frames
+                        if (++toGC == 1000)
                         {
                             GC.Collect();
                             toGC=0;
@@ -227,12 +224,6 @@ namespace drawedOut
 
             try { CheckProjectileCollisions(deltaTime); }
             catch (OperationCanceledException) { return; }
-
-            //if ((bulletInterval > 0) || (deltaTime == 0))
-            //    bulletInterval -= (float)deltaTime;
-            //else
-            //    createBullet();
-
 
             // ticks down the parry window
             if (isParrying && parryWindowS > 0)

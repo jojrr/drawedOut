@@ -23,7 +23,6 @@
         protected double endlagS = 0;
 
         private RectangleF? _xStickTarget, _yStickTarget;
-        private RectangleF _overShootRec; // TODO: remove and see what happens
 
         private Entity? _xStickEntity, _yStickEntity;
 
@@ -41,7 +40,6 @@
         public Character(Point origin, int width, int height, int hp, double xAccel)
             : base(origin: origin, width: width, height: height )
         {
-            SetOverShootRec();
             MaxHp = hp;
             Hp = hp;
             IsMoving = false;
@@ -56,8 +54,8 @@
         /// <param name="collisionTarget"> the <see cref="Entity" that is being checked </param>
         private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
-            // Checks if there is a platform below - considers overshoot
-            if ((Center.Y <= targetHitbox.Y) || (_overShootRec.IntersectsWith(targetHitbox) && (_overShootRec.Top < targetHitbox.Top)))
+            // Checks if there is a platform below
+            if (Center.Y <= collisionTarget.Center.Y)
             {
                 // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
                 if (!IsOnFloor) _yVelocity = Math.Min(_yVelocity, 0); 
@@ -238,7 +236,6 @@
         /// </summary>
         public void MoveCharacter(double dt, Global.XDirections? direction, bool doScroll)
         {
-            SetOverShootRec();
             DoGravTick(dt);
 
             // stops the player going above the screen
@@ -290,12 +287,6 @@
             return "null";
         }
 
-        /// <summary>
-        /// creates a new rectangle to detect for overshoot above the player's current location. <br/>
-        /// Rectangle is the size of the player (effectively doubling the player's height) <br/>
-        /// Only used to detect overshoot incase the player clips into the ground.
-        /// </summary>
-        private void SetOverShootRec() => _overShootRec = new RectangleF(Location.X, Location.Y - Height, Width, Height); 
 
         public void DoDamage(int dmg)
         {
