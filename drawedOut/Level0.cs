@@ -11,8 +11,7 @@ namespace drawedOut
             height: 50,
             attackPower: 1,
             energy: 100,
-            maxHp: 6,
-            accel: 100);
+            maxHp: 6);
 
         private static Platform box2 = new(
            origin: new Point(1, 650),
@@ -100,6 +99,8 @@ namespace drawedOut
             InitializeComponent();
             this.KeyPreview = true;
             this.DoubleBuffered = true;
+
+            Global.CalcNewCenter();
 
             threadSettings.MaxDegreeOfParallelism = 4;
             threadSettings.CancellationToken = cancelTokenSrc.Token;
@@ -334,8 +335,10 @@ namespace drawedOut
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
             fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
-            label2.Text = playerBox.CollisionDebugX().ToString();
-            label3.Text = playerBox.CollisionDebugY().ToString();
+            //label2.Text;
+            label2.Hide();
+            //label3.Text = playerBox.CollisionDebugY().ToString();
+            label3.Hide();
 
             Refresh();
         }

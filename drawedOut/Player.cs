@@ -23,8 +23,8 @@ namespace drawedOut
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
         private static Dictionary<Attacks, int> _atkSpawnFrames = new Dictionary<Attacks, int>();
 
-        public Player(Point origin, int width, int height, int attackPower, double accel, int energy, int maxHp)
-            :base(origin: origin, width: width, height: height, hp: maxHp, xAccel: accel)
+        public Player(Point origin, int width, int height, int attackPower, int energy, int maxHp)
+            :base(origin: origin, width: width, height: height, hp: maxHp)
         {
             AttackPower = attackPower;
             _energy = energy;

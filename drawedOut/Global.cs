@@ -26,10 +26,12 @@ namespace drawedOut
 
 
 
-        private static int _entityLoadThreshold = 1200;
+        // <summary>
+        // Threshold for entities to be "active" (either side of screen center)
+        // </summary>
         public static int EntityLoadThreshold
         {
-            get => (int)(_entityLoadThreshold*BaseScale);
+            get => (int)(_levelBaseSize.Width*_baseScale);
         }
 
 

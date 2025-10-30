@@ -23,6 +23,7 @@ namespace drawedOut
                 IsActive = false;
                 InactiveEnemyList.Add(this);
                 ActiveEnemyList.Remove(this);
+                return;
             }
 
             if (IsActive) return;

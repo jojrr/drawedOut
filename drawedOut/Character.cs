@@ -2,7 +2,8 @@
 {
     internal class Character : Entity
     {
-        private double _xVelocity=0, _yVelocity=0, _xAccel;
+        private double _xVelocity=0, _yVelocity=0; 
+        private int _xAccel;
         protected double xVelocity { get => _xVelocity; }
 
         public bool IsMoving { get; protected set; }
@@ -16,8 +17,26 @@
             _maxXVelocity = 600,
             _jumpVelocity = 1500;
 
-        public int Hp { get; protected set; }
-        public int MaxHp { get; private set; }
+        private int _hp;
+        public int Hp 
+        { 
+            get => _hp;
+            protected set
+            {
+                _hp = value;
+                if (_hp > _maxHp) _hp = _maxHp;
+            }
+        }
+        private int _maxHp;
+        public int MaxHp 
+        { 
+            get => _maxHp; 
+            private set
+            {
+                if (value <= 0) throw new Exception("MaxHp must be > 0");
+                _maxHp = value; 
+            }
+        }
 
         private double _coyoteTimeS;
         protected double endlagS = 0;
@@ -35,10 +54,10 @@
         /// <param name="origin"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        /// <param name="LocatedLevel">The level that the character is located in</param>
-        /// <param name="LocatedChunk">The chunk that the character is located in</param>
-        public Character(Point origin, int width, int height, int hp, double xAccel)
-            : base(origin: origin, width: width, height: height )
+        /// <param name="hp"> 
+        ///
+        public Character(Point origin, int width, int height, int hp, int xAccel=100)
+            : base(origin: origin, width: width, height: height)
         {
             MaxHp = hp;
             Hp = hp;

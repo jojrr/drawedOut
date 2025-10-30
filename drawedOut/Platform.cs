@@ -31,6 +31,7 @@
                 IsActive = false;
                 InactivePlatformList.Add(this);
                 ActivePlatformList.Remove(this);
+                return;
             }
 
             if (IsActive) return;
