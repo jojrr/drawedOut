@@ -2,68 +2,63 @@ namespace drawedOut
 {
     internal class Player : Character
     {
-        public int AttackPower { get; private set; }
         public double XVelocity { get => xVelocity; }
         public bool IsHit;
 
-        //private _curAnimation=Animations.IdleAnimation;
         private Attacks? _curAttack;
         private Attacks
             _basic1,
             _basic2;
-        //private AnimationPlayer 
-        //    _idleAnim,
+        private AnimationPlayer 
+            _idleAnim;
         //    _runAnim,
-        //    _basic1Anim,
         //    _basic2Anim,
         //    _curAnimation;
 
         private int _energy;
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
-        private static Dictionary<Attacks, int> _atkSpawnFrames = new Dictionary<Attacks, int>();
+
+        static Player()
+        {
+            _unlockedMoves.Add("move1", false);
+            _unlockedMoves.Add("move2", false);
+            _unlockedMoves.Add("move3", false);
+        }
 
         public Player(Point origin, int width, int height, int attackPower, int energy, int maxHp)
             :base(origin: origin, width: width, height: height, hp: maxHp)
         {
-            AttackPower = attackPower;
             _energy = energy;
-
-            _unlockedMoves.Add("move1", false);
-            _unlockedMoves.Add("move2", false);
-            _unlockedMoves.Add("move3", false);
 
             IsActive = true;
 
-            initBasics();
-            initAtkSpawnFrames();
+            initAnimations();
+            //initBasics();
         }
 
-        private void initAtkSpawnFrames()
+
+        private void initAnimations()
         {
-            _atkSpawnFrames.Add(_basic1, 6);
-            _atkSpawnFrames.Add(_basic2, 7);
+            _idleAnim = new AnimationPlayer(@"playerChar\idle\");
         }
+
 
         private void initBasics()
         {
+            AnimationPlayer _basic1Anim = new AnimationPlayer(@"playerChar\basic1\");
             _basic1 = new Attacks(
                     parent: this,
                     xOffset: 50,
                     yOffset: 50,
                     width: 50,
                     height: 50,
-                    durationS: 0.2);
-            _basic2 = new Attacks(
-                    parent: this,
-                    xOffset: 50,
-                    yOffset: 50,
-                    width: 50,
-                    height: 50,
-                    durationS: 0.4);
+                    spawn: 4,
+                    despawn: 15,
+                    animation: _basic1Anim);
         }
 
-        // public UnlockMoves() {}
+        public void UnlockMoves(){}
 
         public void DoDamage(int dmg, ref HpBarUI hpBar)
         {
@@ -74,28 +69,45 @@ namespace drawedOut
 
         public void DoBasicAttack()
         {
-            _curAttack = _basic1;
-            // curAnimation = Animation.PlayerIdle;
+            if (endlagS <= 0) _curAttack = _basic1;
         }
 
-        // public Image NextAnimation() 
-        // {
-        //     if (_curAttack is not null)
-        //     {
-        //         if (_curAnimation.CurFrame == _curAnimation.LastFrame)
-        //             _curAnimation = _idleAnim;
-        //         if (_curAnimation.CurFrame == _atkSpawnFrames[_curAttack])
-        //             _curAttack.CreateHitbox();
-        //     }
-
-        //     return _curAnimation.NextFrame(FacingDirection);
-        // }
-
-        public void HealPlayer(int heal)
+        int count = 0;
+        public override Bitmap NextAnimFrame()
         {
-            Hp += heal;
-            if (Hp > MaxHp) Hp = MaxHp;
+            return _idleAnim.NextFrame(FacingDirection);
+            if (_curAttack is null)
+            {
+                /*
+                if (yVelocity == 0)
+                {
+                    if (xVelocity == 0)
+                      return _idleAnim.NextFrame(FacingDirection);
+                    else 
+                      return _runAnim.NextFrame(FacingDirection);
+                }
+                else if (yVelocity > 0)
+                {
+                    return _fallAnim.NextFrame(FacingDirection);
+                }
+                else 
+                {
+                    return _jumpAnim.NextFrame(FacingDirection);
+                }
+                */
+                return _idleAnim.NextFrame(FacingDirection);
+            }
+
+            if (_curAttack.animation.CurFrame == _curAttack.animation.LastFrame)
+            {
+                _curAttack = null;
+                NextAnimFrame();
+            }
+
+            return _curAttack.NextAnimFrame(FacingDirection);
         }
+
+        public void HealPlayer(int heal) => Hp += heal; 
 
 
         /// <summary>

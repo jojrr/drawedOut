@@ -68,7 +68,7 @@ namespace drawedOut
         /// <returns> String: path to project's directory </returns>
         public static string GetProjFolder()
         {
-            DirectoryInfo? dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent;
+            DirectoryInfo? dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent;
             if (dir is null) throw new DirectoryNotFoundException("csproj directory not found");
             return dir.FullName;
         }

@@ -7,14 +7,14 @@ namespace drawedOut
     {
         private static Player playerBox = new Player(
             origin: new Point(750, 250),
-            width: 50,
-            height: 50,
+            width: 100,
+            height: 260,
             attackPower: 1,
             energy: 100,
             maxHp: 6);
 
         private static Platform box2 = new(
-           origin: new Point(1, 650),
+           origin: new Point(1, 1050),
            width: 5400,
            height: 550,
            isMainPlat: true);
@@ -44,6 +44,7 @@ namespace drawedOut
 
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
+        private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
 
         private static Keys? prevLeftRight;
 
@@ -63,7 +64,7 @@ namespace drawedOut
 
 
         private static int
-            gameTickFreq = 150,
+            gameTickFreq = 160,
             gameTickInterval;
 
 
@@ -73,6 +74,8 @@ namespace drawedOut
             SLOW_DURATION_S = 0.35F,
 
             FREEZE_DURATION_S = 0.15F,
+
+            ANIMATION_FPS = 1000/24F,
 
             PARRY_DURATION_S = 0.45F,
             PERFECT_PARRY_WINDOW_S = 0.05F,
@@ -113,15 +116,27 @@ namespace drawedOut
             gameTickInterval = (int)(1000.0F / gameTickFreq);
 
             Stopwatch threadDelaySW = Stopwatch.StartNew();
+            Stopwatch animTickSW = Stopwatch.StartNew();
             CancellationToken threadCT = cancelTokenSrc.Token;
 
-            int toGC = 0;
+            characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
+
+            foreach (Enemy e in Enemy.InactiveEnemyList)
+                characterAnimations.Add(e, e.NextAnimFrame());
+
             gameTickThread = new Thread(() =>
             {
                 while (gameTickEnabled)
                 {
                     if (threadCT.IsCancellationRequested)
                         return;
+
+                    if (animTickSW.Elapsed.TotalMilliseconds >= ANIMATION_FPS)
+                    {
+                        TickAnimations();
+                        animTickSW.Restart();
+                        GC.Collect();
+                    }
 
                     if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
                     {
@@ -130,25 +145,23 @@ namespace drawedOut
 
                         if (isPaused) continue;
 
-                        // TODO: review delta time logic
                         movementTick(deltaTime);
                         attackHandler(deltaTime); 
 
                         try { Invoke(renderGraphics); } 
                         catch (ObjectDisposedException) { return; }
-
-                        // collects garbage every 1000 frames
-                        if (++toGC == 1000)
-                        {
-                            GC.Collect();
-                            toGC=0;
-                        }
                     }
                 }
             });
 
         }
 
+
+        private void TickAnimations()
+        {
+            foreach (KeyValuePair<Character, Bitmap?> c in characterAnimations)
+                characterAnimations[c.Key] = c.Key.NextAnimFrame();
+        }
 
 
         private void Form1_Load(object sender, EventArgs e)
@@ -335,8 +348,8 @@ namespace drawedOut
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
             fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
-            //label2.Text;
-            label2.Hide();
+            label2.Text = playerBox.FacingDirection.ToString();
+            //label2.Hide();
             //label3.Text = playerBox.CollisionDebugY().ToString();
             label3.Hide();
 
@@ -444,22 +457,29 @@ namespace drawedOut
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            Graphics g = e.Graphics;
             if (showHitbox)
             {
                 //foreach (Enemy e in Enemy.ActiveEnemyList)
-                e.Graphics.FillRectangle(playerBrush, playerBox.Hitbox);
+                g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
 
                 foreach (Platform plat in Platform.ActivePlatformList)
                 {
                     using (Pen redPen = new Pen(Color.Red, 3))
-                    { e.Graphics.DrawRectangle(redPen, plat.Hitbox); }
+                    { g.DrawRectangle(redPen, plat.Hitbox); }
                 }
 
                 foreach (Projectile bullet in Projectile.ProjectileList)
-                    e.Graphics.FillRectangle(Brushes.Red, bullet.Hitbox);
+                    g.FillRectangle(Brushes.Red, bullet.Hitbox);
 
                 for (int i = 0; i < hpBar.IconCount; i++)
-                    e.Graphics.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
+                    g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
+            }
+
+            foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
+            {
+                if (img.Value is null) continue;
+                g.DrawImage(img.Value, img.Key.AnimRect);
             }
         }
 
@@ -523,14 +543,19 @@ namespace drawedOut
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
-            // if Not parrying then resets parrywindow and sets to parrying
-            if ((e.Button == MouseButtons.Right) && (!isParrying))
+            switch (e.Button)
             {
-                if (endLagTime <= 0)
-                {
-                    parryWindowS = (PARRY_DURATION_S * 10);
-                    isParrying = true;
-                }
+                // if Not parrying then resets parrywindow and sets to parrying
+                case MouseButtons.Right:
+                    if (endLagTime <= 0)
+                    {
+                        parryWindowS = (PARRY_DURATION_S * 10);
+                        isParrying = true;
+                    }
+                    break;
+                case MouseButtons.Left:
+                    playerBox.DoBasicAttack();
+                    break;
             }
         }
 
@@ -538,14 +563,16 @@ namespace drawedOut
 
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
-            // stops parrying when mouseup but doesnt reset timer > only on mouse down 
-            if (e.Button == MouseButtons.Right)
+            switch (e.Button)
             {
-                if (isParrying)
-                {
-                    endLagTime = PARRY_ENDLAG_S * 10;
-                    isParrying = false;
-                }
+                // stops parrying when mouseup but doesnt reset timer > only on mouse down 
+                case MouseButtons.Right:
+                    if (isParrying)
+                    {
+                        endLagTime = PARRY_ENDLAG_S * 10;
+                        isParrying = false;
+                    }
+                    break;
             }
         }
 

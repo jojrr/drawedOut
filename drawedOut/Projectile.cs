@@ -20,7 +20,6 @@
         private PointF Target;
 
         public static List<Projectile> ProjectileList = new List<Projectile>();
-        private static List<Projectile> _disposedProjectileList = new List<Projectile>();
 
         /// <summary>
         /// creates a projectile with the following parameters
