@@ -31,7 +31,14 @@ namespace drawedOut
 
             _animFrames = new Bitmap[_totalFrameCount];
 
-            for (int i = 0; i < _totalFrameCount; i++) { _animFrames[i] = new Bitmap(fileNames[i]); } 
+            for (int i = 0; i < _totalFrameCount; i++) 
+            { 
+                _animFrames[i] = new Bitmap(
+                        Image.FromFile(fileNames[i]),
+                        (int)(256*Global.BaseScale), 
+                        (int)(256*Global.BaseScale)
+                        );
+            }
         }
 
 

@@ -21,12 +21,10 @@
             }
         }
 
-
-        private const int TERMINAL_VELOCITY = 2300;
-        private const double GRAVITY = 4000;
-
         private readonly int
             _maxXVelocity = 600,
+            _terminalVelocity = 2300,
+            _gravity = 4000,
             _jumpVelocity = 1500;
 
         private int _hp;
@@ -79,7 +77,11 @@
             Hp = hp;
             IsMoving = false;
             IsOnFloor = false;
-            _xAccel = xAccel;
+            _terminalVelocity = (int)Global.BaseScale * _terminalVelocity;
+            _maxXVelocity = (int)Global.BaseScale * _maxXVelocity;
+            _jumpVelocity = (int)Global.BaseScale * _jumpVelocity;
+            _gravity = (int)Global.BaseScale * _gravity;
+            _xAccel = xAccel * (int)Global.BaseScale;
         }
 
 
@@ -248,10 +250,10 @@
             if (CurYColliderDirection != Global.YDirections.bottom)
             {
                 IsOnFloor = false;
-                yVelocity += GRAVITY*dt;
+                yVelocity += _gravity*dt;
 
                 // Terminal velocity -> only applies downwards
-                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, TERMINAL_VELOCITY); 
+                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, _terminalVelocity); 
             }
 
             // Coyote time ticks down 

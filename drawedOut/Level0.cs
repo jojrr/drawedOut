@@ -230,6 +230,8 @@ namespace drawedOut
             playerIsHit = false;
             freezeTimeS = 0;
 
+            Attacks.UpdateHitboxes();
+
             if (endLagTime > 0)
             {
                 endLagTime -= (float)deltaTime;

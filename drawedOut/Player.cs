@@ -34,7 +34,7 @@ namespace drawedOut
             IsActive = true;
 
             initAnimations();
-            //initBasics();
+            initBasics();
         }
 
 
@@ -46,7 +46,7 @@ namespace drawedOut
 
         private void initBasics()
         {
-            AnimationPlayer _basic1Anim = new AnimationPlayer(@"playerChar\basic1\");
+            AnimationPlayer _basic1Anim = new AnimationPlayer(@"fillerAnim\");
             _basic1 = new Attacks(
                     parent: this,
                     xOffset: 50,
@@ -54,7 +54,7 @@ namespace drawedOut
                     width: 50,
                     height: 50,
                     spawn: 4,
-                    despawn: 15,
+                    despawn: 14,
                     animation: _basic1Anim);
         }
 
@@ -75,7 +75,6 @@ namespace drawedOut
         int count = 0;
         public override Bitmap NextAnimFrame()
         {
-            return _idleAnim.NextFrame(FacingDirection);
             if (_curAttack is null)
             {
                 /*

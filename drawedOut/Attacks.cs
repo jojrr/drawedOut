@@ -99,7 +99,7 @@ namespace drawedOut
 
         /// <summary> Update all AtkHitbox positions </summary>
         /// <param name="dt"> delta time </param>
-        public static void UpdateHitboxes(double dt)
+        public static void UpdateHitboxes()
         {
             foreach (Attacks atk in AttacksList)
             {
@@ -112,16 +112,8 @@ namespace drawedOut
                 atk.UpdateHitboxCenter( 
                         x: parentCentre.X + xOffset,
                         y: parentCentre.Y + atk._yOffset);
-
-                if (atk.animation.CurFrame == atk.spawnFrame)
-                    atk.CreateHitbox();
             }
-
-            while (_diposedAttacks.Count > 0)
-                _diposedAttacks.Dequeue().Dispose();
-            
         }
-
     }
 }
 

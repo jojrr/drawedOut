@@ -11,7 +11,7 @@ namespace drawedOut
             get => _baseScale;
             set 
             {
-                if ((value != 0.5) || (value != 1.0) || (value != 1.5))
+                if ((value != 0.5) || (value != 1.0) || (value != 2.0))
                     throw new Exception("scale must be 0.5, 1.0, 1.5");
 
                 _baseScale = value;
