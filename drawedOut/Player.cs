@@ -69,7 +69,9 @@ namespace drawedOut
 
         public void DoBasicAttack()
         {
-            if (endlagS <= 0) _curAttack = _basic1;
+            //if (endlagS <= 0) 
+                _curAttack = _basic1;
+            //endlagS = 0.3;
         }
 
         int count = 0;
@@ -100,7 +102,7 @@ namespace drawedOut
             if (_curAttack.animation.CurFrame == _curAttack.animation.LastFrame)
             {
                 _curAttack = null;
-                NextAnimFrame();
+                return NextAnimFrame();
             }
 
             return _curAttack.NextAnimFrame(FacingDirection);

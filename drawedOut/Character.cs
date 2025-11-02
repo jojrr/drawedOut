@@ -77,11 +77,11 @@
             Hp = hp;
             IsMoving = false;
             IsOnFloor = false;
-            _terminalVelocity = (int)Global.BaseScale * _terminalVelocity;
-            _maxXVelocity = (int)Global.BaseScale * _maxXVelocity;
-            _jumpVelocity = (int)Global.BaseScale * _jumpVelocity;
-            _gravity = (int)Global.BaseScale * _gravity;
-            _xAccel = xAccel * (int)Global.BaseScale;
+            _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
+            _maxXVelocity = (int)(Global.BaseScale * _maxXVelocity);
+            _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
+            _gravity = (int)(Global.BaseScale * _gravity);
+            _xAccel = (int)(xAccel * Global.BaseScale);
         }
 
 

@@ -121,6 +121,5 @@
         public void ResetScale() => _scaledSize = _baseSize; 
 
         public virtual void CheckActive() => throw new Exception($"CheckActive() is not implemented in {this.GetType()}");
-
     }
 }

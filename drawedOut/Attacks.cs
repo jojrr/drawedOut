@@ -7,19 +7,29 @@ namespace drawedOut
 
         public Character parent { get; init; }
         public AnimationPlayer animation { get; init; }
-        public int AtkDmg { get; init; }
 
-        public Entity? AtkHitbox 
+        private AtkHitboxEntity? _atkHitbox;
+        public AtkHitboxEntity? AtkHitbox 
         { 
             get 
             {
-                if (AtkHitbox is null)
-                    throw new Exception("AtkHitbox should not be accessible when null");
-                return AtkHitbox;
+                if (_atkHitbox is null) throw new Exception("AtkHitbox should not be accessible when null");
+                return _atkHitbox;
             }
-            private set { AtkHitbox = value; }
+            private set { _atkHitbox = value; }
         }
 
+        internal class AtkHitboxEntity : Entity
+        {
+            public AtkHitboxEntity(PointF origin, int width, int height)
+            : base(origin: origin, width: width, height: height)
+            { }
+
+            public override void CheckActive() {}
+        }
+
+
+        private readonly int _atkDmg;
         private float _xOffset, _yOffset;
         private int _width, _height;
 
@@ -47,7 +57,7 @@ namespace drawedOut
             this.animation = animation;
             spawnFrame = spawn;
             despawnFrame = despawn;
-            AtkDmg = dmg;
+            _atkDmg = dmg;
             _xOffset = xOffset;
             _yOffset = yOffset;
             _width = width;
@@ -68,12 +78,14 @@ namespace drawedOut
         /// </summary>
         public void CreateHitbox(Global.XDirections direction=Global.XDirections.right) 
         {
-            AtkHitbox = new Entity(
+            if (_atkHitbox is not null) return;
+            AtkHitbox = new AtkHitboxEntity(
                     origin: parent.Location,
                     width: _width,
                     height: _height);
             AttacksList.Add(this);
         }
+
 
         /// <summary>
         /// Update the AtkHitbox' location

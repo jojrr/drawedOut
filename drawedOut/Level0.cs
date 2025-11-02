@@ -5,36 +5,11 @@ namespace drawedOut
 {
     public partial class Level0 : Form
     {
-        private static Player playerBox = new Player(
-            origin: new Point(750, 250),
-            width: 100,
-            height: 260,
-            attackPower: 1,
-            energy: 100,
-            maxHp: 6);
-
-        private static Platform box2 = new(
-           origin: new Point(1, 1050),
-           width: 5400,
-           height: 550,
-           isMainPlat: true);
-
-         private static Platform box3 = new(
-           origin: new Point(300, 200),
-           width: 400,
-           height: 175);
-
-         private static Platform box4 = new(
-           origin: new Point(1000, 400),
-           width: 200,
-           height: 300);
-
-        private static Platform box5 = new(
-           origin: new Point(1500, 400),
-           width: 200,
-           height: 300);
-
-        private static Brush playerBrush; // TODO: remove when player sprites is added
+        private static Player playerBox;
+        private static Platform box2;
+         private static Platform box3;
+         private static Platform box4;
+        private static Platform box5;
 
         private static HpBarUI hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
@@ -64,7 +39,7 @@ namespace drawedOut
 
 
         private static int
-            gameTickFreq = 160,
+            gameTickFreq = 60,
             gameTickInterval;
 
 
@@ -97,20 +72,58 @@ namespace drawedOut
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
 
+
+        private static void initEntities()
+        {
+            playerBox = new Player(
+                origin: new Point(750, 550),
+                width: 100,
+                height: 260,
+                attackPower: 1,
+                energy: 100,
+                maxHp: 6);
+
+            box2 = new(
+               origin: new Point(1, 1050),
+               width: 5400,
+               height: 550,
+               isMainPlat: true);
+
+            box3 = new(
+               origin: new Point(300, 200),
+               width: 400,
+               height: 175);
+
+            box4 = new(
+               origin: new Point(1000, 400),
+               width: 200,
+               height: 300);
+
+            box5 = new(
+               origin: new Point(1500, 400),
+               width: 200,
+               height: 300);
+
+            hpBar = new HpBarUI(
+                        origin: new PointF(70, 50),
+                        barWidth: 20,
+                        barHeight: 40,
+                        maxHp: 6);
+        }
+
+
+
         public Level0()
         {
             InitializeComponent();
             this.KeyPreview = true;
             this.DoubleBuffered = true;
 
-            Global.CalcNewCenter();
+            initEntities();
+            Global.BaseScale = 1.5F;
 
             threadSettings.MaxDegreeOfParallelism = 4;
             threadSettings.CancellationToken = cancelTokenSrc.Token;
-
-            // set height and width of window
-            Width = Global.LevelSize.Width;
-            Height = Global.LevelSize.Height;
 
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / gameTickFreq);
@@ -126,6 +139,7 @@ namespace drawedOut
 
             gameTickThread = new Thread(() =>
             {
+                int gcCounter = 0;
                 while (gameTickEnabled)
                 {
                     if (threadCT.IsCancellationRequested)
@@ -135,7 +149,11 @@ namespace drawedOut
                     {
                         TickAnimations();
                         animTickSW.Restart();
-                        GC.Collect();
+                        if (++gcCounter == 16) 
+                        {
+                            GC.Collect();
+                            gcCounter = 0;
+                        }
                     }
 
                     if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
@@ -166,9 +184,11 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
+            // set height and width of window
+            this.Width = Global.LevelSize.Width;
+            this.Height = Global.LevelSize.Height;
 
-            playerBrush = Brushes.Blue;
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
 
             deltaTimeSW.Start();
 
@@ -330,8 +350,6 @@ namespace drawedOut
         // rendering graphics method
         private void renderGraphics()
         {
-            if (playerBrush is null) throw new Exception("playerBrush is not defined");
-
             if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
                 unZoomScreen();
@@ -339,12 +357,12 @@ namespace drawedOut
             }
 
             // debugging/visual indicator for parry
-            if (isParrying)
-                playerBrush = Brushes.Gray;
-            else if (playerIsHit)
-                playerBrush = Brushes.Red; // visual hit indicator
-            else
-                playerBrush = Brushes.Blue;
+            //if (isParrying)
+            //    playerBrush = Brushes.Gray;
+            //else if (playerIsHit)
+            //    playerBrush = Brushes.Red; // visual hit indicator
+            //else
+            //    playerBrush = Brushes.Blue;
 
 
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
@@ -433,7 +451,7 @@ namespace drawedOut
             playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
 
             foreach (Platform plat in Platform.ActivePlatformList)
-            { playerBox.CheckPlatformCollision(plat); }
+                playerBox.CheckPlatformCollision(plat); 
 
             try
             {
@@ -473,6 +491,9 @@ namespace drawedOut
 
                 foreach (Projectile bullet in Projectile.ProjectileList)
                     g.FillRectangle(Brushes.Red, bullet.Hitbox);
+
+                foreach (Attacks a in Attacks.AttacksList)
+                    g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
 
                 for (int i = 0; i < hpBar.IconCount; i++)
                     g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
@@ -556,7 +577,7 @@ namespace drawedOut
                     }
                     break;
                 case MouseButtons.Left:
-                    //playerBox.DoBasicAttack();
+                    playerBox.DoBasicAttack();
                     break;
             }
         }

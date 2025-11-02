@@ -13,14 +13,15 @@ namespace drawedOut
             {
                 if (value == _baseScale) return;
 
-                if ((value != 0.5) || (value != 1.0) || (value != 2.0))
-                    throw new Exception("scale must be 0.5, 1.0, 1.5");
+                if ((value != 0.5F) && (value != 1.0F) && (value != 1.5F))
+                    throw new Exception("scale must be 0.5F, 1.0F, 1.5F");
 
-                SizeF floatSize = new SizeF (_levelSize.Width*_baseScale, _levelSize.Height*_baseScale); 
+                SizeF floatSize = new SizeF (_levelSize.Width*value, _levelSize.Height*value); 
                 _levelSize = Size.Truncate(floatSize);
                 _leftScrollBound = (int)(_levelSize.Width * 0.2);
                 _rightScrollBound = (int)(_levelSize.Width * 0.8);
 
+                CalcNewCenter();
                 _baseScale = value;
             }
         }
