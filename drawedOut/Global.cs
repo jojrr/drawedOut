@@ -11,39 +11,36 @@ namespace drawedOut
             get => _baseScale;
             set 
             {
+                if (value == _baseScale) return;
+
                 if ((value != 0.5) || (value != 1.0) || (value != 2.0))
                     throw new Exception("scale must be 0.5, 1.0, 1.5");
+
+                SizeF floatSize = new SizeF (_levelSize.Width*_baseScale, _levelSize.Height*_baseScale); 
+                _levelSize = Size.Truncate(floatSize);
+                _leftScrollBound = (int)(_levelSize.Width * 0.2);
+                _rightScrollBound = (int)(_levelSize.Width * 0.8);
 
                 _baseScale = value;
             }
         }
 
 
-        private static float _leftScrollBound = 500;
-        private static float _rightScrollBound = 1300;
-        public static float LeftScrollBound { get => _leftScrollBound * BaseScale; }
-        public static float RightScrollBound { get => _rightScrollBound * BaseScale; }
+        private static float _leftScrollBound = 512;
+        private static float _rightScrollBound = 2048;
+        public static float LeftScrollBound { get => _leftScrollBound; }
+        public static float RightScrollBound { get => _rightScrollBound; }
 
 
 
         // <summary>
         // Threshold for entities to be "active" (either side of screen center)
         // </summary>
-        public static int EntityLoadThreshold
-        {
-            get => (int)(_levelBaseSize.Width*_baseScale);
-        }
+        public static int EntityLoadThreshold { get => (int)(_levelSize.Width/1.5*_baseScale); }
 
 
-        private static Size _levelBaseSize = new Size(1860, 770);
-        public static Size LevelSize 
-        { 
-            get 
-            {
-                SizeF floatP = new SizeF (_levelBaseSize.Width*_baseScale, _levelBaseSize.Height*_baseScale); 
-                return Size.Truncate(floatP);
-            }
-        }
+        private static Size _levelSize = new Size(2560, 1440);
+        public static Size LevelSize { get => _levelSize; }
 
         private static Point _centerOfScreen;
         public static Point CenterOfScreen
@@ -55,8 +52,8 @@ namespace drawedOut
         {
 
             _centerOfScreen = new Point(
-                    (int)(_levelBaseSize.Width/2*BaseScale), 
-                    (int)(_levelBaseSize.Height/2*BaseScale));
+                    (int)(_levelSize.Width/2*BaseScale), 
+                    (int)(_levelSize.Height/2*BaseScale));
         }
 
         public enum XDirections { left, right }

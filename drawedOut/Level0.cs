@@ -556,7 +556,7 @@ namespace drawedOut
                     }
                     break;
                 case MouseButtons.Left:
-                    playerBox.DoBasicAttack();
+                    //playerBox.DoBasicAttack();
                     break;
             }
         }
