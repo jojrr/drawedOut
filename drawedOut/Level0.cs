@@ -119,8 +119,8 @@ namespace drawedOut
             this.KeyPreview = true;
             this.DoubleBuffered = true;
 
+            Global.BaseScale = 1.0F;
             initEntities();
-            Global.BaseScale = 1.5F;
 
             threadSettings.MaxDegreeOfParallelism = 4;
             threadSettings.CancellationToken = cancelTokenSrc.Token;
@@ -478,6 +478,13 @@ namespace drawedOut
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+
+            foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
+            {
+                if (img.Value is null) continue;
+                g.DrawImage(img.Value, img.Key.AnimRect);
+            }
+
             if (showHitbox)
             {
                 //foreach (Enemy e in Enemy.ActiveEnemyList)
@@ -488,21 +495,15 @@ namespace drawedOut
                     using (Pen redPen = new Pen(Color.Red, 3))
                     { g.DrawRectangle(redPen, plat.Hitbox); }
                 }
-
+ 
                 foreach (Projectile bullet in Projectile.ProjectileList)
                     g.FillRectangle(Brushes.Red, bullet.Hitbox);
 
                 foreach (Attacks a in Attacks.AttacksList)
-                    g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
+                    g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
 
                 for (int i = 0; i < hpBar.IconCount; i++)
                     g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
-            }
-
-            foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
-            {
-                if (img.Value is null) continue;
-                g.DrawImage(img.Value, img.Key.AnimRect);
             }
         }
 

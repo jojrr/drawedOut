@@ -33,7 +33,6 @@ namespace drawedOut
         public static float RightScrollBound { get => _rightScrollBound; }
 
 
-
         // <summary>
         // Threshold for entities to be "active" (either side of screen center)
         // </summary>
@@ -44,10 +43,7 @@ namespace drawedOut
         public static Size LevelSize { get => _levelSize; }
 
         private static Point _centerOfScreen;
-        public static Point CenterOfScreen
-        {
-            get => _centerOfScreen;
-        }
+        public static Point CenterOfScreen { get => _centerOfScreen; }
 
         public static void CalcNewCenter()
         {

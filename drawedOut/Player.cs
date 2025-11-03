@@ -6,7 +6,7 @@ namespace drawedOut
         public bool IsHit;
 
         private Attacks? _curAttack;
-        private Attacks
+        private readonly Attacks
             _basic1,
             _basic2;
         private AnimationPlayer 
@@ -33,29 +33,16 @@ namespace drawedOut
 
             IsActive = true;
 
-            initAnimations();
-            initBasics();
-        }
-
-
-        private void initAnimations()
-        {
             _idleAnim = new AnimationPlayer(@"playerChar\idle\");
-        }
-
-
-        private void initBasics()
-        {
-            AnimationPlayer _basic1Anim = new AnimationPlayer(@"fillerAnim\");
+            
             _basic1 = new Attacks(
                     parent: this,
-                    xOffset: 50,
-                    yOffset: 50,
-                    width: 50,
-                    height: 50,
-                    spawn: 4,
-                    despawn: 14,
-                    animation: _basic1Anim);
+                    width: 180,
+                    height: 220,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    xOffset: 100,
+                    spawn: 2,
+                    despawn: 14);
         }
 
         public void UnlockMoves(){}
@@ -101,8 +88,9 @@ namespace drawedOut
 
             if (_curAttack.animation.CurFrame == _curAttack.animation.LastFrame)
             {
+                Bitmap atkAnim = _curAttack.NextAnimFrame(FacingDirection);
                 _curAttack = null;
-                return NextAnimFrame();
+                return atkAnim;
             }
 
             return _curAttack.NextAnimFrame(FacingDirection);

@@ -5,8 +5,8 @@ namespace drawedOut
         public static List<Attacks> AttacksList = new List<Attacks>();
         private static Queue<Attacks> _diposedAttacks = new Queue<Attacks>();
 
-        public Character parent { get; init; }
-        public AnimationPlayer animation { get; init; }
+        public Character parent { get; private init; }
+        public AnimationPlayer animation { get; private init; }
 
         private AtkHitboxEntity? _atkHitbox;
         public AtkHitboxEntity? AtkHitbox 
@@ -29,12 +29,11 @@ namespace drawedOut
         }
 
 
-        private readonly int _atkDmg;
-        private float _xOffset, _yOffset;
-        private int _width, _height;
+        private readonly float _xOffset, _yOffset;
+        private readonly int _atkDmg, _width, _height;
 
-        private int spawnFrame { get; init;}
-        private int despawnFrame { get; init;}
+        private int spawnFrame { get; init; }
+        private int despawnFrame { get; init; }
 
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
@@ -50,17 +49,18 @@ namespace drawedOut
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character parent, float xOffset, float yOffset, int width, int height, 
-                int spawn, int despawn, AnimationPlayer animation, int dmg=1) 
+        public Attacks(Character parent, int width, int height, AnimationPlayer animation, 
+                float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1) 
         {
             this.parent = parent;
             this.animation = animation;
             spawnFrame = spawn;
-            despawnFrame = despawn;
+            despawnFrame = (despawn == -1) ? animation.LastFrame : despawnFrame = despawn;
             _atkDmg = dmg;
-            _xOffset = xOffset;
-            _yOffset = yOffset;
+            _xOffset = xOffset * Global.BaseScale;
+            _yOffset = yOffset * Global.BaseScale;
             _width = width;
+            _height = height;
         }
 
         /// <summary>
@@ -113,6 +113,7 @@ namespace drawedOut
         /// <param name="dt"> delta time </param>
         public static void UpdateHitboxes()
         {
+            if (AttacksList.Count == 0) return;
             foreach (Attacks atk in AttacksList)
             {
                 PointF parentCentre = atk.parent.Center;
@@ -123,7 +124,7 @@ namespace drawedOut
 
                 atk.UpdateHitboxCenter( 
                         x: parentCentre.X + xOffset,
-                        y: parentCentre.Y + atk._yOffset);
+                        y: parentCentre.Y - atk._yOffset);
             }
         }
     }
