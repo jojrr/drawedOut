@@ -3,17 +3,10 @@ namespace drawedOut
     internal class Player : Character
     {
         public double XVelocity { get => xVelocity; }
-        public bool IsHit;
 
-        private Attacks? _curAttack;
         private readonly Attacks
             _basic1,
             _basic2;
-        private AnimationPlayer 
-            _idleAnim;
-        //    _runAnim,
-        //    _basic2Anim,
-        //    _curAnimation;
 
         private int _energy;
 
@@ -30,11 +23,11 @@ namespace drawedOut
             :base(origin: origin, width: width, height: height, hp: maxHp)
         {
             _energy = energy;
-
             IsActive = true;
-
-            _idleAnim = new AnimationPlayer(@"playerChar\idle\");
-            
+            setIdleAnim(@"playerChar\idle\");
+            setRunAnim(@"fillerAnim\");
+            //_idleAnim = new AnimationPlayer(@"playerChar\idle\");
+            //_runAnim = new AnimationPlayer(@"fillerAnim\");
             _basic1 = new Attacks(
                     parent: this,
                     width: 180,

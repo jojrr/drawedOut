@@ -7,8 +7,8 @@ namespace drawedOut
     {
         private static Player playerBox;
         private static Platform box2;
-         private static Platform box3;
-         private static Platform box4;
+        private static Platform box3;
+        private static Platform box4;
         private static Platform box5;
 
         private static HpBarUI hpBar = new HpBarUI(
@@ -84,7 +84,7 @@ namespace drawedOut
                 maxHp: 6);
 
             box2 = new(
-               origin: new Point(1, 1050),
+               origin: new Point(1, 750),
                width: 5400,
                height: 550,
                isMainPlat: true);
@@ -119,7 +119,7 @@ namespace drawedOut
             this.KeyPreview = true;
             this.DoubleBuffered = true;
 
-            Global.BaseScale = 1.0F;
+            Global.BaseScale = 1.5F;
             initEntities();
 
             threadSettings.MaxDegreeOfParallelism = 4;
