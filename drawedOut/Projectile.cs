@@ -3,21 +3,10 @@
     internal class Projectile : Entity
     {
         private float 
-            xVelocity, 
-            yVelocity;
-
-        // debugging 
-        // todo: set to private
-        public float 
-            velocityAngle, 
-            yDiff, 
-            xDiff;
-
-        public float Velocity;
-
-        private bool isRebound = false;
-
-        private PointF Target;
+            _xVelocity, 
+            _yVelocity;
+        private bool _isRebound = false;
+        private readonly float _velocity;
 
         public static List<Projectile> ProjectileList = new List<Projectile>();
 
@@ -32,20 +21,9 @@
         public Projectile (PointF origin, int width, int height, float velocity, PointF target)
             : base(origin: origin, width: width, height: height)
         {
-            Velocity = velocity;
-            float[] velocities = CalculateVelocities(target);
-
-            Target = target;
-
-            xVelocity = velocities[0]; 
-            yVelocity = velocities[1]; 
-
+            _velocity = velocity;
+            calculateVelocities(target);
             ProjectileList.Add(this);
-
-            // debugging
-            velocityAngle = velocities[2];
-            yDiff = velocities[3];
-            xDiff = velocities[4];
         }
 
 
@@ -53,38 +31,35 @@
         /// updates the projectile's location based on the velocity and angle (x and y velocities)
         /// adjusts for rebound
         /// </summary>
-        public void moveProjectile(double deltaTime)
+        public void MoveProjectile(double deltaTime)
         {
-            float xVelocity = (float)(this.xVelocity*deltaTime);
-            float yVelocity = (float)(this.yVelocity*deltaTime);
+            float xVelocity = (float)(_xVelocity*deltaTime);
+            float yVelocity = (float)(_yVelocity*deltaTime);
 
             // moves backwards if rebounded
-            if (isRebound)
+            if (_isRebound)
             {
-                this.Location = new PointF(Location.X-xVelocity, Location.Y-yVelocity);
+                Location = new PointF(Location.X-xVelocity, Location.Y-yVelocity);
                 return;
             }
-
-            this.Location = new PointF(Location.X+xVelocity, Location.Y+yVelocity);
+            Location = new PointF(Location.X+xVelocity, Location.Y+yVelocity);
         }
 
 
 
         // calculates the required y and x velocities for the projectile
         // angle and distances used for debugging
-        public float[] CalculateVelocities(PointF target)
+        private void calculateVelocities(PointF target)
         {
             float xDiff = target.X - Location.X;
             float yDiff = target.Y - Location.Y;
 
             double velocityAngle = Math.Atan(yDiff/xDiff);
 
-            float xVelocity = (float)Math.Abs(Math.Cos(velocityAngle)) * Velocity * Math.Sign(xDiff);
-            float yVelocity = (float)Math.Abs(Math.Sin(velocityAngle)) * Velocity * Math.Sign(yDiff);
-
-               
-
-            return [xVelocity, yVelocity, (float)velocityAngle, yDiff, xDiff];
+            _xVelocity = (float)Math.Abs(Math.Cos(velocityAngle)) *
+                _velocity * Math.Sign(xDiff);
+            _yVelocity = (float)Math.Abs(Math.Sin(velocityAngle)) *
+                _velocity * Math.Sign(yDiff);
         }
 
         /// <summary>
@@ -93,12 +68,12 @@
         /// <param name="target">rebound target</param>
         public void rebound(PointF target) // todo: use Entity or RectangleF - not PointF
         {
-            isRebound = !isRebound; 
+            _isRebound = !_isRebound; 
 
             // todo: redo positioning logic 
             // also use different variable names maybe
-            xDiff = Center.X - target.X;
-            yDiff = Center.Y - target.Y;
+            float xDiff = Center.X - target.X;
+            float yDiff = Center.Y - target.Y;
 
             this.Location = new PointF( Location.X + 2*xDiff, Location.Y + 2*yDiff);
         }
