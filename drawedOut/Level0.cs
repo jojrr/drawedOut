@@ -285,7 +285,7 @@ namespace drawedOut
             if (Projectile.ProjectileList.Count == 0) return;
             Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
             {
-                bullet.moveProjectile(dt);
+                bullet.MoveProjectile(dt);
                 PointF bLoc = bullet.Center;
 
                 if (disposedProjectiles.Contains(bullet)) return;
@@ -317,7 +317,7 @@ namespace drawedOut
                     return;
                 }
 
-                bullet.rebound(playerBox.Center); // required to prevent getting hit anyway when parrying
+                bullet.rebound(playerBox);// required to prevent getting hit anyway when parrying
 
                 // TODO: move into player
                 // if the current parry has lasted for at most the perfectParryWindow

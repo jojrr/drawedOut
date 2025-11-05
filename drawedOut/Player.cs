@@ -79,7 +79,7 @@ namespace drawedOut
                 return _idleAnim.NextFrame(FacingDirection);
             }
 
-            if (_curAttack.animation.CurFrame == _curAttack.animation.LastFrame)
+            if (_curAttack.Animation.CurFrame == _curAttack.Animation.LastFrame)
             {
                 Bitmap atkAnim = _curAttack.NextAnimFrame(FacingDirection);
                 _curAttack = null;

@@ -3,17 +3,15 @@ namespace drawedOut
     internal class Attacks
     {
         public static List<Attacks> AttacksList = new List<Attacks>();
-        private static Queue<Attacks> _diposedAttacks = new Queue<Attacks>();
-        public AnimationPlayer animation { get; private init; }
-        public Character parent { get; private init; }
+        public AnimationPlayer Animation { get; private init; }
+        public Character Parent { get; private init; }
 
-        private readonly float _xOffset, _yOffset;
         private readonly int _atkDmg, _width, _height;
-
-        private int spawnFrame { get; init; }
-        private int despawnFrame { get; init; }
-
+        private readonly float _xOffset, _yOffset;
+        private int _despawnFrame { get; init; }
+        private int _spawnFrame { get; init; }
         private AtkHitboxEntity? _atkHitbox;
+        
         public AtkHitboxEntity? AtkHitbox 
         { 
             get 
@@ -24,6 +22,7 @@ namespace drawedOut
             }
             private set { _atkHitbox = value; }
         }
+
 
         internal class AtkHitboxEntity : Entity
         {
@@ -38,9 +37,9 @@ namespace drawedOut
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
         /// </summary>
-        /// <param name="parent"> The parent <see cref="Character"/> </param>
-        /// <param name="xOffset"> The horizontal distance between the parent's centre and the AtkHitbox's centre</param>
-        /// <param name="yOffset"> The vertical distance between the parent's centre and the AtkHitbox's centre</param>
+        /// <param name="Parent"> The Parent <see cref="Character"/> </param>
+        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
         /// <param name="width"> The width of the AtkHitbox </param>
         /// <param name="height"> The height of the AtkHitbox </param>
         /// <oaram name="spawn"> The first frame at which a AtkHitbox should be created </param>
@@ -52,10 +51,10 @@ namespace drawedOut
         public Attacks(Character parent, int width, int height, AnimationPlayer animation, 
                 float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1) 
         {
-            this.parent = parent;
-            this.animation = animation;
-            spawnFrame = spawn;
-            despawnFrame = (despawn == -1) ? animation.LastFrame : despawnFrame = despawn;
+            Parent = parent;
+            Animation = animation;
+            _spawnFrame = spawn;
+            _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
             _atkDmg = dmg;
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
@@ -80,7 +79,7 @@ namespace drawedOut
         {
             if (_atkHitbox is not null) return;
             AtkHitbox = new AtkHitboxEntity(
-                    origin: parent.Location,
+                    origin: Parent.Location,
                     width: _width,
                     height: _height);
             AttacksList.Add(this);
@@ -100,12 +99,12 @@ namespace drawedOut
 
         public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            if (animation.CurFrame == despawnFrame)
+            if (Animation.CurFrame == _despawnFrame)
                 Dispose();
-            else if (animation.CurFrame == spawnFrame)
+            else if (Animation.CurFrame == _spawnFrame)
                 CreateHitbox();
 
-            return animation.NextFrame();
+            return Animation.NextFrame();
         }
 
 
@@ -117,15 +116,15 @@ namespace drawedOut
             if (AttacksList.Count == 0) return;
             foreach (Attacks atk in AttacksList)
             {
-                PointF parentCentre = atk.parent.Center;
+                PointF ParentCentre = atk.Parent.Center;
 
                 float xOffset = atk._xOffset;
-                if (atk.parent.FacingDirection == Global.XDirections.left)
+                if (atk.Parent.FacingDirection == Global.XDirections.left)
                     xOffset = -atk._xOffset;
 
                 atk.UpdateHitboxCenter( 
-                        x: parentCentre.X + xOffset,
-                        y: parentCentre.Y - atk._yOffset);
+                        x: ParentCentre.X + xOffset,
+                        y: ParentCentre.Y - atk._yOffset);
             }
         }
     }

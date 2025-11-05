@@ -74,8 +74,8 @@
             float xDiff = Center.X - targetCenter.X;
             float yDiff = Center.Y - targetCenter.Y;
 
-            float newX = (Width/2 + target.Width/2 + xVelocity)*Math.Sign(xDiff);
-            float newY = (Height/2 + target.Height/2 + yVelocity)*Math.Sign(yDiff);
+            float newX = (Width/2 + target.Width/2 + _xVelocity)*Math.Sign(xDiff);
+            float newY = (Height/2 + target.Height/2 + _yVelocity)*Math.Sign(yDiff);
 
             Center = new PointF( targetCenter.X + newX, targetCenter.Y + newY );
         }

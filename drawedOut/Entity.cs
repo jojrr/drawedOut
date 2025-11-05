@@ -62,9 +62,9 @@
 
         private SizeF _scaledSize;
         private readonly SizeF _baseSize;
-        protected SizeF Size { get => _scaledSize;  }
-        protected float Width { get => _scaledSize.Width;  }
-        protected float Height { get => _scaledSize.Height;  }
+        public SizeF Size { get => _scaledSize;  }
+        public float Width { get => _scaledSize.Width;  }
+        public float Height { get => _scaledSize.Height;  }
 
         private RectangleF _hitbox;
         public RectangleF Hitbox { get => _calcHitbox(); }
