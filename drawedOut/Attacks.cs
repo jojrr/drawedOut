@@ -4,16 +4,22 @@ namespace drawedOut
     {
         public static List<Attacks> AttacksList = new List<Attacks>();
         private static Queue<Attacks> _diposedAttacks = new Queue<Attacks>();
-
-        public Character parent { get; private init; }
         public AnimationPlayer animation { get; private init; }
+        public Character parent { get; private init; }
+
+        private readonly float _xOffset, _yOffset;
+        private readonly int _atkDmg, _width, _height;
+
+        private int spawnFrame { get; init; }
+        private int despawnFrame { get; init; }
 
         private AtkHitboxEntity? _atkHitbox;
         public AtkHitboxEntity? AtkHitbox 
         { 
             get 
             {
-                if (_atkHitbox is null) throw new Exception("AtkHitbox should not be accessible when null");
+                if (_atkHitbox is null)
+                    throw new Exception("AtkHitbox should not be accessible when null");
                 return _atkHitbox;
             }
             private set { _atkHitbox = value; }
@@ -28,12 +34,6 @@ namespace drawedOut
             public override void CheckActive() {}
         }
 
-
-        private readonly float _xOffset, _yOffset;
-        private readonly int _atkDmg, _width, _height;
-
-        private int spawnFrame { get; init; }
-        private int despawnFrame { get; init; }
 
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
@@ -64,7 +64,7 @@ namespace drawedOut
         }
 
         /// <summary>
-        /// Removes the AtkHitbox of the attack
+        /// Destroys the AtkHitbox of the attack
         /// </summary>
         public void Dispose() 
         {
@@ -92,7 +92,8 @@ namespace drawedOut
         /// </summary>
         public void UpdateHitboxCenter( float x, float y )
         {
-            if (AtkHitbox is null) throw new Exception($"{this} is in AttackList but null");
+            if (AtkHitbox is null)
+                throw new Exception($"{this} is in AttackList but null");
             AtkHitbox.Center = new PointF(x,y);
         }
 

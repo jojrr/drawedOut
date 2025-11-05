@@ -69,14 +69,15 @@
         public void rebound(Entity target) 
         {
             _isRebound = !_isRebound; 
+            PointF targetCenter = target.Center;
 
-            float xDiff = Center.X - target.Center.X;
-            float yDiff = Center.Y - target.Center.Y;
+            float xDiff = Center.X - targetCenter.X;
+            float yDiff = Center.Y - targetCenter.Y;
 
             float newX = (Width/2 + target.Width/2 + xVelocity)*Math.Sign(xDiff);
             float newY = (Height/2 + target.Height/2 + yVelocity)*Math.Sign(yDiff);
 
-            Center = new PointF( Center.X + newX, Center.Y + newY );
+            Center = new PointF( targetCenter.X + newX, targetCenter.Y + newY );
         }
 
         public void Dipose() => ProjectileList.Remove(this);
