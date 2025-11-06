@@ -98,10 +98,10 @@ namespace drawedOut
             gameTickThread = new Thread(() =>
             {
                 int gcCounter = 0;
-                while (gameTickEnabled)
+                while (true)
                 {
-                    if (threadCT.IsCancellationRequested)
-                        return;
+                    if (threadCT.IsCancellationRequested) return;
+                    if (!gameTickEnabled) continue;
 
                     if (animTickSW.Elapsed.TotalMilliseconds >= ANIMATION_FPS)
                     {
@@ -123,15 +123,21 @@ namespace drawedOut
 
                         movementTick(deltaTime);
                         attackHandler(deltaTime); 
-
-                        try { Invoke(renderGraphics); } 
-                        catch (ObjectDisposedException) { return; }
+                        TryInvoke(renderGraphics);
                     }
                 }
             });
-
         }
 
+        // fixes InvalidAsynchronousStateException upon form close
+        private void TryInvoke(Action action)
+        {
+            if (IsDisposed) return;
+
+            try { BeginInvoke(renderGraphics); } 
+            catch (ObjectDisposedException) { return; }
+            catch (InvalidOperationException) { return; }
+        }
 
         private static void initEntities()
         {
@@ -365,7 +371,7 @@ namespace drawedOut
             float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
             fpsTimer.Restart();
             label1.Text = deltaFPSTime.ToString("F0");
-            label2.Text = playerBox.FacingDirection.ToString();
+            label2.Text = "";
             //label2.Hide();
             //label3.Text = playerBox.CollisionDebugY().ToString();
             label3.Hide();

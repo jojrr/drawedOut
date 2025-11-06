@@ -26,8 +26,6 @@ namespace drawedOut
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"fillerAnim\");
-            //_idleAnim = new AnimationPlayer(@"playerChar\idle\");
-            //_runAnim = new AnimationPlayer(@"fillerAnim\");
             _basic1 = new Attacks(
                     parent: this,
                     width: 180,

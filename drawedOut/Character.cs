@@ -2,48 +2,54 @@
 {
     internal class Character : Entity
     {
-        public bool IsHit;
-        public bool IsMoving { get; protected set; }
-        public bool IsOnFloor { get; protected set; }
         public Global.XDirections FacingDirection { get; private set; }
-        public int Hp 
-        { 
-            get => _hp;
-            protected set
-            {
-                if (value > _maxHp) 
-                    _hp = _maxHp;
-                else
-                    _hp = value;
-            }
-        }
-        public int MaxHp 
-        { 
-            get => _maxHp; 
-            private set
-            {
-                if (value <= 0) throw new Exception("MaxHp must be > 0");
-                _maxHp = value; 
-            }
-        }
-        public RectangleF AnimRect 
-        {
-            get 
-            {
-                float sqrSize = Math.Max(Hitbox.Width*1.1F, Hitbox.Height*1.1F);
-                SizeF s = new SizeF(sqrSize, sqrSize);
-                PointF p = new PointF(Center.X - s.Width/2, Hitbox.Bottom - s.Height);
-                return new RectangleF(p,s);
-            }
-        }
-
-
         public AnimationPlayer _idleAnim { get; private set; }
         public AnimationPlayer _runAnim { get; private set; }
+        public bool IsOnFloor { get; protected set; }
+        public bool IsMoving { get; protected set; }
+        public bool IsHit;
+
         protected double xVelocity { get; private set; }
         protected double yVelocity { get; private set; }
-        protected double endlagS = 0;
         protected Attacks? _curAttack;
+        protected double endlagS = 0;
+
+        private Global.YDirections? _curYColliderDirection = null;
+        private Global.XDirections? _curXColliderDirection = null;
+        private RectangleF? _xStickTarget, _yStickTarget;
+        private Entity? _xStickEntity, _yStickEntity;
+        private double _coyoteTimeS;
+        private int _maxHp, _hp;
+        private readonly int
+            _xAccel,
+            _maxXVelocity = 600,
+            _terminalVelocity = 2300,
+            _gravity = 4000,
+            _jumpVelocity = 1500;
+
+        /// <summary>
+        /// Initalises a "character" (entity with velocity and gravity)
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="hp"> 
+        ///
+        protected Character(Point origin, int width, int height, int hp, int xAccel=100) 
+            : base(origin: origin, width: width, height: height)
+        {
+            IsOnFloor = false;
+            IsMoving = false;
+            xVelocity = 0;
+            yVelocity = 0;
+            _hp = hp;
+            _maxHp = hp;
+            _xAccel = (int)(xAccel * Global.BaseScale);
+            _gravity = (int)(Global.BaseScale * _gravity);
+            _maxXVelocity = (int)(Global.BaseScale * _maxXVelocity);
+            _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
+            _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
+        }
 
         protected void setIdleAnim(string filePath)
         {
@@ -58,41 +64,30 @@
             _runAnim = new AnimationPlayer(filePath);
         }
 
-        private readonly int
-            _xAccel,
-            _maxXVelocity = 600,
-            _terminalVelocity = 2300,
-            _gravity = 4000,
-            _jumpVelocity = 1500;
-        private double _coyoteTimeS;
-        private int _maxHp, _hp;
-        private RectangleF? _xStickTarget, _yStickTarget;
-        private Entity? _xStickEntity, _yStickEntity;
-        private Global.YDirections? _curYColliderDirection = null;
-        private Global.XDirections? _curXColliderDirection = null;
+        public int Hp 
+        { 
+            get => _hp;
+            protected set => _hp = (value > _maxHp) ? _maxHp : value; 
+        }
 
-        /// <summary>
-        /// Initalises a "character" (entity with velocity and gravity)
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="hp"> 
-        ///
-        protected Character(Point origin, int width, int height, int hp, int xAccel=100) 
-            : base(origin: origin, width: width, height: height)
+        public int MaxHp 
+        { 
+            get => _maxHp; 
+            private set
+            {
+                if (value <= 0) throw new Exception("MaxHp must be > 0");
+                _maxHp = value; 
+            }
+        }
+        public RectangleF AnimRect 
         {
-            xVelocity = 0;
-            yVelocity = 0;
-            MaxHp = hp;
-            Hp = hp;
-            IsMoving = false;
-            IsOnFloor = false;
-            _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
-            _maxXVelocity = (int)(Global.BaseScale * _maxXVelocity);
-            _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
-            _gravity = (int)(Global.BaseScale * _gravity);
-            _xAccel = (int)(xAccel * Global.BaseScale);
+            get 
+            {
+                float sqrSize = Math.Max(Hitbox.Width*1.1F, Hitbox.Height*1.1F);
+                PointF p = new PointF(Center.X - sqrSize/2, Hitbox.Bottom - sqrSize);
+                SizeF s = new SizeF(sqrSize, sqrSize);
+                return new RectangleF(p,s);
+            }
         }
 
 
@@ -351,10 +346,8 @@
             {
                 if (yVelocity == 0)
                 {
-                    if (xVelocity == 0)
-                      return _idleAnim.NextFrame(FacingDirection);
-                    else 
-                      return _runAnim.NextFrame(FacingDirection);
+                    if (xVelocity == 0) return _idleAnim.NextFrame(FacingDirection);
+                    return _runAnim.NextFrame(FacingDirection);
                 }
                 return _idleAnim.NextFrame(FacingDirection);
             }
