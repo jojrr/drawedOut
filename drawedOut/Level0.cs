@@ -77,7 +77,7 @@ namespace drawedOut
             this.KeyPreview = true;
             this.DoubleBuffered = true;
 
-            Global.BaseScale = 1.5F;
+            Global.BaseScale = 0.5F;
             initEntities();
 
             threadSettings.MaxDegreeOfParallelism = 4;
