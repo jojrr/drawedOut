@@ -37,11 +37,9 @@ namespace drawedOut
             isPaused = false,
             slowedMov = false;
 
-
         private static int
             gameTickFreq = 60,
             gameTickInterval;
-
 
         private const float 
             ZOOM_FACTOR = 1.2F,
@@ -71,46 +69,6 @@ namespace drawedOut
         private static Thread gameTickThread;
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
-
-
-        private static void initEntities()
-        {
-            playerBox = new Player(
-                origin: new Point(750, 550),
-                width: 100,
-                height: 260,
-                attackPower: 1,
-                energy: 100,
-                maxHp: 6);
-
-            box2 = new(
-               origin: new Point(1, 750),
-               width: 5400,
-               height: 550,
-               isMainPlat: true);
-
-            box3 = new(
-               origin: new Point(300, 200),
-               width: 400,
-               height: 175);
-
-            box4 = new(
-               origin: new Point(1000, 400),
-               width: 200,
-               height: 300);
-
-            box5 = new(
-               origin: new Point(1500, 400),
-               width: 200,
-               height: 300);
-
-            hpBar = new HpBarUI(
-                        origin: new PointF(70, 50),
-                        barWidth: 20,
-                        barHeight: 40,
-                        maxHp: 6);
-        }
-
 
 
         public Level0()
@@ -172,6 +130,45 @@ namespace drawedOut
                 }
             });
 
+        }
+
+
+        private static void initEntities()
+        {
+            playerBox = new Player(
+                origin: new Point(750, 550),
+                width: 100,
+                height: 260,
+                attackPower: 1,
+                energy: 100,
+                maxHp: 6);
+
+            box2 = new(
+               origin: new Point(1, 750),
+               width: 5400,
+               height: 550,
+               isMainPlat: true);
+
+            box3 = new(
+               origin: new Point(300, 200),
+               width: 400,
+               height: 175);
+
+            box4 = new(
+               origin: new Point(1000, 400),
+               width: 200,
+               height: 300);
+
+            box5 = new(
+               origin: new Point(1500, 400),
+               width: 200,
+               height: 300);
+
+            hpBar = new HpBarUI(
+                        origin: new PointF(70, 50),
+                        barWidth: 20,
+                        barHeight: 40,
+                        maxHp: 6);
         }
 
 
