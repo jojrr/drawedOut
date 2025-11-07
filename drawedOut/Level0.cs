@@ -154,7 +154,7 @@ namespace drawedOut
         {
             playerBox = new Player(
                 origin: new Point(550, 550),
-                width: 50,
+                width: 30,
                 height: 160,
                 attackPower: 1,
                 energy: 100,
@@ -462,7 +462,7 @@ namespace drawedOut
             try
             {
                 Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
-                    enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
+                    enemy.DoMovement( dt: deltaTime, doScroll: isScrolling, playerCenter: playerBox.Center );
                     foreach (Platform plat in Platform.ActivePlatformList)
                     { enemy.CheckPlatformCollision(plat); }
                 });
@@ -481,6 +481,9 @@ namespace drawedOut
         }
 
 
+        private float totalTime = 60;
+        private float deltaFPS = 0;
+        private float deltaFPSTime = 0;
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -513,13 +516,26 @@ namespace drawedOut
                     g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
             }
 
-            float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
-            fpsTimer.Restart();
+            totalTime += Convert.ToSingle(fpsTimer.Elapsed.TotalSeconds);
             g.DrawString(
-                    deltaFPSTime.ToString("F0"),
+                    deltaFPS.ToString("F0"),
                     new Font("Arial", 20*Global.BaseScale),
                     Brushes.Black,
                     new PointF(100*Global.BaseScale,100*Global.BaseScale));
+            g.DrawString(
+                    deltaFPSTime.ToString("F2"),
+                    new Font("Arial", 20*Global.BaseScale),
+                    Brushes.Black,
+                    new PointF(100*Global.BaseScale,150*Global.BaseScale));
+
+            if (totalTime <= 0.5) 
+            {
+                totalTime = 0;
+                deltaFPSTime = Convert.ToSingle(fpsTimer.Elapsed.TotalSeconds);
+                deltaFPS = 1/deltaFPSTime;
+            }
+
+            fpsTimer.Restart();
         }
 
 

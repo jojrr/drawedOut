@@ -11,7 +11,7 @@ namespace drawedOut
             InactiveEnemyList.Add(this);
         }
 
-        public virtual void CalcMovement(double dt, bool doScroll, PointF playerCenter) => 
+        public virtual void DoMovement(double dt, bool doScroll, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
 
         public override void CheckActive()
