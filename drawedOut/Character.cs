@@ -278,7 +278,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections? direction, bool doScroll)
+        public void MoveCharacter(double dt, Global.XDirections? direction, bool doScroll) // TODO: move doScroll into player class
         {
             DoGravTick(dt);
 
@@ -317,6 +317,7 @@
             }
         }
         
+        /*
         public string CollisionDebugX()
         {
             if (_curXColliderDirection == Global.XDirections.left) return ($"left {(_xStickEntity==_yStickEntity).ToString()}");
@@ -330,6 +331,7 @@
             else if (_curYColliderDirection == Global.YDirections.bottom) return "bottom";
             return "null";
         }
+        */
 
 
         public void DoDamage(int dmg)

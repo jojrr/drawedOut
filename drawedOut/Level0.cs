@@ -11,12 +11,7 @@ namespace drawedOut
         private static Platform box4;
         private static Platform box5;
 
-        private static HpBarUI hpBar = new HpBarUI(
-                    origin: new PointF(70, 50),
-                    barWidth: 20,
-                    barHeight: 40,
-                    maxHp: 6);
-
+        private static HpBarUI hpBar;
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
@@ -74,11 +69,15 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            this.KeyPreview = true;
+            Global.LevelResolution = Global.Resolutions.p1080;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = new Point(0, 0);
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
 
-            Global.BaseScale = 0.5F;
-            initEntities();
+            InitEntities();
+            InitUI();
 
             threadSettings.MaxDegreeOfParallelism = 4;
             threadSettings.CancellationToken = cancelTokenSrc.Token;
@@ -139,7 +138,19 @@ namespace drawedOut
             catch (InvalidOperationException) { return; }
         }
 
-        private static void initEntities()
+        private static void InitUI()
+        {
+            hpBar = new HpBarUI(
+                    origin: new PointF(70, 50),
+                    barWidth: 20,
+                    barHeight: 40,
+                    maxHp: 6);
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
+        }
+
+
+
+        private static void InitEntities()
         {
             playerBox = new Player(
                 origin: new Point(750, 550),
@@ -169,12 +180,6 @@ namespace drawedOut
                origin: new Point(1500, 400),
                width: 200,
                height: 300);
-
-            hpBar = new HpBarUI(
-                        origin: new PointF(70, 50),
-                        barWidth: 20,
-                        barHeight: 40,
-                        maxHp: 6);
         }
 
 
@@ -190,8 +195,6 @@ namespace drawedOut
             // set height and width of window
             this.Width = Global.LevelSize.Width;
             this.Height = Global.LevelSize.Height;
-
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
 
             deltaTimeSW.Start();
 
@@ -368,11 +371,9 @@ namespace drawedOut
             //    playerBrush = Brushes.Blue;
 
 
-            float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
-            fpsTimer.Restart();
-            label1.Text = deltaFPSTime.ToString("F0");
-            label2.Text = "";
-            //label2.Hide();
+            label1.Hide();
+            //label2.Text = "";
+            label2.Hide();
             //label3.Text = playerBox.CollisionDebugY().ToString();
             label3.Hide();
 
@@ -409,7 +410,9 @@ namespace drawedOut
                 zoomOrigins.Add(e,e.Center);
                 if (e == playerBox)
                 {
-                    playerBox.Center = new PointF (Global.CenterOfScreen.X, Global.CenterOfScreen.Y);
+                    playerBox.Center = new PointF(
+                            Global.CenterOfScreen.X,
+                            Global.CenterOfScreen.Y);
                     playerBox.ScaleHitbox(scaleF);
                     continue;
                 }
@@ -482,6 +485,7 @@ namespace drawedOut
         {
             Graphics g = e.Graphics;
 
+            // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
             {
                 if (img.Value is null) continue;
@@ -508,6 +512,14 @@ namespace drawedOut
                 for (int i = 0; i < hpBar.IconCount; i++)
                     g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
             }
+
+            float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
+            fpsTimer.Restart();
+            g.DrawString(
+                    deltaFPSTime.ToString("F0"),
+                    new Font("Arial", 20*Global.BaseScale),
+                    Brushes.Black,
+                    new PointF(100*Global.BaseScale,100*Global.BaseScale));
         }
 
 
