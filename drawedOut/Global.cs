@@ -23,7 +23,6 @@ namespace drawedOut
             set
             {
                 _curResolution = value;
-
                 float scaleF = 1F;
                 switch (value)
                 {
@@ -40,7 +39,6 @@ namespace drawedOut
                         scaleF = 2F;
                         break;
                 }
-
                 SizeF floatSize = new SizeF (_levelSize.Width*scaleF, _levelSize.Height*scaleF); 
                 _levelSize = Size.Truncate(floatSize);
                 _rightScrollBound = (int)(floatSize.Width * 0.8);
