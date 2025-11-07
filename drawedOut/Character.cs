@@ -11,6 +11,7 @@
 
         protected double xVelocity { get; private set; }
         protected double yVelocity { get; private set; }
+        protected int curXAccel { get => _curXAccel; }
         protected Attacks? _curAttack;
         protected double endlagS = 0;
 
@@ -19,13 +20,13 @@
         private RectangleF? _xStickTarget, _yStickTarget;
         private Entity? _xStickEntity, _yStickEntity;
         private double _coyoteTimeS;
-        private int _maxHp, _hp;
+        private int _maxHp, _hp, _curXAccel;
         private readonly int
             _xAccel,
-            _maxXVelocity = 600,
             _terminalVelocity = 2300,
-            _gravity = 4000,
-            _jumpVelocity = 1500;
+            _jumpVelocity = 1500,
+            _maxXVelocity = 600,
+            _gravity = 4000;
 
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
@@ -292,12 +293,12 @@
                 yVelocity = 0;
             }
 
-            double xAccel=0;
+            _curXAccel=0;
 
-            if (direction == Global.XDirections.left) xAccel = -_xAccel;
-            if (direction == Global.XDirections.right) xAccel = _xAccel;
+            if (direction == Global.XDirections.left) _curXAccel = -_xAccel;
+            if (direction == Global.XDirections.right) _curXAccel = _xAccel;
 
-            xVelocity += xAccel;
+            xVelocity += _curXAccel;
 
             if (doScroll)
             {
@@ -313,7 +314,7 @@
             if (xVelocity > 0) FacingDirection = Global.XDirections.right;
             if (xVelocity < 0) FacingDirection = Global.XDirections.left;
             // if not moving horizontally -> gradually decrease horizontal velocity
-            if (xAccel == 0) 
+            if (_curXAccel == 0) 
             {
                 if (Math.Abs(xVelocity) > 1)  xVelocity -= xVelocity * (15*dt); 
                 else xVelocity = 0; 
@@ -349,9 +350,9 @@
         {
             if (_curAttack is null)
             {
-                if (yVelocity == 0)
+                if (yVelocity == 0 || IsOnFloor)
                 {
-                    if (xVelocity == 0) return _idleAnim.NextFrame(FacingDirection);
+                    if (curXAccel == 0) return _idleAnim.NextFrame(FacingDirection);
                     return _runAnim.NextFrame(FacingDirection);
                 }
                 return _idleAnim.NextFrame(FacingDirection);

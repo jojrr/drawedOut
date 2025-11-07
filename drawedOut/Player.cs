@@ -25,7 +25,7 @@ namespace drawedOut
             _energy = energy;
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
-            setRunAnim(@"fillerAnim\");
+            setRunAnim(@"playerChar\run\");
             _basic1 = new Attacks(
                     parent: this,
                     width: 180,
@@ -57,14 +57,12 @@ namespace drawedOut
         {
             if (_curAttack is null)
             {
-                /*
                 if (yVelocity == 0)
                 {
-                    if (xVelocity == 0)
-                      return _idleAnim.NextFrame(FacingDirection);
-                    else 
-                      return _runAnim.NextFrame(FacingDirection);
+                    if (curXAccel == 0) return _idleAnim.NextFrame(FacingDirection);
+                    return _runAnim.NextFrame(FacingDirection);
                 }
+                /*
                 else if (yVelocity > 0)
                 {
                     return _fallAnim.NextFrame(FacingDirection);

@@ -133,7 +133,7 @@ namespace drawedOut
         {
             if (IsDisposed) return;
 
-            try { BeginInvoke(renderGraphics); } 
+            try { BeginInvoke(action); } 
             catch (ObjectDisposedException) { return; }
             catch (InvalidOperationException) { return; }
         }
