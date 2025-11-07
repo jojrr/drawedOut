@@ -65,13 +65,55 @@ namespace drawedOut
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
 
+        private static void InitUI()
+        {
+            hpBar = new HpBarUI(
+                    origin: new PointF(70, 50),
+                    barWidth: 20,
+                    barHeight: 40,
+                    maxHp: 6);
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
+        }
+
+        private static void InitEntities()
+        {
+            playerBox = new Player(
+                origin: new Point(550, 550),
+                width: 30,
+                height: 160,
+                attackPower: 1,
+                energy: 100,
+                maxHp: 6);
+
+            box2 = new(
+               origin: new Point(1, 750),
+               width: 5400,
+               height: 550,
+               isMainPlat: true);
+
+            box3 = new(
+               origin: new Point(300, 200),
+               width: 400,
+               height: 175);
+
+            box4 = new(
+               origin: new Point(1000, 400),
+               width: 200,
+               height: 300);
+
+            box5 = new(
+               origin: new Point(1500, 400),
+               width: 200,
+               height: 300);
+        }
+
 
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            Global.LevelResolution = Global.Resolutions.p1440;
             this.StartPosition = FormStartPosition.Manual;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.Location = new Point(0, 0);
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -122,7 +164,8 @@ namespace drawedOut
 
                         movementTick(deltaTime);
                         attackHandler(deltaTime); 
-                        TryInvoke(renderGraphics);
+                        renderGraphics();
+                        TryInvoke(this.Refresh);
                     }
                 }
             });
@@ -137,51 +180,6 @@ namespace drawedOut
             catch (ObjectDisposedException) { return; }
             catch (InvalidOperationException) { return; }
         }
-
-        private static void InitUI()
-        {
-            hpBar = new HpBarUI(
-                    origin: new PointF(70, 50),
-                    barWidth: 20,
-                    barHeight: 40,
-                    maxHp: 6);
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
-        }
-
-
-
-        private static void InitEntities()
-        {
-            playerBox = new Player(
-                origin: new Point(550, 550),
-                width: 30,
-                height: 160,
-                attackPower: 1,
-                energy: 100,
-                maxHp: 6);
-
-            box2 = new(
-               origin: new Point(1, 750),
-               width: 5400,
-               height: 550,
-               isMainPlat: true);
-
-            box3 = new(
-               origin: new Point(300, 200),
-               width: 400,
-               height: 175);
-
-            box4 = new(
-               origin: new Point(1000, 400),
-               width: 200,
-               height: 300);
-
-            box5 = new(
-               origin: new Point(1500, 400),
-               width: 200,
-               height: 300);
-        }
-
 
         private void TickAnimations()
         {
@@ -351,37 +349,6 @@ namespace drawedOut
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
 
-
-        private static Stopwatch fpsTimer = new Stopwatch();
-        // rendering graphics method
-        private void renderGraphics()
-        {
-            if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
-            {
-                unZoomScreen();
-                curZoom = 1;
-            }
-
-            // debugging/visual indicator for parry
-            //if (isParrying)
-            //    playerBrush = Brushes.Gray;
-            //else if (playerIsHit)
-            //    playerBrush = Brushes.Red; // visual hit indicator
-            //else
-            //    playerBrush = Brushes.Blue;
-
-
-            label1.Hide();
-            //label2.Text = "";
-            label2.Hide();
-            //label3.Text = playerBox.CollisionDebugY().ToString();
-            label3.Hide();
-
-            Refresh();
-        }
-
-
-
         private void zoomScreen(float scaleF)
         {
             curZoom = scaleF;
@@ -481,12 +448,37 @@ namespace drawedOut
         }
 
 
-        private float totalTime = 60;
-        private float deltaFPS = 0;
-        private float deltaFPSTime = 0;
+        private static Stopwatch fpsTimer = new Stopwatch();
+        // rendering graphics method
+        private void renderGraphics()
+        {
+            if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
+            {
+                unZoomScreen();
+                curZoom = 1;
+            }
+
+            // debugging/visual indicator for parry
+            //if (isParrying)
+            //    playerBrush = Brushes.Gray;
+            //else if (playerIsHit)
+            //    playerBrush = Brushes.Red; // visual hit indicator
+            //else
+            //    playerBrush = Brushes.Blue;
+
+            //Refresh();
+        }
+
+
+        private double totalTime = 60;
+        private double deltaFPS = 0;
+        private double deltaFPSTime = 0;
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+
+            for (int i = 0; i < hpBar.IconCount; i++)
+                g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
 
             // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
@@ -511,39 +503,40 @@ namespace drawedOut
 
                 foreach (Attacks a in Attacks.AttacksList)
                     g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
-
-                for (int i = 0; i < hpBar.IconCount; i++)
-                    g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
             }
 
-            totalTime += Convert.ToSingle(fpsTimer.Elapsed.TotalSeconds);
+            totalTime += fpsTimer.Elapsed.TotalSeconds;
             g.DrawString(
-                    deltaFPS.ToString("F0"),
-                    new Font("Arial", 20*Global.BaseScale),
+                    deltaFPS.ToString("F0")+"fps",
+                    new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
-                    new PointF(100*Global.BaseScale,100*Global.BaseScale));
+                    new PointF(60*Global.BaseScale,120*Global.BaseScale));
             g.DrawString(
-                    deltaFPSTime.ToString("F2"),
-                    new Font("Arial", 20*Global.BaseScale),
+                    deltaFPSTime.ToString("F2")+"ms",
+                    new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
-                    new PointF(100*Global.BaseScale,150*Global.BaseScale));
+                    new PointF(60*Global.BaseScale,140*Global.BaseScale));
 
-            if (totalTime <= 0.5) 
+            if (totalTime >= 1) 
             {
                 totalTime = 0;
-                deltaFPSTime = Convert.ToSingle(fpsTimer.Elapsed.TotalSeconds);
-                deltaFPS = 1/deltaFPSTime;
+                deltaFPSTime = fpsTimer.Elapsed.TotalMilliseconds;
+                deltaFPS = 1/fpsTimer.Elapsed.TotalSeconds;
             }
 
             fpsTimer.Restart();
         }
 
-
-
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Modifiers  == Keys.Alt && e.KeyCode == Keys.F5) Application.Exit();
+
             switch (e.KeyCode)
             {
+                case Keys.W:
+                    if (playerBox.IsOnFloor) jumping = true; 
+                    break;
+
                 case Keys.A:
                     if (movingRight && !movingLeft && prevLeftRight is null)
                     {
@@ -562,8 +555,8 @@ namespace drawedOut
                     movingRight = true;
                     break;
 
-                case Keys.W:
-                    if (playerBox.IsOnFloor) { jumping = true; }
+                case Keys.Escape:
+                    this.Close();
                     break;
             }
         }
