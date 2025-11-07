@@ -79,17 +79,20 @@
                 _maxHp = value; 
             }
         }
+
         public RectangleF AnimRect 
         {
             get 
             {
-                float sqrSize = Math.Max(Hitbox.Width*1.1F, Hitbox.Height*1.1F);
+                float sqrSize = Math.Max(Hitbox.Width, Hitbox.Height);
+                if (this is Player) sqrSize *= 1.3F;
+                else sqrSize *= 1.1F;
+
                 PointF p = new PointF(Center.X - sqrSize/2, Hitbox.Bottom - sqrSize);
                 SizeF s = new SizeF(sqrSize, sqrSize);
                 return new RectangleF(p,s);
             }
         }
-
 
         /// <summary>
         /// checks the Y direction for collision with platforms

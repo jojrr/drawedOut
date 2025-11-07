@@ -2,13 +2,13 @@ namespace drawedOut
 {
     internal class Player : Character
     {
-        public double XVelocity { get => xVelocity; }
-
+        
         private readonly Attacks
             _basic1,
             _basic2;
 
         private int _energy;
+        public double XVelocity { get => xVelocity; }
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
 

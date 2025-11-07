@@ -153,9 +153,9 @@ namespace drawedOut
         private static void InitEntities()
         {
             playerBox = new Player(
-                origin: new Point(750, 550),
-                width: 100,
-                height: 260,
+                origin: new Point(550, 550),
+                width: 50,
+                height: 160,
                 attackPower: 1,
                 energy: 100,
                 maxHp: 6);
