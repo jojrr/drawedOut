@@ -34,7 +34,7 @@ namespace drawedOut
             slowedMov = false;
 
         private static int
-            gameTickFreq = 120,
+            gameTickFreq = 60,
             gameTickInterval;
 
         private const float 
@@ -112,7 +112,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p4k;
+            Global.LevelResolution = Global.Resolutions.p1440;
             this.StartPosition = FormStartPosition.Manual;
             this.FormBorderStyle = FormBorderStyle.None;
             this.Location = new Point(0, 0);
@@ -159,13 +159,12 @@ namespace drawedOut
                         }
                     }
 
+
                     if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
                     {
                         double deltaTime = getDeltaTime();
                         threadDelaySW.Restart();
-
-                        if (isPaused) continue;
-
+                        if (isPaused) continue; 
                         movementTick(deltaTime);
                         attackHandler(deltaTime); 
                         renderGraphics();
@@ -314,6 +313,7 @@ namespace drawedOut
                     return;
                 }
 
+                // Return if bullet not touching player
                 if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
                     return;
 
@@ -349,9 +349,9 @@ namespace drawedOut
         }
 
 
-
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
+
 
         private void zoomScreen(float scaleF)
         {
@@ -496,24 +496,24 @@ namespace drawedOut
                 if (img.Value is null) continue;
                 g.DrawImage(img.Value, img.Key.AnimRect);
             }
-
-            if (showHitbox)
+            
+            //Bitmap platformSprite = Platform.PlatformSprite;
+            foreach (Platform plat in Platform.ActivePlatformList)
             {
-                //foreach (Enemy e in Enemy.ActiveEnemyList)
-                g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
-
-                foreach (Platform plat in Platform.ActivePlatformList)
-                {
-                    using (Pen redPen = new Pen(Color.Red, 3))
-                    { g.DrawRectangle(redPen, plat.Hitbox); }
-                }
- 
-                foreach (Projectile bullet in Projectile.ProjectileList)
-                    g.FillRectangle(Brushes.Red, bullet.Hitbox);
-
-                foreach (Attacks a in Attacks.AttacksList)
-                    g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
+                RectangleF hitbox = plat.Hitbox;
+                using (Pen blackPen = new Pen(Color.Black, 3))
+                { g.DrawRectangle(blackPen, hitbox); }
+                //if (plat.IsMainPlat) continue;
+                //g.DrawImage(platformSprite, hitbox);
             }
+
+            if (showHitbox) drawHitboxes(g);
+
+            ShowFPSInfo(g);
+        }
+
+        private void ShowFPSInfo(Graphics g)
+        {
 
             totalTime += fpsTimer.Elapsed.TotalSeconds;
             g.DrawString(
@@ -536,6 +536,19 @@ namespace drawedOut
 
             fpsTimer.Restart();
         }
+
+        private void drawHitboxes(Graphics g)
+        {
+                //foreach (Enemy e in Enemy.ActiveEnemyList)
+                g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
+ 
+                foreach (Projectile bullet in Projectile.ProjectileList)
+                    g.FillRectangle(Brushes.Red, bullet.Hitbox);
+
+                foreach (Attacks a in Attacks.AttacksList)
+                    g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
+        }
+
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
