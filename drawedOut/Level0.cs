@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using InterpolationMode = System.Drawing.Drawing2D.InterpolationMode;
 
 // TODO: move all const values into global
 namespace drawedOut
@@ -33,7 +34,7 @@ namespace drawedOut
             slowedMov = false;
 
         private static int
-            gameTickFreq = 60,
+            gameTickFreq = 120,
             gameTickInterval;
 
         private const float 
@@ -78,7 +79,7 @@ namespace drawedOut
         private static void InitEntities()
         {
             playerBox = new Player(
-                origin: new Point(550, 550),
+                origin: new Point(850, 550),
                 width: 30,
                 height: 160,
                 attackPower: 1,
@@ -111,12 +112,15 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1440;
+            Global.LevelResolution = Global.Resolutions.p4k;
             this.StartPosition = FormStartPosition.Manual;
             this.FormBorderStyle = FormBorderStyle.None;
             this.Location = new Point(0, 0);
             this.DoubleBuffered = true;
             this.KeyPreview = true;
+
+            if (Global.LevelResolution == Global.Resolutions.p4k && gameTickFreq > 60)
+                gameTickFreq = 60;
 
             InitEntities();
             InitUI();
@@ -476,6 +480,12 @@ namespace drawedOut
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            
+            if (Global.LevelResolution == Global.Resolutions.p4k) 
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.ScaleTransform(3/2F, 3/2F);
+            }
 
             for (int i = 0; i < hpBar.IconCount; i++)
                 g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
