@@ -113,9 +113,7 @@ namespace drawedOut
         {
             InitializeComponent();
             Global.LevelResolution = Global.Resolutions.p1440;
-            this.StartPosition = FormStartPosition.Manual;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.Location = new Point(0, 0);
             this.DoubleBuffered = true;
             this.KeyPreview = true;
 
@@ -196,6 +194,7 @@ namespace drawedOut
             // set height and width of window
             this.Width = Global.LevelSize.Width;
             this.Height = Global.LevelSize.Height;
+            this.StartPosition = FormStartPosition.CenterScreen;
 
             deltaTimeSW.Start();
 
@@ -501,7 +500,7 @@ namespace drawedOut
             foreach (Platform plat in Platform.ActivePlatformList)
             {
                 RectangleF hitbox = plat.Hitbox;
-                using (Pen blackPen = new Pen(Color.Black, 3))
+                using (Pen blackPen = new Pen(Color.Black, 6))
                 { g.DrawRectangle(blackPen, hitbox); }
                 //if (plat.IsMainPlat) continue;
                 //g.DrawImage(platformSprite, hitbox);
