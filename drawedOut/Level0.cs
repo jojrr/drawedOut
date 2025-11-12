@@ -381,8 +381,9 @@ namespace drawedOut
         }
 
 
-
-        private void zoomScreen(float scaleF)
+        // TODO: remove this logic and use graphics scaling instead.
+        // (Center Player on screen method)
+        private void zoomScreen(float scaleF) 
         {
             curZoom = scaleF;
 
