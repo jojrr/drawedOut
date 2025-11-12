@@ -120,6 +120,11 @@ namespace drawedOut
             if (Global.LevelResolution == Global.Resolutions.p4k && gameTickFreq > 60)
                 gameTickFreq = 60;
 
+            // set height and width of window
+            this.Width = Global.LevelSize.Width;
+            this.Height = Global.LevelSize.Height;
+            this.StartPosition = FormStartPosition.CenterScreen;
+
             InitEntities();
             InitUI();
 
@@ -191,10 +196,6 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // set height and width of window
-            this.Width = Global.LevelSize.Width;
-            this.Height = Global.LevelSize.Height;
-            this.StartPosition = FormStartPosition.CenterScreen;
 
             deltaTimeSW.Start();
 
@@ -350,36 +351,6 @@ namespace drawedOut
 
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
-
-
-<<<<<<< HEAD
-        private static Stopwatch fpsTimer = new Stopwatch();
-        // rendering graphics method
-        private void renderGraphics()
-        {
-            if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
-            {
-                unZoomScreen();
-                curZoom = 1;
-            }
-
-            // debugging/visual indicator for parry
-            //if (isParrying)
-            //    playerBrush = Brushes.Gray;
-            //else if (playerIsHit)
-            //    playerBrush = Brushes.Red; // visual hit indicator
-            //else
-            //    playerBrush = Brushes.Blue;
-
-
-            label1.Hide();
-            //label2.Text = "";
-            label2.Hide();
-            //label3.Text = playerBox.CollisionDebugY().ToString();
-            label3.Hide();
-
-            Refresh();
-        }
 
 
         // TODO: remove this logic and use graphics scaling instead.
@@ -570,14 +541,14 @@ namespace drawedOut
 
         private void drawHitboxes(Graphics g)
         {
-                //foreach (Enemy e in Enemy.ActiveEnemyList)
-                g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
- 
-                foreach (Projectile bullet in Projectile.ProjectileList)
-                    g.FillRectangle(Brushes.Red, bullet.Hitbox);
+            //foreach (Enemy e in Enemy.ActiveEnemyList)
+            g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
 
-                foreach (Attacks a in Attacks.AttacksList)
-                    g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
+            foreach (Projectile bullet in Projectile.ProjectileList)
+                g.FillRectangle(Brushes.Red, bullet.Hitbox);
+
+            foreach (Attacks a in Attacks.AttacksList)
+                g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
         }
 
 
