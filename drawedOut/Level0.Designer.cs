@@ -29,40 +29,13 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            label1 = new Label();
-            label2 = new Label();
-            label3 = new Label();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.Location = new Point(223, 102);
-            label1.Name = "label1";
-            label1.Size = new Size(100, 23);
-            label1.TabIndex = 0;
-            // 
-            // label2
-            // 
-            label2.Location = new Point(53, 102);
-            label2.Name = "label2";
-            label2.Size = new Size(100, 23);
-            label2.TabIndex = 0;
-            // 
-            // label3
-            // 
-            label3.Location = new Point(423, 102);
-            label3.Name = "label3";
-            label3.Size = new Size(100, 23);
-            label3.TabIndex = 0;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(label1);
-            Controls.Add(label2);
-            Controls.Add(label3);
             Name = "Level0";
             Text = "Level0";
             FormClosing += Form1_FormClosing;
@@ -77,8 +50,5 @@
 
         #endregion
 
-        private Label label1;
-        private Label label2;
-        private Label label3;
     }
 }

@@ -295,8 +295,12 @@
 
             _curXAccel=0;
 
-            if (direction == Global.XDirections.left) _curXAccel = -_xAccel;
-            if (direction == Global.XDirections.right) _curXAccel = _xAccel;
+            if (direction is not null)
+            {
+                FacingDirection = direction.Value;
+                if (direction == Global.XDirections.left) _curXAccel = -_xAccel;
+                if (direction == Global.XDirections.right) _curXAccel = _xAccel;
+            }
 
             xVelocity += _curXAccel;
 
@@ -311,8 +315,6 @@
 
             xVelocity = Math.Min(Math.Abs(xVelocity), _maxXVelocity) * Math.Sign(xVelocity); // clamp player speed
 
-            if (xVelocity > 0) FacingDirection = Global.XDirections.right;
-            if (xVelocity < 0) FacingDirection = Global.XDirections.left;
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (_curXAccel == 0) 
             {
