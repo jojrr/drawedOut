@@ -22,11 +22,13 @@
         private double _coyoteTimeS;
         private int _maxHp, _hp, _curXAccel;
         private readonly int
-            _xAccel,
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
             _maxXVelocity = 600,
-            _gravity = 4000; // TODO: make this constant bro why is ts readonly :wiltedRose:
+            _gravity,
+            _xAccel;
+
+        private const int GRAVITY = 4000;
 
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
@@ -46,7 +48,7 @@
             _hp = hp;
             _maxHp = hp;
             _xAccel = (int)(xAccel * Global.BaseScale);
-            _gravity = (int)(Global.BaseScale * _gravity);
+            _gravity = (int)(Global.BaseScale * GRAVITY);
             _maxXVelocity = (int)(Global.BaseScale * _maxXVelocity);
             _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
             _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
