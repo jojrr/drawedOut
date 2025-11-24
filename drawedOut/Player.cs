@@ -97,8 +97,8 @@ namespace drawedOut
             Global.XDirections? onWorldBoundary = null;
             Global.XDirections? scrollDirection = null;
 
-            //if (!ShouldDoMove())  return false;
-            //if (Global.LeftScrollBound<=Center.X && Center.X<=Global.RightScrollBound) return false;
+            if (!ShouldDoMove())  return false;
+            if (Global.LeftScrollBound<=Center.X && Center.X<=Global.RightScrollBound) return false;
 
             if (0 < baseBox.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
             else if (Global.LevelSize.Width > baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
