@@ -26,7 +26,7 @@
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
             _maxXVelocity = 600,
-            _gravity = 4000;
+            _gravity = 4000; // TODO: make this constant bro why is ts readonly :wiltedRose:
 
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
