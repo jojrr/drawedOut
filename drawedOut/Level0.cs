@@ -143,7 +143,7 @@ namespace drawedOut
             foreach (Enemy e in Enemy.InactiveEnemyList)
                 characterAnimations.Add(e, e.NextAnimFrame());
 
-            gameTickThread = new Thread(() =>
+            gameTickThread = new Thread(() => // TODO: make the FPS capped instead of hard set
             {
                 int gcCounter = 0;
                 while (true)
