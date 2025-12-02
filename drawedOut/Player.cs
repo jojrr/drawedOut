@@ -3,12 +3,10 @@ namespace drawedOut
     internal class Player : Character
     {
         
-        private readonly Attacks
-            _basic1,
-            _basic2;
-
-        private int _energy;
         public double XVelocity { get => xVelocity; }
+        private readonly Attacks _basic1, _basic2;
+        private static new double endlagS;
+        private int _energy;
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
 
@@ -19,8 +17,11 @@ namespace drawedOut
             _unlockedMoves.Add("move3", false);
         }
 
-        public Player(Point origin, int width, int height, int attackPower, int energy, int maxHp)
-            :base(origin: origin, width: width, height: height, hp: maxHp)
+        protected static void TickEndlagS(double dt) { if (Player.endlagS > 0) Player.endlagS -= dt; }
+
+        public Player(Point origin, int width, int height, int attackPower, int energy, int hp, 
+                int xAccel=100, int maxXVelocity=600)
+            :base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
         {
             _energy = energy;
             IsActive = true;
@@ -45,44 +46,51 @@ namespace drawedOut
             hpBar.ComputeHP(Hp);
         }
 
+        ///<summary>
+        ///reduces endlag by <paramref name="dt"/>
+        ///</summary>
+        ///<param name="dt"> delta time </param>
+        public static void TickEndlag(double dt) => endlagS -= dt;
+
         public void DoBasicAttack()
         {
-            //if (endlagS <= 0) 
-                _curAttack = _basic1;
-            //endlagS = 0.3;
+            if (Player.endlagS > 0) return;
+            curAttack = _basic1;
+            Player.endlagS = 1;
         }
 
         int count = 0;
         public override Bitmap NextAnimFrame()
         {
-            if (_curAttack is null)
+            if (runAnim is null || idleAnim is null) throw new Exception("Player runAnim or idle null");
+            if (curAttack is null)
             {
                 if (yVelocity == 0)
                 {
-                    if (curXAccel == 0) return _idleAnim.NextFrame(FacingDirection);
-                    return _runAnim.NextFrame(FacingDirection);
+                    if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
+                    return runAnim.NextFrame(FacingDirection);
                 }
                 /*
                 else if (yVelocity > 0)
                 {
-                    return _fallAnim.NextFrame(FacingDirection);
+                    return fallAnim.NextFrame(FacingDirection);
                 }
                 else 
                 {
-                    return _jumpAnim.NextFrame(FacingDirection);
+                    return jumpAnim.NextFrame(FacingDirection);
                 }
                 */
-                return _idleAnim.NextFrame(FacingDirection);
+                return idleAnim.NextFrame(FacingDirection);
             }
 
-            if (_curAttack.Animation.CurFrame == _curAttack.Animation.LastFrame)
+            if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
             {
-                Bitmap atkAnim = _curAttack.NextAnimFrame(FacingDirection);
-                _curAttack = null;
+                Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                curAttack = null;
                 return atkAnim;
             }
 
-            return _curAttack.NextAnimFrame(FacingDirection);
+            return curAttack.NextAnimFrame(FacingDirection);
         }
 
         public void HealPlayer(int heal) => Hp += heal; 

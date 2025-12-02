@@ -3,17 +3,21 @@
     internal class Character : Entity
     {
         public Global.XDirections FacingDirection { get; private set; }
-        public AnimationPlayer _idleAnim { get; private set; }
-        public AnimationPlayer _runAnim { get; private set; }
         public bool IsOnFloor { get; protected set; }
-        public bool IsMoving { get; protected set; }
         public bool IsHit;
 
+        protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
+        protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
         protected double xVelocity { get; private set; }
         protected double yVelocity { get; private set; }
         protected int curXAccel { get => _curXAccel; }
-        protected Attacks? _curAttack;
+        protected Attacks? curAttack;
         protected double endlagS = 0;
+
+        private AnimationPlayer? _idleAnim;
+        private AnimationPlayer? _runAnim;
+
+        private const int GRAVITY = 4000;
 
         private Global.YDirections? _curYColliderDirection = null;
         private Global.XDirections? _curXColliderDirection = null;
@@ -24,11 +28,9 @@
         private readonly int
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
-            _maxXVelocity = 600,
+            _maxXVelocity,
             _gravity,
             _xAccel;
-
-        private const int GRAVITY = 4000;
 
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
@@ -38,18 +40,17 @@
         /// <param name="height"></param>
         /// <param name="hp"> 
         ///
-        protected Character(Point origin, int width, int height, int hp, int xAccel=100) 
+        protected Character(Point origin, int width, int height, int hp, int xAccel, int maxXVelocity)
             : base(origin: origin, width: width, height: height)
         {
             IsOnFloor = false;
-            IsMoving = false;
             xVelocity = 0;
             yVelocity = 0;
             _hp = hp;
             _maxHp = hp;
             _xAccel = (int)(xAccel * Global.BaseScale);
             _gravity = (int)(Global.BaseScale * GRAVITY);
-            _maxXVelocity = (int)(Global.BaseScale * _maxXVelocity);
+            _maxXVelocity = (int)(Global.BaseScale * maxXVelocity);
             _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
             _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
         }
@@ -94,6 +95,16 @@
                 PointF p = new PointF(Center.X - sqrSize/2, Hitbox.Bottom - sqrSize);
                 SizeF s = new SizeF(sqrSize, sqrSize);
                 return new RectangleF(p,s);
+            }
+        }
+
+        public static void TickEndlags(double dt)
+        {
+            Player.TickEndlag(dt);
+            foreach (Enemy e in Enemy.ActiveEnemyList) 
+            {
+                if (e.endlagS <= 0) continue;
+                e.endlagS -= dt; 
             }
         }
 
@@ -217,6 +228,8 @@
 
         public void CheckPlatformCollision(Entity target)
         {
+            if (!ShouldDoMove()) return;
+
             RectangleF? targetHitbox = IsCollidingWith(target);
 
             if (targetHitbox is null) return;
@@ -284,7 +297,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections? direction, bool doScroll) // TODO: move doScroll into player class
+        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
         {
             DoGravTick(dt);
 
@@ -305,17 +318,21 @@
             }
 
             xVelocity += _curXAccel;
-
-            if (doScroll)
+            if (Math.Abs(scrollVelocity) > 0)
             {
                 if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
-                Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
+                if (this is Player) Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
+                else 
+                { 
+                    xVelocity += scrollVelocity; 
+                    if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
+                }
             }
             else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
             if (xVelocity == 0) return;
 
-            xVelocity = Math.Min(Math.Abs(xVelocity), _maxXVelocity) * Math.Sign(xVelocity); // clamp player speed
+            xVelocity = Math.Min(Math.Abs(xVelocity), _maxXVelocity) * Math.Sign(xVelocity); // clamp speed
 
             // if not moving horizontally -> gradually decrease horizontal velocity
             if (_curXAccel == 0) 
@@ -324,7 +341,7 @@
                 else xVelocity = 0; 
             }
         }
-        
+
         /*
         public string CollisionDebugX()
         {
@@ -352,24 +369,24 @@
 
         public virtual Bitmap? NextAnimFrame()
         {
-            if (_curAttack is null)
+            if (curAttack is null)
             {
                 if (yVelocity == 0 || IsOnFloor)
                 {
-                    if (curXAccel == 0) return _idleAnim.NextFrame(FacingDirection);
-                    return _runAnim.NextFrame(FacingDirection);
+                    if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
+                    return runAnim.NextFrame(FacingDirection);
                 }
-                return _idleAnim.NextFrame(FacingDirection);
+                return idleAnim.NextFrame(FacingDirection);
             }
 
-            if (_curAttack.Animation.CurFrame == _curAttack.Animation.LastFrame)
+            if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
             {
-                Bitmap atkAnim = _curAttack.NextAnimFrame(FacingDirection);
-                _curAttack = null;
+                Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                curAttack = null;
                 return atkAnim;
             }
 
-            return _curAttack.NextAnimFrame(FacingDirection);
+            return curAttack.NextAnimFrame(FacingDirection);
         }
     }
 }

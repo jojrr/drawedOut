@@ -37,13 +37,19 @@ namespace drawedOut
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
         /// </summary>
-        /// <param name="Parent"> The Parent <see cref="Character"/> </param>
-        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
-        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="parent"> The Parent <see cref="Character"/> </param>
         /// <param name="width"> The width of the AtkHitbox </param>
         /// <param name="height"> The height of the AtkHitbox </param>
-        /// <param name="spawn"> The first frame at which a AtkHitbox should be created </param>
-        /// <param name="despawn"> The frame at which a AtkHitbox should be removed </param>
+        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="spawn"> 
+        /// The first frame at which a AtkHitbox should be created <br/>
+        /// (Default: first frame)
+        /// </param>
+        /// <param name="despawn"> 
+        /// The frame at which a AtkHitbox should be removed. <br/>
+        /// (Default: last frame)
+        /// </param>
         /// <param name="dmg"> 
         /// The damage of the attack.<br/>
         /// Default = 1
@@ -53,16 +59,81 @@ namespace drawedOut
         {
             Parent = parent;
             Animation = animation;
+
+            if (spawn > animation.LastFrame || spawn < 0) 
+            {
+                throw new ArgumentException(
+                        "Spawn frame cannot be bigger than the animationLength or <0"
+                        );
+            }
+            if (despawn > animation.LastFrame || despawn < -1) 
+            {
+                throw new ArgumentException(
+                        "Despawn frame cannot be bigger than the animationLength or <-1"
+                        );
+            }
+
             _spawnFrame = spawn;
             _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
+
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
-            _width = width;
             _height = height;
+            _width = width;
+
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             _atkDmg = dmg;
         }
 
+        /// <summary>
+        /// Creates an attack object which can create attack hitboxes.
+        /// </summary>
+        /// <param name="parent"> The Parent <see cref="Character"/> </param>
+        /// <param name="size"> The <see cref="Size" of the AtkHitbox </param>
+        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="spawn"> 
+        /// The first frame at which a AtkHitbox should be created <br/>
+        /// (Default: first frame)
+        /// </param>
+        /// <param name="despawn"> 
+        /// The frame at which a AtkHitbox should be removed. <br/>
+        /// (Default: last frame)
+        /// </param>
+        /// <param name="dmg"> 
+        /// The damage of the attack.<br/>
+        /// Default = 1
+        /// </param>
+        public Attacks(Character parent, Size size, AnimationPlayer animation,
+                float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
+        {
+            Parent = parent;
+            Animation = animation;
+
+            if (spawn > animation.LastFrame || spawn < 0) 
+            {
+                throw new ArgumentException(
+                        "Spawn frame cannot be bigger than the animationLength or <0"
+                        );
+            }
+            if (despawn > animation.LastFrame || despawn < -1) 
+            {
+                throw new ArgumentException(
+                        "Despawn frame cannot be bigger than the animationLength or <-1"
+                        );
+            }
+
+            _spawnFrame = spawn;
+            _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
+
+            _xOffset = xOffset * Global.BaseScale;
+            _yOffset = yOffset * Global.BaseScale;
+            _height = size.Height;
+            _width = size.Width;
+
+            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
+            _atkDmg = dmg;
+        }
         /// <summary>
         /// Destroys the AtkHitbox of the attack
         /// </summary>

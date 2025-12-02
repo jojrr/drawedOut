@@ -58,7 +58,8 @@
         ///Distance is scalar
         ///</summary>
         protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
-        protected bool IsActive = false;
+        protected bool isActive = false;
+        public bool IsActive { get => isActive; protected set => isActive = value; }
 
         private SizeF _scaledSize;
         private readonly SizeF _baseSize;
