@@ -114,7 +114,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1440;
+            Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -200,7 +200,6 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
             deltaTimeSW.Start();
 
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");

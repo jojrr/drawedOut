@@ -326,6 +326,7 @@
                 { 
                     xVelocity += scrollVelocity; 
                     if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
+                    Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
                 }
             }
             else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
