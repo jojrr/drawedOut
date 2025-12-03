@@ -214,7 +214,7 @@
         /// <returns>boolean: default true</returns>
         public bool ShouldDoMove()
         {
-            if (_curYColliderDirection != Global.YDirections.bottom) return true;
+            if (_yStickEntity is not null || _xStickEntity is not null) return true;
             if ((yVelocity == 0) && (xVelocity == 0)) return false; 
             return true;
         }
@@ -318,18 +318,8 @@
             }
 
             xVelocity += _curXAccel;
-            if (Math.Abs(scrollVelocity) > 0)
-            {
-                if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
-                if (this is Player) Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt));
-                else 
-                { 
-                    xVelocity += scrollVelocity; 
-                    if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
-                    Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
-                }
-            }
-            else Location = new PointF(Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
+            if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
+            else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
             if (xVelocity == 0) return;
 
@@ -342,6 +332,27 @@
                 else xVelocity = 0; 
             }
         }
+
+        public void ScrollChar(double dt, double scrollVelocity)
+        {
+                if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
+
+                if (this is Player) 
+                { Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt)); }
+                else 
+                { 
+                    if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
+                    Location = new PointF(Location.X + (float)(xVelocity * dt), 
+                            Location.Y + (float)(yVelocity * dt)); 
+                }
+        }
+
+        public override void UpdateX(double scrollVelocity)
+        {
+            if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
+            base.UpdateX(scrollVelocity);
+        }
+
 
         /*
         public string CollisionDebugX()

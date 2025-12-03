@@ -358,19 +358,18 @@ namespace drawedOut
         private void movementTick(double deltaTime)
         {
             double scrollVelocity = 0;
+            Global.XDirections? playerMovDir = null;
+            bool isScrolling = playerBox.CheckScrolling(box2);
+
             slowTime(deltaTime);
 
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
-            
+
             if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            Global.XDirections? playerMovDir = null;
             if (movingLeft) playerMovDir = Global.XDirections.left;
             if (movingRight) playerMovDir = Global.XDirections.right;
-            
-            bool isScrolling = playerBox.CheckScrolling(box2);
-
-            if (isScrolling) scrollVelocity += playerBox.XVelocity;
+            if (isScrolling) scrollVelocity -= playerBox.XVelocity;
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
@@ -396,7 +395,7 @@ namespace drawedOut
             foreach( Entity e in Entity.EntityList)
             {
                 if (e is Player) { continue; }
-                e.UpdateX(-velocity * deltaTime);
+                e.UpdateX(velocity * deltaTime);
             }
         }
 
