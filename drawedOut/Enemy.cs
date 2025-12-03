@@ -16,6 +16,12 @@ namespace drawedOut
 
         public override void CheckActive()
         {
+            if (Hp <= 0) 
+            {
+                IsActive = false;
+                InactiveEnemyList.Remove(this);
+                ActiveEnemyList.Remove(this);
+            }
             if (DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;

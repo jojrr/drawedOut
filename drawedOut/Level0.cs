@@ -260,6 +260,16 @@ namespace drawedOut
             playerIsHit = false;
             freezeTimeS = 0;
 
+            foreach (Attacks a in Attacks.AttacksList)
+            {
+                foreach (Enemy e in Enemy.ActiveEnemyList)
+                {
+                    if (a.Parent == e) continue;
+                    if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) e.DoDamage(a.AtkDmg);
+                }
+                if (a.Parent is Player) continue;
+            }
+
             Attacks.UpdateHitboxes();
             Character.TickEndlags(deltaTime);
 

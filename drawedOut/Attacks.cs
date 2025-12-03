@@ -5,12 +5,13 @@ namespace drawedOut
         public static List<Attacks> AttacksList = new List<Attacks>();
         public AnimationPlayer Animation { get; private init; }
         public Character Parent { get; private init; }
+        public int AtkDmg { get; private init; }
 
-        private readonly int _atkDmg, _width, _height;
         private readonly float _xOffset, _yOffset;
+        private readonly int _width, _height;
+        private AtkHitboxEntity? _atkHitbox;
         private int _despawnFrame { get; init; }
         private int _spawnFrame { get; init; }
-        private AtkHitboxEntity? _atkHitbox;
 
         public AtkHitboxEntity? AtkHitbox
         {
@@ -82,7 +83,7 @@ namespace drawedOut
             _width = width;
 
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            _atkDmg = dmg;
+            AtkDmg = dmg;
         }
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace drawedOut
         /// </summary>
         /// <param name="parent"> The Parent <see cref="Character"/> </param>
         /// <param name="size"> The <see cref="Size" of the AtkHitbox </param>
-        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        //u <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
         /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
         /// <param name="spawn"> 
         /// The first frame at which a AtkHitbox should be created <br/>
@@ -132,7 +133,7 @@ namespace drawedOut
             _width = size.Width;
 
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            _atkDmg = dmg;
+            AtkDmg = dmg;
         }
         /// <summary>
         /// Destroys the AtkHitbox of the attack
