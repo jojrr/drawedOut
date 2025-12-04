@@ -57,5 +57,11 @@ namespace drawedOut
                 currentHp -= 2;
             }
         }
+
+        public override void Draw(Graphics g)
+        {
+            for (int i = 0; i < IconCount; i++) g.FillRectangle(HpRecColours[i], HpRectangles[i]);
+        }
+
     }
 }

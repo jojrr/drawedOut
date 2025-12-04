@@ -3,6 +3,7 @@ namespace drawedOut
     internal class Player : Character
     {
         
+        public int Energy { get => _energy; }
         public double XVelocity { get => xVelocity; }
         public static bool IsParrying { get => _isParrying; }
 
@@ -58,15 +59,11 @@ namespace drawedOut
             hpBar.ComputeHP(Hp);
         }
 
-        public void DoParry() 
-        {
-
-        }
+        public void DoParry() { if (!_isParrying) _isParrying = true; }
 
         public void StopParry()
         {
-            if (_isParrying) return;
-
+            if (!_isParrying) return;
             _isParrying = false;
             endlagS = PARRY_ENDLAG_S;
         }

@@ -14,6 +14,7 @@ namespace drawedOut
         private static Platform box5;
 
         private static HpBarUI hpBar;
+        private static BarUI energyBar;
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
@@ -74,6 +75,15 @@ namespace drawedOut
                     barHeight: 40,
                     maxHp: 6);
             hpBar.UpdateMaxHp(playerBox.MaxHp);
+
+            energyBar = new BarUI(
+                    origin: new PointF(70, 210),
+                    elementWidth: 200,
+                    elementHeight: 20,
+                    brush: Brushes.Blue,
+                    bgBrush: Brushes.Gray,
+                    maxVal: 50,
+                    barScale: 0.8f);
         }
 
         private static void InitEntities()
@@ -516,8 +526,7 @@ namespace drawedOut
                 g.ScaleTransform(3/2F, 3/2F);
             }
 
-            for (int i = 0; i < hpBar.IconCount; i++)
-                g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
+            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
 
             // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
