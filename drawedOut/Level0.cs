@@ -194,6 +194,7 @@ namespace drawedOut
             foreach (KeyValuePair<Character, Bitmap?> c in characterAnimations)
             {
                 if (c.Key.IsActive) characterAnimations[c.Key] = c.Key.NextAnimFrame(); 
+                else characterAnimations[c.Key] = null;
             }
         }
 

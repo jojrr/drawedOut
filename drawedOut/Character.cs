@@ -381,24 +381,24 @@
 
         public virtual Bitmap? NextAnimFrame()
         {
-            if (curAttack is null)
+            if (curAttack is not null)
             {
-                if (yVelocity == 0 || IsOnFloor)
+                if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
                 {
-                    if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
-                    return runAnim.NextFrame(FacingDirection);
+                    Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                    curAttack = null;
+                    return atkAnim;
                 }
-                return idleAnim.NextFrame(FacingDirection);
+                return curAttack.NextAnimFrame(FacingDirection);
             }
 
-            if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
+            if (yVelocity == 0 || IsOnFloor)
             {
-                Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
-                curAttack = null;
-                return atkAnim;
+                if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
+                return runAnim.NextFrame(FacingDirection);
             }
+            return idleAnim.NextFrame(FacingDirection);
 
-            return curAttack.NextAnimFrame(FacingDirection);
         }
     }
 }

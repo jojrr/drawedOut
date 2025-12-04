@@ -19,8 +19,10 @@ namespace drawedOut
             if (Hp <= 0) 
             {
                 IsActive = false;
-                InactiveEnemyList.Remove(this);
                 ActiveEnemyList.Remove(this);
+                InactiveEnemyList.Remove(this);
+                if (this.curAttack is not null) this.curAttack.Dispose();
+                return;
             }
 
             if (DistToMid > Global.EntityLoadThreshold)
