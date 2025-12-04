@@ -4,9 +4,23 @@ namespace drawedOut
     {
         
         public double XVelocity { get => xVelocity; }
-        private readonly Attacks _basic1, _basic2;
+        public static bool IsParrying { get => _isParrying; }
+
+        private const float PARRY_ENDLAG_S = 0.1f;
+        private static bool _isParrying = false;
         private static new double endlagS;
-        private int _energy;
+        private static int _energy;
+
+        private static readonly Attacks 
+            _basic1 = new Attacks(
+                    parent: null,
+                    width: 380,
+                    height: 220,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    xOffset: 100,
+                    spawn: 2,
+                    despawn: 14), 
+            _basic2; 
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
 
@@ -17,7 +31,7 @@ namespace drawedOut
             _unlockedMoves.Add("move3", false);
         }
 
-        protected static void TickEndlagS(double dt) { if (Player.endlagS > 0) Player.endlagS -= dt; }
+        public static void UnlockMoves(){}
 
         public Player(Point origin, int width, int height, int attackPower, int energy, int hp, 
                 int xAccel=100, int maxXVelocity=600)
@@ -25,32 +39,10 @@ namespace drawedOut
         {
             _energy = energy;
             IsActive = true;
+            _basic1.Parent = this;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
-            _basic1 = new Attacks(
-                    parent: this,
-                    width: 380,
-                    height: 220,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
-                    xOffset: 100,
-                    spawn: 2,
-                    despawn: 14);
         }
-
-        public void UnlockMoves(){}
-
-        public void DoDamage(int dmg, ref HpBarUI hpBar)
-        {
-            IsHit = true;
-            Hp -= dmg;
-            hpBar.ComputeHP(Hp);
-        }
-
-        ///<summary>
-        ///reduces endlag by <paramref name="dt"/>
-        ///</summary>
-        ///<param name="dt"> delta time </param>
-        public static void TickEndlag(double dt) => endlagS -= dt;
 
         public void DoBasicAttack()
         {
@@ -59,7 +51,41 @@ namespace drawedOut
             Player.endlagS = 1;
         }
 
-        int count = 0;
+        public void DoDamage(int dmg, ref HpBarUI hpBar)
+        {
+            IsHit = true;
+            Hp -= dmg;
+            hpBar.ComputeHP(Hp);
+        }
+
+        public void DoParry() 
+        {
+
+        }
+
+        public void StopParry()
+        {
+            if (_isParrying) return;
+
+            _isParrying = false;
+            endlagS = PARRY_ENDLAG_S;
+        }
+
+        public void PerfectParry()
+        {
+            _isParrying = false;
+            endlagS = 0; //TODO: parry endlag
+        }
+
+        public void HealPlayer(int heal) => Hp += heal; 
+
+        ///<summary>
+        ///reduces endlag by <paramref name="dt"/>
+        ///</summary>
+        ///<param name="dt"> delta time </param>
+        public static void TickEndlagS(double dt) { if (Player.endlagS > 0) Player.endlagS -= dt; }
+
+
         public override Bitmap NextAnimFrame()
         {
             if (runAnim is null || idleAnim is null) throw new Exception("Player runAnim or idle null");
@@ -92,8 +118,6 @@ namespace drawedOut
 
             return curAttack.NextAnimFrame(FacingDirection);
         }
-
-        public void HealPlayer(int heal) => Hp += heal; 
 
 
         /// <summary>

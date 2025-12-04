@@ -4,13 +4,13 @@ namespace drawedOut
     {
         public static List<Attacks> AttacksList = new List<Attacks>();
         public AnimationPlayer Animation { get; private init; }
-        public Character Parent { get; private init; }
         public int AtkDmg { get; private init; }
 
         private static List<Attacks> _disposedAttacks = new List<Attacks>();
         private readonly float _xOffset, _yOffset;
         private readonly int _width, _height;
         private AtkHitboxEntity? _atkHitbox;
+        private Character _parent;
         private int _despawnFrame { get; init; }
         private int _spawnFrame { get; init; }
 
@@ -18,11 +18,30 @@ namespace drawedOut
         {
             get
             {
-                if (_atkHitbox is null)
-                    throw new Exception("AtkHitbox should not be accessible when null");
+                if (_atkHitbox is null) throw new Exception("AtkHitbox should not be accessible when null");
                 return _atkHitbox;
             }
             private set { _atkHitbox = value; }
+        }
+
+        /// <summary>
+        /// The <see cref="Character"/> which this attack belongs to.
+        /// </summary>
+        public Character Parent { // support for static attacks in classes
+            get 
+            {
+                if (_parent is null) throw new NullReferenceException(
+                        "Parent is accessed when null"
+                        ); 
+                return _parent;
+            }
+            set 
+            {
+                if (_parent is not null) throw new NullReferenceException(
+                        "Parent attempted to be overwritten when already having value"
+                        ); 
+                _parent = value; 
+            }
         }
 
 
@@ -56,12 +75,12 @@ namespace drawedOut
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character parent, int width, int height, AnimationPlayer animation,
+        public Attacks(Character? parent, int width, int height, AnimationPlayer animation,
                 float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
         {
-            Parent = parent;
-            Animation = animation;
+            if (parent is not null) _parent = parent;
 
+            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -75,16 +94,14 @@ namespace drawedOut
                         );
             }
 
+            AtkDmg = dmg;
+            _width = width;
+            _height = height;
+            Animation = animation;
             _spawnFrame = spawn;
-            _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
-
+            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
-            _height = height;
-            _width = width;
-
-            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            AtkDmg = dmg;
         }
 
         /// <summary>
@@ -106,12 +123,12 @@ namespace drawedOut
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character parent, Size size, AnimationPlayer animation,
+        public Attacks(Character? parent, Size size, AnimationPlayer animation,
                 float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
         {
-            Parent = parent;
-            Animation = animation;
+            if (parent is not null) _parent = parent;
 
+            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -124,17 +141,17 @@ namespace drawedOut
                         "Despawn frame cannot be bigger than the animationLength or <-1"
                         );
             }
-            if (dmg<=0) throw new ArgumentException(
-                    "atk dmg should be bigger than 0"
-                    );
+
+            AtkDmg = dmg;
+            _width = size.Width;
+            _height = size.Height;
+            Animation = animation;
             _spawnFrame = spawn;
-            _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
+            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
-            _height = size.Height;
-            _width = size.Width;
-            AtkDmg = dmg;
         }
+
         /// <summary>
         /// Destroys the AtkHitbox of the attack
         /// </summary>

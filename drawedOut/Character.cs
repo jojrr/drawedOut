@@ -100,7 +100,7 @@
 
         public static void TickEndlags(double dt)
         {
-            Player.TickEndlag(dt);
+            Player.TickEndlagS(dt);
             foreach (Enemy e in Enemy.ActiveEnemyList) 
             {
                 if (e.endlagS <= 0) continue;
