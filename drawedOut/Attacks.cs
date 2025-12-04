@@ -7,6 +7,7 @@ namespace drawedOut
         public Character Parent { get; private init; }
         public int AtkDmg { get; private init; }
 
+        private static List<Attacks> _disposedAttacks = new List<Attacks>();
         private readonly float _xOffset, _yOffset;
         private readonly int _width, _height;
         private AtkHitboxEntity? _atkHitbox;
@@ -27,7 +28,7 @@ namespace drawedOut
 
         internal class AtkHitboxEntity : Entity
         {
-            public AtkHitboxEntity(PointF origin, int width, int height) 
+            internal AtkHitboxEntity(PointF origin, int width, int height) 
             : base(origin: origin, width: width, height: height)
             { }
 
@@ -123,27 +124,25 @@ namespace drawedOut
                         "Despawn frame cannot be bigger than the animationLength or <-1"
                         );
             }
-
+            if (dmg<=0) throw new ArgumentException(
+                    "atk dmg should be bigger than 0"
+                    );
             _spawnFrame = spawn;
             _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
-
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
             _height = size.Height;
             _width = size.Width;
-
-            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             AtkDmg = dmg;
         }
         /// <summary>
         /// Destroys the AtkHitbox of the attack
         /// </summary>
-        public void Dispose()
+        public void Dispose() 
         {
-            AttacksList.Remove(this);
-            AtkHitbox = null;
+            if (_atkHitbox is null) return;
+            _disposedAttacks.Add(this);
         }
-
 
         /// <summary>
         /// Creates a AtkHitbox
@@ -171,14 +170,10 @@ namespace drawedOut
 
         public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            if (Animation.CurFrame == _despawnFrame)
-                Dispose();
-            else if (Animation.CurFrame == _spawnFrame)
-                CreateHitbox();
-
+            if (Animation.CurFrame == _despawnFrame) Dispose();
+            else if (Animation.CurFrame == _spawnFrame) CreateHitbox();
             return Animation.NextFrame();
         }
-
 
 
         /// <summary> Update all AtkHitbox positions </summary>
@@ -198,6 +193,16 @@ namespace drawedOut
                         x: ParentCenter.X + xOffset,
                         y: ParentCenter.Y - atk._yOffset);
             }
+
+            if (_disposedAttacks.Count == 0) return;
+
+            foreach (Attacks atk in _disposedAttacks) 
+            {
+                AttacksList.Remove(atk);
+                atk.AtkHitbox = null;
+            }
+
+            _disposedAttacks.Clear();
         }
     }
 }

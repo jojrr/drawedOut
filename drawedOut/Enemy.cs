@@ -22,6 +22,7 @@ namespace drawedOut
                 InactiveEnemyList.Remove(this);
                 ActiveEnemyList.Remove(this);
             }
+
             if (DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;

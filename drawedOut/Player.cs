@@ -29,7 +29,7 @@ namespace drawedOut
             setRunAnim(@"playerChar\run\");
             _basic1 = new Attacks(
                     parent: this,
-                    width: 180,
+                    width: 380,
                     height: 220,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: 100,

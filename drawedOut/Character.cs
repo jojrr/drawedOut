@@ -374,7 +374,7 @@
         public void DoDamage(int dmg)
         {
             if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI as param"); }
-            Hp -= dmg;
+            _hp -= dmg;
         }
 
         public override void CheckActive(){}

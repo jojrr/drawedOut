@@ -8,7 +8,7 @@ namespace drawedOut
     {
         private static Player playerBox;
         private static MeleeEnemy meleeOne;
-        private static Platform box2;
+        private static Platform mainPlat;
         private static Platform box3;
         private static Platform box4;
         private static Platform box5;
@@ -88,26 +88,26 @@ namespace drawedOut
 
             meleeOne = new MeleeEnemy( origin: new Point(350, 550) );
 
-            box2 = new(
+            mainPlat = new(
                origin: new Point(1, 750),
                width: 5400,
                height: 550,
                isMainPlat: true);
 
             box3 = new(
-               origin: new Point(300, 200),
+               origin: new Point(300, 250),
                width: 400,
                height: 175);
 
             box4 = new(
-               origin: new Point(1000, 400),
+               origin: new Point(1000, 550),
                width: 200,
-               height: 300);
+               height: 250);
 
             box5 = new(
-               origin: new Point(1500, 400),
+               origin: new Point(1500, 550),
                width: 200,
-               height: 300);
+               height: 250);
         }
 
 
@@ -265,13 +265,19 @@ namespace drawedOut
                 foreach (Enemy e in Enemy.ActiveEnemyList)
                 {
                     if (a.Parent == e) continue;
-                    if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) e.DoDamage(a.AtkDmg);
+                    if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) 
+                    {
+                        e.DoDamage(a.AtkDmg);
+                        a.Dispose();
+                    }
                 }
                 if (a.Parent is Player) continue;
+                if (a.AtkHitbox.Hitbox.IntersectsWith(playerBox.Hitbox)) 
+                {
+                    playerBox.DoDamage(a.AtkDmg, ref hpBar);
+                    a.Dispose();
+                }
             }
-
-            Attacks.UpdateHitboxes();
-            Character.TickEndlags(deltaTime);
 
             // TODO: move into player
             /*
@@ -294,11 +300,14 @@ namespace drawedOut
             }
             */
 
+            Character.TickEndlags(deltaTime);
+            Attacks.UpdateHitboxes();
+
             if (playerBox.Hp <= 0)
             {
                 togglePause(true);
                 MessageBox.Show("you are dead");
-                Application.Exit();
+                this.Close();
             }
         }
 
@@ -315,9 +324,7 @@ namespace drawedOut
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
-                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
-                    continue;
-
+                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
                     disposedProjectiles.Add(bullet);
                     break;
                 }
@@ -369,7 +376,7 @@ namespace drawedOut
         {
             double scrollVelocity = 0;
             Global.XDirections? playerMovDir = null;
-            bool isScrolling = playerBox.CheckScrolling(box2);
+            bool isScrolling = playerBox.CheckScrolling(mainPlat);
 
             slowTime(deltaTime);
 
