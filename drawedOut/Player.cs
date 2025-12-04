@@ -2,14 +2,19 @@ namespace drawedOut
 {
     internal class Player : Character
     {
-        
         public int Energy { get => _energy; }
         public double XVelocity { get => xVelocity; }
         public static bool IsParrying { get => _isParrying; }
 
-        private const float PARRY_ENDLAG_S = 0.1f;
+        private const double 
+            PARRY_ENDLAG_S = 0.2,
+            PARRY_DURATION_S = 0.45,
+            PERFECT_PARRY_WINDOW_S = 0.05;
         private static bool _isParrying = false;
-        private static new double endlagS;
+        private static double 
+            _parryEndlagS = 0,
+            _parryTimeS = 0;
+        private static new double _endlagS;
         private static int _energy;
 
         private static readonly Attacks 
@@ -47,9 +52,9 @@ namespace drawedOut
 
         public void DoBasicAttack()
         {
-            if (Player.endlagS > 0) return;
+            if (Player._endlagS > 0) return;
             curAttack = _basic1;
-            Player.endlagS = 1;
+            Player._endlagS = 1;
         }
 
         public void DoDamage(int dmg, ref HpBarUI hpBar)
@@ -59,20 +64,49 @@ namespace drawedOut
             hpBar.ComputeHP(Hp);
         }
 
-        public void DoParry() { if (!_isParrying) _isParrying = true; }
+        public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }
 
-        public void StopParry()
+        public static void StopParry()
         {
-            if (!_isParrying) return;
+            if (!_isParrying && _parryEndlagS > 0) return;
             _isParrying = false;
-            endlagS = PARRY_ENDLAG_S;
+            _parryEndlagS = PARRY_ENDLAG_S;
         }
 
-        public void PerfectParry()
+        private void PerfectParry()
         {
-            _isParrying = false;
-            endlagS = 0; //TODO: parry endlag
+            Level0.SlowTime();
+            Level0.ZoomScreen();
+            StopParry();
+            _parryEndlagS = 0;
         }
+
+        public bool CheckParrying(Attacks atk)
+        {
+            if (!Hitbox.IntersectsWith(atk.AtkHitbox.Hitbox)) return false;
+            if (!IsParrying) return false;
+
+            if (_parryTimeS >= PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S)
+            {
+                PerfectParry();
+                return true;
+            }
+            return true;
+        }
+
+        public bool CheckParrying(Projectile proj)
+        {
+            if (!Hitbox.IntersectsWith(proj.Hitbox)) return false;
+            if (!IsParrying) return false;
+
+            if (_parryTimeS >= PERFECT_PARRY_WINDOW_S)
+            {
+                PerfectParry();
+                return false; // returns false as projectile should not be disposed when perfect parried
+            }
+            return true;
+        }
+
 
         public void HealPlayer(int heal) => Hp += heal; 
 
@@ -80,7 +114,13 @@ namespace drawedOut
         ///reduces endlag by <paramref name="dt"/>
         ///</summary>
         ///<param name="dt"> delta time </param>
-        public static void TickEndlagS(double dt) { if (Player.endlagS > 0) Player.endlagS -= dt; }
+        public static void TickEndlagS(double dt) 
+        { 
+            if (Player._endlagS > 0) Player._endlagS -= dt; 
+            if (Player.IsParrying) Player._parryTimeS += dt;
+            if (Player._parryEndlagS > 0) Player._parryEndlagS -= dt;
+            if (Player._parryTimeS >= PARRY_DURATION_S) Player.StopParry();
+        }
 
 
         public override Bitmap NextAnimFrame()

@@ -52,17 +52,17 @@
         private Brush? _bgBrush;
         private Brush _barBrush; 
         private RectangleF _progressBar;
-        private double _maxVal, _baseWidth;
+        private float _maxVal, _baseWidth;
 
         /// <summary>
         /// Creates a bar UI
         /// </summary>
         /// <param name="origin"> the origin </param>
         public BarUI(PointF origin, float elementWidth, float elementHeight, Brush brush, double maxVal, double startVal,
-                Brush? bgBrush = null, float barScale = 1.0f)
+                Brush? bgBrush = null, float borderScale = 1.0f)
             : base(origin: origin, elementWidth: elementWidth, elementHeight: elementHeight)
         {
-            if (barScale > 1 || 0 > barScale) throw new ArgumentOutOfRangeException(
+            if (borderScale > 1 || 0 > borderScale) throw new ArgumentOutOfRangeException(
                     "Bar scale should be between 0 and 1"
                     );
             if (maxVal < 0) throw new ArgumentOutOfRangeException(
@@ -72,53 +72,56 @@
                     "Starting value should be between 0 and max value"
                     );
 
-            PointF elementCenter = new PointF(origin.X + elementWidth/2, origin.Y + elementHeight/2);
-            _progressBar.Height = elementHeight*barScale;
-            _progressBar.Width = elementWidth*barScale;
+            float borderWidth = elementHeight/2 * borderScale;
+            _progressBar.Y = origin.Y + borderWidth;
+            _progressBar.X = origin.X + borderWidth;
+
+            _progressBar.Height = elementHeight - (2*borderWidth);
+            _progressBar.Width = elementWidth - (2*borderWidth);
             _baseWidth = _progressBar.Width;
             _bgBrush = bgBrush;
             _barBrush = brush;
-            _progressBar.X = elementCenter.X - _progressBar.Width/2;
-            _progressBar.Y = elementCenter.Y - _progressBar.Height/2;
 
-            _maxVal = maxVal;
+            _maxVal = (float)maxVal;
 
             double startingVal = (startVal <= -1) ? maxVal : startVal;
-            Update(startingVal);
+            Update((float)startingVal);
         }
 
         public BarUI(PointF origin, float elementWidth, float elementHeight, Brush brush, double maxVal,
-                Brush? bgBrush = null, float barScale = 1.0f)
+                Brush? bgBrush = null, float borderScale = 0.0f)
             : base(origin: origin, elementWidth: elementWidth, elementHeight: elementHeight)
         {
-            if (barScale > 1 || 0 > barScale) throw new ArgumentOutOfRangeException(
-                    "Bar scale should be between 0 and 1"
+            if (borderScale > 1 || 0 > borderScale) throw new ArgumentOutOfRangeException(
+                    "Border scale should be between 0 and 1"
                     );
             if (maxVal < 0) throw new ArgumentOutOfRangeException(
                     "Max value should be bigger than 0"
                     );
 
-            PointF elementCenter = new PointF(origin.X + elementWidth/2, origin.Y + elementHeight/2);
-            _progressBar.Height = elementHeight*barScale;
-            _progressBar.Width = elementWidth*barScale;
+            float borderWidth = elementHeight/2 * borderScale;
+            _progressBar.Y = origin.Y + borderWidth;
+            _progressBar.X = origin.X + borderWidth;
+
+            _progressBar.Height = elementHeight - (2*borderWidth);
+            _progressBar.Width = elementWidth - (2*borderWidth);
             _baseWidth = _progressBar.Width;
             _bgBrush = bgBrush;
             _barBrush = brush;
-            _progressBar.X = elementCenter.X - _progressBar.Width/2;
-            _progressBar.Y = elementCenter.Y - _progressBar.Height/2;
 
-            _maxVal = maxVal;
+            _maxVal = (float)maxVal;
 
-            Update(maxVal);
+            Update(_maxVal);
         }
 
-        public void Update(double val)
+        public void Update(float val)
         {
             if (val > _maxVal) CalcBars(_maxVal);
             if (val < 0) CalcBars(0);
+            else CalcBars(val);
         }
 
-        private void CalcBars(double val) => _progressBar.Width = (float)(_baseWidth * val/_maxVal);
+        private void CalcBars(float val) => _progressBar.Width = _baseWidth * val/_maxVal;
 
         public override void Draw(Graphics g) 
         {

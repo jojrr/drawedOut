@@ -46,15 +46,10 @@ namespace drawedOut
 
             FREEZE_DURATION_S = 0.15F,
 
-            ANIMATION_FPS = 1000/24F,
+            ANIMATION_FPS = 1000/24F;
 
-            PARRY_DURATION_S = 0.45F,
-            PERFECT_PARRY_WINDOW_S = 0.05F,
-            PARRY_ENDLAG_S = 0.2F;
 
         private static float
-            parryWindowS,
-
             curZoom = 1,
             // TODO: redo freeze and slow logic
             slowTimeS = 0,
@@ -83,7 +78,7 @@ namespace drawedOut
                     brush: Brushes.Blue,
                     bgBrush: Brushes.Gray,
                     maxVal: 50,
-                    barScale: 0.8f);
+                    borderScale: 0.4f);
         }
 
         private static void InitEntities()
@@ -173,7 +168,6 @@ namespace drawedOut
                             gcCounter = 0;
                         }
                     }
-
 
                     if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
                     {
@@ -290,26 +284,8 @@ namespace drawedOut
                 }
             }
 
-            // TODO: move into player
-            /*
-            if (endLagTime > 0)
-            {
-                endLagTime -= (float)deltaTime;
-                isParrying = false;
-            }
-
             try { CheckProjectileCollisions(deltaTime); }
             catch (OperationCanceledException) { return; }
-
-            // ticks down the parry window
-            if (isParrying && parryWindowS > 0)
-                parryWindowS -= (float)deltaTime;
-            if (parryWindowS < 0)
-            {
-                endLagTime = PARRY_ENDLAG_S * 10;
-                parryWindowS = 0;
-            }
-            */
 
             Character.TickEndlags(deltaTime);
             Attacks.UpdateHitboxes();
@@ -340,8 +316,7 @@ namespace drawedOut
                     break;
                 }
 
-
-                if ((bLoc.X < 0) || (bLoc.Y < 0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
+                if (!bullet.Hitbox.IntersectsWith(ClientRectangle)) // WARNING: changed from location based to rectangle based
                 {
                     disposedProjectiles.Add(bullet);
                     return;
@@ -351,7 +326,7 @@ namespace drawedOut
                 if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
                     return;
 
-                if (!isParrying)
+                if (!Player.IsParrying)
                 {
                     freezeTimeS = FREEZE_DURATION_S * 10;
                     disposedProjectiles.Add(bullet);
@@ -361,16 +336,7 @@ namespace drawedOut
 
                 bullet.rebound(playerBox);// required to prevent getting hit anyway when parrying
 
-                // TODO: move into player
-                // if the current parry has lasted for at most the perfectParryWindow
-                if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
-                {
-                    slowTimeS = SLOW_DURATION_S * 10;
-                    zoomScreen(ZOOM_FACTOR);
-                    isParrying = false;
-                    //playerBox.endLagTime = 0; //TODO: parry endlag
-                }
-                else disposedProjectiles.Add(bullet);
+                if (playerBox.CheckParrying(bullet)) disposedProjectiles.Add(bullet);
 
                 if (disposedProjectiles.Count == 0) return;
                 foreach (Projectile p in disposedProjectiles)
@@ -381,6 +347,9 @@ namespace drawedOut
 
             });
         }
+
+
+        public static void SlowTime() => slowTimeS = SLOW_DURATION_S * 10;
 
 
         private void movementTick(double deltaTime)
@@ -438,16 +407,11 @@ namespace drawedOut
                 curZoom = 1;
             }
 
-            // debugging/visual indicator for parry
-            //if (isParrying)
-            //    playerBrush = Brushes.Gray;
-            //else if (playerIsHit)
-            //    playerBrush = Brushes.Red; // visual hit indicator
-            //else
-            //    playerBrush = Brushes.Blue;
-
-            //Refresh();
+            if (Player.IsParrying) playerPen = Pens.Gray;
+            else if (playerIsHit) playerPen = Pens.Red; // visual hit indicator
+            else playerPen = Pens.Blue;
         }
+        private static Pen playerPen = Pens.Blue;
 
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
@@ -455,9 +419,9 @@ namespace drawedOut
 
         // TODO: remove this logic and use graphics scaling instead.
         // (Center Player on screen method)
-        private void zoomScreen(float scaleF) 
+        public static void ZoomScreen() 
         {
-            curZoom = scaleF;
+            curZoom = ZOOM_FACTOR;
 
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
@@ -469,12 +433,12 @@ namespace drawedOut
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = x + _xDiff * scaleF;
-                float newY = y + _yDiff * scaleF;
+                float newX = x + _xDiff * curZoom;
+                float newY = y + _yDiff * curZoom;
 
-                obj.ScaleHitbox(scaleF);
+                obj.ScaleHitbox(curZoom);
                 obj.Center = new PointF (newX, newY);
-                this.Invalidate();
+                //Invalidate(); // WARNING: unsure if needed
             }
 
 
@@ -486,7 +450,7 @@ namespace drawedOut
                     playerBox.Center = new PointF(
                             Global.CenterOfScreen.X,
                             Global.CenterOfScreen.Y);
-                    playerBox.ScaleHitbox(scaleF);
+                    playerBox.ScaleHitbox(curZoom);
                     continue;
                 }
                 zoomObj(e, midX, midY); 
@@ -578,7 +542,7 @@ namespace drawedOut
 
         private void drawHitboxes(Graphics g)
         {
-            g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
+            g.DrawRectangle(playerPen, playerBox.Hitbox);
 
             foreach (Enemy e in Enemy.ActiveEnemyList) 
                 g.DrawRectangle(Pens.Blue, e.Hitbox);
@@ -657,14 +621,7 @@ namespace drawedOut
             {
                 // if Not parrying then resets parrywindow and sets to parrying
                 case MouseButtons.Right:
-                    // todo: move into player
-                    /*
-                    if (endLagTime <= 0)
-                    {
-                        parryWindowS = (PARRY_DURATION_S * 10);
-                        isParrying = true;
-                    }
-                    */
+                    playerBox.DoParry();
                     break;
                 case MouseButtons.Left:
                     playerBox.DoBasicAttack();
@@ -680,14 +637,7 @@ namespace drawedOut
             {
                 // stops parrying when mouseup but doesnt reset timer > only on mouse down 
                 case MouseButtons.Right:
-                    // todo: move into player
-                    /*
-                    if (isParrying)
-                    {
-                        endLagTime = PARRY_ENDLAG_S * 10;
-                        isParrying = false;
-                    }
-                    */
+                    Player.StopParry();
                     break;
             }
         }
