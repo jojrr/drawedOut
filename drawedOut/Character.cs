@@ -2,7 +2,7 @@
 {
     internal class Character : Entity
     {
-        public Global.XDirections FacingDirection { get; private set; }
+        public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
         public bool IsHit;
 

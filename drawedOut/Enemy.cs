@@ -78,20 +78,22 @@ namespace drawedOut
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)
         {
+            float xDistance = (Center.X - playerCenter.X);
+            float yDistance = (Center.Y - playerCenter.Y);
+            Global.XDirections direction = (xDistance > 0) 
+                ? Global.XDirections.left : Global.XDirections.right;
+
             if (endlagS > 0) 
             {
                 this.MoveCharacter(dt, null, scrollVelocity);
+                FacingDirection = direction;
                 return;
             }
-
-            float xDistance = (Center.X - playerCenter.X);
-            float yDistance = (Center.Y - playerCenter.Y);
 
             if ( yDistance > _jumpRange ) DoJump();
 
             if ( Math.Abs(xDistance) > _maxRange )
             {
-                Global.XDirections direction = (xDistance > 0) ? Global.XDirections.left : Global.XDirections.right;
                 this.MoveCharacter(dt, direction, scrollVelocity);
                 _movementTimer += dt;
             }
