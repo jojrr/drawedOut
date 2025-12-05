@@ -308,6 +308,7 @@
                 LocationY = 1;
                 yVelocity = 0;
             }
+            else if (Location.Y > Global.LevelSize.Height) this.Hp = 0;
 
             _curXAccel=0;
 
