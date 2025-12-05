@@ -6,16 +6,16 @@ namespace drawedOut
         public double XVelocity { get => xVelocity; }
         public static bool IsParrying { get => _isParrying; }
 
+        private static int _energy;
+        private static bool _isParrying = false;
+        private static new double _endlagS;
         private const double 
             PARRY_ENDLAG_S = 0.2,
             PARRY_DURATION_S = 0.45,
-            PERFECT_PARRY_WINDOW_S = 0.05;
-        private static bool _isParrying = false;
+            PERFECT_PARRY_WINDOW_S = 0.25;
         private static double 
-            _parryEndlagS = 0,
-            _parryTimeS = 0;
-        private static new double _endlagS;
-        private static int _energy;
+            _parryTimeS = 0,
+            _parryEndlagS = 0;
 
         private static readonly Attacks 
             _basic1 = new Attacks(
@@ -68,9 +68,10 @@ namespace drawedOut
 
         public static void StopParry()
         {
-            if (!_isParrying && _parryEndlagS > 0) return;
-            _isParrying = false;
+            if (!_isParrying) return;
             _parryEndlagS = PARRY_ENDLAG_S;
+            _isParrying = false;
+            _parryTimeS = 0;
         }
 
         private void PerfectParry()
@@ -85,12 +86,7 @@ namespace drawedOut
         {
             if (!Hitbox.IntersectsWith(atk.AtkHitbox.Hitbox)) return false;
             if (!IsParrying) return false;
-
-            if (_parryTimeS >= PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S)
-            {
-                PerfectParry();
-                return true;
-            }
+            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) PerfectParry();
             return true;
         }
 
@@ -99,7 +95,7 @@ namespace drawedOut
             if (!Hitbox.IntersectsWith(proj.Hitbox)) return false;
             if (!IsParrying) return false;
 
-            if (_parryTimeS >= PERFECT_PARRY_WINDOW_S)
+            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S)
             {
                 PerfectParry();
                 return false; // returns false as projectile should not be disposed when perfect parried

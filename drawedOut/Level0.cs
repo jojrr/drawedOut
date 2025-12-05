@@ -42,7 +42,7 @@ namespace drawedOut
         private const float 
             ZOOM_FACTOR = 1.2F,
             SLOW_FACTOR = 1.5F,
-            SLOW_DURATION_S = 0.35F,
+            SLOW_DURATION_S = 0.55F,
 
             FREEZE_DURATION_S = 0.15F,
 
@@ -72,7 +72,7 @@ namespace drawedOut
             hpBar.UpdateMaxHp(playerBox.MaxHp);
 
             energyBar = new BarUI(
-                    origin: new PointF(70, 210),
+                    origin: new PointF(70, 120),
                     elementWidth: 200,
                     elementHeight: 20,
                     brush: Brushes.Blue,
@@ -157,8 +157,13 @@ namespace drawedOut
                 {
                     if (threadCT.IsCancellationRequested) return;
                     if (!gameTickEnabled) continue;
+                    if (threadDelaySW.Elapsed.TotalMilliseconds <= gameTickInterval) continue;
 
-                    if (animTickSW.Elapsed.TotalMilliseconds >= ANIMATION_FPS)
+                    double deltaTime = slowTime(getDeltaTime());
+                    double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
+
+                    if (slowTimeS > 0) animationInterval /= SLOW_FACTOR;
+                    if (animationInterval >= ANIMATION_FPS)
                     {
                         TickAnimations();
                         animTickSW.Restart();
@@ -169,16 +174,12 @@ namespace drawedOut
                         }
                     }
 
-                    if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
-                    {
-                        double deltaTime = getDeltaTime();
-                        threadDelaySW.Restart();
-                        if (isPaused) continue; 
-                        movementTick(deltaTime);
-                        attackHandler(deltaTime); 
-                        renderGraphics();
-                        TryInvoke(this.Refresh);
-                    }
+                    threadDelaySW.Restart();
+                    if (isPaused) continue; 
+                    movementTick(deltaTime);
+                    attackHandler(deltaTime); 
+                    renderGraphics(deltaTime);
+                    TryInvoke(this.Refresh);
                 }
             });
         }
@@ -210,8 +211,6 @@ namespace drawedOut
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
 
-            fpsTimer.Start();
-
             togglePause(false);
         }
 
@@ -231,28 +230,27 @@ namespace drawedOut
         }
 
 
-        private void slowTime(double deltaTime)
+        private double slowTime(double deltaTime)
         {
             if (slowTimeS > 0)
             {
-                slowedMov = true;
-
                 if (ZOOM_FACTOR <= 1)
                     throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
 
+                slowedMov = true;
                 slowTimeS -= (float)deltaTime;
-
-                deltaTime /= SLOW_FACTOR;
+                return (deltaTime /= SLOW_FACTOR);
             }
             else 
             {
                 slowTimeS = 0;
-                if (slowedMov) // keeps the player in motion when in slow 
+                if (slowedMov) // the player in motion when in slow 
                 {
                     movingLeft = false;
                     movingRight = false;
                     slowedMov = false;
                 }
+                return deltaTime;
             }
         }
 
@@ -279,6 +277,12 @@ namespace drawedOut
                 if (a.Parent is Player) continue;
                 if (a.AtkHitbox.Hitbox.IntersectsWith(playerBox.Hitbox)) 
                 {
+                    if (playerBox.CheckParrying(a)) 
+                    {
+                        a.Dispose();
+                        continue;
+                    }
+
                     playerBox.DoDamage(a.AtkDmg, ref hpBar);
                     a.Dispose();
                 }
@@ -349,7 +353,7 @@ namespace drawedOut
         }
 
 
-        public static void SlowTime() => slowTimeS = SLOW_DURATION_S * 10;
+        public static void SlowTime() => slowTimeS = SLOW_DURATION_S;
 
 
         private void movementTick(double deltaTime)
@@ -357,8 +361,6 @@ namespace drawedOut
             double scrollVelocity = 0;
             Global.XDirections? playerMovDir = null;
             bool isScrolling = playerBox.CheckScrolling(mainPlat);
-
-            slowTime(deltaTime);
 
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
@@ -397,9 +399,15 @@ namespace drawedOut
         }
 
 
-        private static Stopwatch fpsTimer = new Stopwatch();
-        // rendering graphics method
-        private void renderGraphics()
+
+        private double totalTime = 60;
+        private double deltaFPS = 0;
+        private double deltaFrameTime = 0;
+        private static Pen playerPen = Pens.Blue;
+
+        /// <summary> rendering graphics method </summary>
+        /// <param name="dt"> deltaTime for fps calculations </param>
+        private void renderGraphics(double dt)
         {
             if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
@@ -410,8 +418,15 @@ namespace drawedOut
             if (Player.IsParrying) playerPen = Pens.Gray;
             else if (playerIsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
+
+            totalTime += dt;
+            if (totalTime >= 1) 
+            {
+                totalTime = 0;
+                deltaFrameTime = dt;
+                deltaFPS = 0.001/dt;
+            }
         }
-        private static Pen playerPen = Pens.Blue;
 
         // pause game
         private void togglePause(bool pause) => isPaused = !isPaused; 
@@ -475,11 +490,6 @@ namespace drawedOut
         }
 
 
-
-
-        private double totalTime = 60;
-        private double deltaFPS = 0;
-        private double deltaFPSTime = 0;
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -518,26 +528,16 @@ namespace drawedOut
         private void ShowFPSInfo(Graphics g)
         {
 
-            totalTime += fpsTimer.Elapsed.TotalSeconds;
             g.DrawString(
                     deltaFPS.ToString("F0")+"fps",
                     new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
-                    new PointF(60*Global.BaseScale,120*Global.BaseScale));
+                    new PointF(60*Global.BaseScale,220*Global.BaseScale));
             g.DrawString(
-                    deltaFPSTime.ToString("F2")+"ms",
+                    deltaFrameTime.ToString("F2")+"ms",
                     new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
-                    new PointF(60*Global.BaseScale,140*Global.BaseScale));
-
-            if (totalTime >= 1) 
-            {
-                totalTime = 0;
-                deltaFPSTime = fpsTimer.Elapsed.TotalMilliseconds;
-                deltaFPS = 1/fpsTimer.Elapsed.TotalSeconds;
-            }
-
-            fpsTimer.Restart();
+                    new PointF(60*Global.BaseScale,240*Global.BaseScale));
         }
 
         private void drawHitboxes(Graphics g)
