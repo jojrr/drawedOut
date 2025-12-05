@@ -40,9 +40,9 @@ namespace drawedOut
             gameTickInterval;
 
         private const float 
-            ZOOM_FACTOR = 1.2F,
-            SLOW_FACTOR = 1.5F,
-            SLOW_DURATION_S = 0.55F,
+            ZOOM_FACTOR = 1.1F,
+            SLOW_FACTOR = 3.5F,
+            SLOW_DURATION_S = 0.35F,
 
             FREEZE_DURATION_S = 0.15F,
 
@@ -400,9 +400,8 @@ namespace drawedOut
 
 
 
-        private double totalTime = 60;
-        private double deltaFPS = 0;
-        private double deltaFrameTime = 0;
+        private ushort prevFrameFPS = 0;
+        private float prevFrameTime = 0;
         private static Pen playerPen = Pens.Blue;
 
         /// <summary> rendering graphics method </summary>
@@ -415,17 +414,16 @@ namespace drawedOut
                 curZoom = 1;
             }
 
+
+            if (Math.Abs(prevFrameFPS - (ushort)(1/dt)) > 4) 
+            {
+                prevFrameFPS = (ushort)(1/dt);
+                prevFrameTime = (float)dt; 
+            }
+
             if (Player.IsParrying) playerPen = Pens.Gray;
             else if (playerIsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
-
-            totalTime += dt;
-            if (totalTime >= 1) 
-            {
-                totalTime = 0;
-                deltaFrameTime = dt;
-                deltaFPS = 0.001/dt;
-            }
         }
 
         // pause game
@@ -529,12 +527,12 @@ namespace drawedOut
         {
 
             g.DrawString(
-                    deltaFPS.ToString("F0")+"fps",
+                    prevFrameFPS.ToString()+"fps",
                     new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
                     new PointF(60*Global.BaseScale,220*Global.BaseScale));
             g.DrawString(
-                    deltaFrameTime.ToString("F2")+"ms",
+                    prevFrameTime.ToString("F3")+"ms",
                     new Font("Arial", 10*Global.BaseScale),
                     Brushes.Black,
                     new PointF(60*Global.BaseScale,240*Global.BaseScale));

@@ -11,7 +11,7 @@ namespace drawedOut
         private static new double _endlagS;
         private const double 
             PARRY_ENDLAG_S = 0.2,
-            PARRY_DURATION_S = 0.45,
+            PARRY_DURATION_S = 0.65,
             PERFECT_PARRY_WINDOW_S = 0.25;
         private static double 
             _parryTimeS = 0,
