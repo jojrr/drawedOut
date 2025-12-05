@@ -297,7 +297,7 @@ namespace drawedOut
             if (playerBox.Hp <= 0)
             {
                 togglePause(true);
-                MessageBox.Show("you are dead");
+                MessageBox.Show(this, "you are dead", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Close();
             }
         }
