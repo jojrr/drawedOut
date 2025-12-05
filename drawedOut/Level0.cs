@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using InterpolationMode = System.Drawing.Drawing2D.InterpolationMode;
 
 // TODO: move all const values into global
 namespace drawedOut
@@ -6,12 +7,14 @@ namespace drawedOut
     public partial class Level0 : Form
     {
         private static Player playerBox;
-        private static Platform box2;
+        private static MeleeEnemy meleeOne;
+        private static Platform mainPlat;
         private static Platform box3;
         private static Platform box4;
         private static Platform box5;
 
         private static HpBarUI hpBar;
+        private static BarUI energyBar;
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
@@ -37,22 +40,16 @@ namespace drawedOut
             gameTickInterval;
 
         private const float 
-            ZOOM_FACTOR = 1.2F,
-            SLOW_FACTOR = 1.5F,
+            ZOOM_FACTOR = 1.1F,
+            SLOW_FACTOR = 3.5F,
             SLOW_DURATION_S = 0.35F,
 
             FREEZE_DURATION_S = 0.15F,
 
-            ANIMATION_FPS = 1000/24F,
+            ANIMATION_FPS = 1000/24F;
 
-            PARRY_DURATION_S = 0.45F,
-            PERFECT_PARRY_WINDOW_S = 0.05F,
-            PARRY_ENDLAG_S = 0.2F;
 
         private static float
-            parryWindowS,
-            endLagTime,
-
             curZoom = 1,
             // TODO: redo freeze and slow logic
             slowTimeS = 0,
@@ -65,16 +62,75 @@ namespace drawedOut
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
 
+        private static void InitUI()
+        {
+            hpBar = new HpBarUI(
+                    origin: new PointF(70, 50),
+                    barWidth: 20,
+                    barHeight: 40,
+                    maxHp: 6);
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
+
+            energyBar = new BarUI(
+                    origin: new PointF(70, 120),
+                    elementWidth: 200,
+                    elementHeight: 20,
+                    brush: Brushes.Blue,
+                    bgBrush: Brushes.Gray,
+                    maxVal: 50,
+                    borderScale: 0.4f);
+        }
+
+        private static void InitEntities()
+        {
+            playerBox = new Player(
+                origin: new Point(850, 550),
+                width: 30,
+                height: 160,
+                attackPower: 1,
+                energy: 100,
+                hp: 6);
+
+            meleeOne = new MeleeEnemy( origin: new Point(350, 550) );
+
+            mainPlat = new(
+               origin: new Point(1, 750),
+               width: 5400,
+               height: 550,
+               isMainPlat: true);
+
+            box3 = new(
+               origin: new Point(300, 250),
+               width: 400,
+               height: 175);
+
+            box4 = new(
+               origin: new Point(1000, 550),
+               width: 200,
+               height: 250);
+
+            box5 = new(
+               origin: new Point(1500, 550),
+               width: 200,
+               height: 250);
+        }
+
 
         public Level0()
         {
             InitializeComponent();
             Global.LevelResolution = Global.Resolutions.p1080;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.StartPosition = FormStartPosition.Manual;
-            this.Location = new Point(0, 0);
+            this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
+
+            if (Global.LevelResolution == Global.Resolutions.p4k && gameTickFreq > 60)
+                gameTickFreq = 60;
+
+            // set height and width of window
+            this.Width = Global.LevelSize.Width;
+            this.Height = Global.LevelSize.Height;
+            this.StartPosition = FormStartPosition.CenterScreen;
 
             InitEntities();
             InitUI();
@@ -101,8 +157,13 @@ namespace drawedOut
                 {
                     if (threadCT.IsCancellationRequested) return;
                     if (!gameTickEnabled) continue;
+                    if (threadDelaySW.Elapsed.TotalMilliseconds <= gameTickInterval) continue;
 
-                    if (animTickSW.Elapsed.TotalMilliseconds >= ANIMATION_FPS)
+                    double deltaTime = slowTime(getDeltaTime());
+                    double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
+
+                    if (slowTimeS > 0) animationInterval /= SLOW_FACTOR;
+                    if (animationInterval >= ANIMATION_FPS)
                     {
                         TickAnimations();
                         animTickSW.Restart();
@@ -113,17 +174,12 @@ namespace drawedOut
                         }
                     }
 
-                    if (threadDelaySW.Elapsed.TotalMilliseconds >= gameTickInterval)
-                    {
-                        double deltaTime = getDeltaTime();
-                        threadDelaySW.Restart();
-
-                        if (isPaused) continue;
-
-                        movementTick(deltaTime);
-                        attackHandler(deltaTime); 
-                        TryInvoke(renderGraphics);
-                    }
+                    threadDelaySW.Restart();
+                    if (isPaused) continue; 
+                    movementTick(deltaTime);
+                    attackHandler(deltaTime); 
+                    renderGraphics(deltaTime);
+                    TryInvoke(this.Refresh);
                 }
             });
         }
@@ -138,70 +194,22 @@ namespace drawedOut
             catch (InvalidOperationException) { return; }
         }
 
-        private static void InitUI()
-        {
-            hpBar = new HpBarUI(
-                    origin: new PointF(70, 50),
-                    barWidth: 20,
-                    barHeight: 40,
-                    maxHp: 6);
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
-        }
-
-
-
-        private static void InitEntities()
-        {
-            playerBox = new Player(
-                origin: new Point(550, 550),
-                width: 50,
-                height: 160,
-                attackPower: 1,
-                energy: 100,
-                maxHp: 6);
-
-            box2 = new(
-               origin: new Point(1, 750),
-               width: 5400,
-               height: 550,
-               isMainPlat: true);
-
-            box3 = new(
-               origin: new Point(300, 200),
-               width: 400,
-               height: 175);
-
-            box4 = new(
-               origin: new Point(1000, 400),
-               width: 200,
-               height: 300);
-
-            box5 = new(
-               origin: new Point(1500, 400),
-               width: 200,
-               height: 300);
-        }
-
-
         private void TickAnimations()
         {
             foreach (KeyValuePair<Character, Bitmap?> c in characterAnimations)
-                characterAnimations[c.Key] = c.Key.NextAnimFrame();
+            {
+                if (c.Key.IsActive) characterAnimations[c.Key] = c.Key.NextAnimFrame(); 
+                else characterAnimations[c.Key] = null;
+            }
         }
 
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // set height and width of window
-            this.Width = Global.LevelSize.Width;
-            this.Height = Global.LevelSize.Height;
-
             deltaTimeSW.Start();
 
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
-
-            fpsTimer.Start();
 
             togglePause(false);
         }
@@ -222,28 +230,27 @@ namespace drawedOut
         }
 
 
-        private void slowTime(double deltaTime)
+        private double slowTime(double deltaTime)
         {
             if (slowTimeS > 0)
             {
-                slowedMov = true;
-
                 if (ZOOM_FACTOR <= 1)
                     throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
 
+                slowedMov = true;
                 slowTimeS -= (float)deltaTime;
-
-                deltaTime /= SLOW_FACTOR;
+                return (deltaTime /= SLOW_FACTOR);
             }
             else 
             {
                 slowTimeS = 0;
-                if (slowedMov) // keeps the player in motion when in slow 
+                if (slowedMov) // the player in motion when in slow 
                 {
                     movingLeft = false;
                     movingRight = false;
                     slowedMov = false;
                 }
+                return deltaTime;
             }
         }
 
@@ -256,32 +263,42 @@ namespace drawedOut
             playerIsHit = false;
             freezeTimeS = 0;
 
-            Attacks.UpdateHitboxes();
-
-            if (endLagTime > 0)
+            foreach (Attacks a in Attacks.AttacksList)
             {
-                endLagTime -= (float)deltaTime;
-                isParrying = false;
+                foreach (Enemy e in Enemy.ActiveEnemyList)
+                {
+                    if (a.Parent == e) continue;
+                    if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) 
+                    {
+                        e.DoDamage(a.AtkDmg);
+                        a.Dispose();
+                    }
+                }
+                if (a.Parent is Player) continue;
+                if (a.AtkHitbox.Hitbox.IntersectsWith(playerBox.Hitbox)) 
+                {
+                    if (playerBox.CheckParrying(a)) 
+                    {
+                        a.Dispose();
+                        continue;
+                    }
+
+                    playerBox.DoDamage(a.AtkDmg, ref hpBar);
+                    a.Dispose();
+                }
             }
 
             try { CheckProjectileCollisions(deltaTime); }
             catch (OperationCanceledException) { return; }
 
-            // ticks down the parry window
-            if (isParrying && parryWindowS > 0)
-                parryWindowS -= (float)deltaTime;
-            if (parryWindowS < 0)
-            {
-                endLagTime = PARRY_ENDLAG_S * 10;
-                parryWindowS = 0;
-            }
-
+            Character.TickEndlags(deltaTime);
+            Attacks.UpdateHitboxes();
 
             if (playerBox.Hp <= 0)
             {
                 togglePause(true);
                 MessageBox.Show("you are dead");
-                Application.Exit();
+                this.Close();
             }
         }
 
@@ -298,24 +315,22 @@ namespace drawedOut
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
-                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox)))
-                    continue;
-
+                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
                     disposedProjectiles.Add(bullet);
                     break;
                 }
 
-
-                if ((bLoc.X < 0) || (bLoc.Y < 0) || (bLoc.X > ClientSize.Width) || (bLoc.Y > ClientSize.Height))
+                if (!bullet.Hitbox.IntersectsWith(ClientRectangle)) // WARNING: changed from location based to rectangle based
                 {
                     disposedProjectiles.Add(bullet);
                     return;
                 }
 
+                // Return if bullet not touching player
                 if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
                     return;
 
-                if (!isParrying)
+                if (!Player.IsParrying)
                 {
                     freezeTimeS = FREEZE_DURATION_S * 10;
                     disposedProjectiles.Add(bullet);
@@ -325,16 +340,7 @@ namespace drawedOut
 
                 bullet.rebound(playerBox);// required to prevent getting hit anyway when parrying
 
-                // TODO: move into player
-                // if the current parry has lasted for at most the perfectParryWindow
-                if (parryWindowS >= (PARRY_DURATION_S - PERFECT_PARRY_WINDOW_S) * 10)
-                {
-                    slowTimeS = SLOW_DURATION_S * 10;
-                    zoomScreen(ZOOM_FACTOR);
-                    isParrying = false;
-                    //playerBox.endLagTime = 0; //TODO: parry endlag
-                }
-                else disposedProjectiles.Add(bullet);
+                if (playerBox.CheckParrying(bullet)) disposedProjectiles.Add(bullet);
 
                 if (disposedProjectiles.Count == 0) return;
                 foreach (Projectile p in disposedProjectiles)
@@ -347,14 +353,60 @@ namespace drawedOut
         }
 
 
-
-        // pause game
-        private void togglePause(bool pause) => isPaused = !isPaused; 
+        public static void SlowTime() => slowTimeS = SLOW_DURATION_S;
 
 
-        private static Stopwatch fpsTimer = new Stopwatch();
-        // rendering graphics method
-        private void renderGraphics()
+        private void movementTick(double deltaTime)
+        {
+            double scrollVelocity = 0;
+            Global.XDirections? playerMovDir = null;
+            bool isScrolling = playerBox.CheckScrolling(mainPlat);
+
+            foreach (Entity e in Entity.EntityList)
+                e.CheckActive();
+
+            if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
+            if (movingLeft) playerMovDir = Global.XDirections.left;
+            if (movingRight) playerMovDir = Global.XDirections.right;
+            if (isScrolling) scrollVelocity -= playerBox.XVelocity;
+
+            playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
+
+            foreach (Platform plat in Platform.ActivePlatformList)
+                playerBox.CheckPlatformCollision(plat); 
+
+            try
+            {
+                Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
+                    enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center );
+                    foreach (Platform plat in Platform.ActivePlatformList)
+                    { enemy.CheckPlatformCollision(plat); }
+                });
+            }
+            catch (OperationCanceledException) { return; }
+
+            ScrollEntities(scrollVelocity, deltaTime);
+        }
+
+
+        public void ScrollEntities(double velocity, double deltaTime)
+        {
+            foreach( Entity e in Entity.EntityList)
+            {
+                if (e is Player) { continue; }
+                e.UpdateX(velocity * deltaTime);
+            }
+        }
+
+
+
+        private ushort prevFrameFPS = 0;
+        private float prevFrameTime = 0;
+        private static Pen playerPen = Pens.Blue;
+
+        /// <summary> rendering graphics method </summary>
+        /// <param name="dt"> deltaTime for fps calculations </param>
+        private void renderGraphics(double dt)
         {
             if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
             {
@@ -362,29 +414,27 @@ namespace drawedOut
                 curZoom = 1;
             }
 
-            // debugging/visual indicator for parry
-            //if (isParrying)
-            //    playerBrush = Brushes.Gray;
-            //else if (playerIsHit)
-            //    playerBrush = Brushes.Red; // visual hit indicator
-            //else
-            //    playerBrush = Brushes.Blue;
 
+            if (Math.Abs(prevFrameFPS - (ushort)(1/dt)) > 4) 
+            {
+                prevFrameFPS = (ushort)(1/dt);
+                prevFrameTime = (float)dt; 
+            }
 
-            label1.Hide();
-            //label2.Text = "";
-            label2.Hide();
-            //label3.Text = playerBox.CollisionDebugY().ToString();
-            label3.Hide();
-
-            Refresh();
+            if (Player.IsParrying) playerPen = Pens.Gray;
+            else if (playerIsHit) playerPen = Pens.Red; // visual hit indicator
+            else playerPen = Pens.Blue;
         }
 
+        // pause game
+        private void togglePause(bool pause) => isPaused = !isPaused; 
 
 
-        private void zoomScreen(float scaleF)
+        // TODO: remove this logic and use graphics scaling instead.
+        // (Center Player on screen method)
+        public static void ZoomScreen() 
         {
-            curZoom = scaleF;
+            curZoom = ZOOM_FACTOR;
 
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
@@ -396,12 +446,12 @@ namespace drawedOut
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = x + _xDiff * scaleF;
-                float newY = y + _yDiff * scaleF;
+                float newX = x + _xDiff * curZoom;
+                float newY = y + _yDiff * curZoom;
 
-                obj.ScaleHitbox(scaleF);
+                obj.ScaleHitbox(curZoom);
                 obj.Center = new PointF (newX, newY);
-                this.Invalidate();
+                //Invalidate(); // WARNING: unsure if needed
             }
 
 
@@ -413,7 +463,7 @@ namespace drawedOut
                     playerBox.Center = new PointF(
                             Global.CenterOfScreen.X,
                             Global.CenterOfScreen.Y);
-                    playerBox.ScaleHitbox(scaleF);
+                    playerBox.ScaleHitbox(curZoom);
                     continue;
                 }
                 zoomObj(e, midX, midY); 
@@ -438,52 +488,17 @@ namespace drawedOut
         }
 
 
-        private void movementTick(double deltaTime)
-        {
-            slowTime(deltaTime);
-
-            foreach (Entity e in Entity.EntityList)
-                e.CheckActive();
-            
-            if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            Global.XDirections? playerMovDir = null;
-            if (movingLeft) playerMovDir = Global.XDirections.left;
-            if (movingRight) playerMovDir = Global.XDirections.right;
-            
-            bool isScrolling = playerBox.CheckScrolling(box2);
-
-            if (isScrolling) ScrollEntities(velocity: playerBox.XVelocity, deltaTime);
-
-            playerBox.MoveCharacter(deltaTime, playerMovDir, doScroll: isScrolling);
-
-            foreach (Platform plat in Platform.ActivePlatformList)
-                playerBox.CheckPlatformCollision(plat); 
-
-            try
-            {
-                Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
-                    enemy.DoMove( dt: deltaTime, doScroll: isScrolling);
-                    foreach (Platform plat in Platform.ActivePlatformList)
-                    { enemy.CheckPlatformCollision(plat); }
-                });
-            }
-            catch (OperationCanceledException) { return; }
-        }
-
-
-        public void ScrollEntities(double velocity, double deltaTime)
-        {
-            foreach( Entity e in Entity.EntityList)
-            {
-                if (e == playerBox) { continue; }
-                e.UpdateX(-velocity * deltaTime);
-            }
-        }
-
-
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            
+            if (Global.LevelResolution == Global.Resolutions.p4k) 
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.ScaleTransform(3/2F, 3/2F);
+            }
+
+            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
 
             // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
@@ -491,43 +506,61 @@ namespace drawedOut
                 if (img.Value is null) continue;
                 g.DrawImage(img.Value, img.Key.AnimRect);
             }
-
-            if (showHitbox)
+            
+            //Bitmap platformSprite = Platform.PlatformSprite;
+            foreach (Platform plat in Platform.ActivePlatformList)
             {
-                //foreach (Enemy e in Enemy.ActiveEnemyList)
-                g.DrawRectangle(Pens.Blue, playerBox.Hitbox);
-
-                foreach (Platform plat in Platform.ActivePlatformList)
-                {
-                    using (Pen redPen = new Pen(Color.Red, 3))
-                    { g.DrawRectangle(redPen, plat.Hitbox); }
-                }
- 
-                foreach (Projectile bullet in Projectile.ProjectileList)
-                    g.FillRectangle(Brushes.Red, bullet.Hitbox);
-
-                foreach (Attacks a in Attacks.AttacksList)
-                    g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
-
-                for (int i = 0; i < hpBar.IconCount; i++)
-                    g.FillRectangle(hpBar.HpRecColours[i], hpBar.HpRectangles[i]);
+                RectangleF hitbox = plat.Hitbox;
+                using (Pen blackPen = new Pen(Color.Black, 6))
+                { g.DrawRectangle(blackPen, hitbox); }
+                //if (plat.IsMainPlat) continue;
+                //g.DrawImage(platformSprite, hitbox);
             }
 
-            float deltaFPSTime = Convert.ToSingle(1/(fpsTimer.Elapsed.TotalSeconds));
-            fpsTimer.Restart();
-            g.DrawString(
-                    deltaFPSTime.ToString("F0"),
-                    new Font("Arial", 20*Global.BaseScale),
-                    Brushes.Black,
-                    new PointF(100*Global.BaseScale,100*Global.BaseScale));
+            if (showHitbox) drawHitboxes(g);
+
+            ShowFPSInfo(g);
         }
 
+
+        private void ShowFPSInfo(Graphics g)
+        {
+
+            g.DrawString(
+                    prevFrameFPS.ToString()+"fps",
+                    new Font("Arial", 10*Global.BaseScale),
+                    Brushes.Black,
+                    new PointF(60*Global.BaseScale,220*Global.BaseScale));
+            g.DrawString(
+                    prevFrameTime.ToString("F3")+"ms",
+                    new Font("Arial", 10*Global.BaseScale),
+                    Brushes.Black,
+                    new PointF(60*Global.BaseScale,240*Global.BaseScale));
+        }
+
+        private void drawHitboxes(Graphics g)
+        {
+            g.DrawRectangle(playerPen, playerBox.Hitbox);
+
+            foreach (Enemy e in Enemy.ActiveEnemyList) 
+                g.DrawRectangle(Pens.Blue, e.Hitbox);
+            foreach (Projectile bullet in Projectile.ProjectileList) 
+                g.FillRectangle(Brushes.Red, bullet.Hitbox);
+            foreach (Attacks a in Attacks.AttacksList) 
+                g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
+        }
 
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Modifiers  == Keys.Alt && e.KeyCode == Keys.F5) Application.Exit();
+
             switch (e.KeyCode)
             {
+                case Keys.W:
+                    if (playerBox.IsOnFloor) jumping = true; 
+                    break;
+
                 case Keys.A:
                     if (movingRight && !movingLeft && prevLeftRight is null)
                     {
@@ -546,8 +579,8 @@ namespace drawedOut
                     movingRight = true;
                     break;
 
-                case Keys.W:
-                    if (playerBox.IsOnFloor) { jumping = true; }
+                case Keys.Escape:
+                    this.Close();
                     break;
             }
         }
@@ -586,11 +619,7 @@ namespace drawedOut
             {
                 // if Not parrying then resets parrywindow and sets to parrying
                 case MouseButtons.Right:
-                    if (endLagTime <= 0)
-                    {
-                        parryWindowS = (PARRY_DURATION_S * 10);
-                        isParrying = true;
-                    }
+                    playerBox.DoParry();
                     break;
                 case MouseButtons.Left:
                     playerBox.DoBasicAttack();
@@ -606,11 +635,7 @@ namespace drawedOut
             {
                 // stops parrying when mouseup but doesnt reset timer > only on mouse down 
                 case MouseButtons.Right:
-                    if (isParrying)
-                    {
-                        endLagTime = PARRY_ENDLAG_S * 10;
-                        isParrying = false;
-                    }
+                    Player.StopParry();
                     break;
             }
         }

@@ -16,6 +16,15 @@ namespace drawedOut
         }
 
         public enum Resolutions { p720, p1080, p1440, p4k }
+
+        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
+        {
+            { Resolutions.p720, new Size(1280, 720) },
+            { Resolutions.p1080, new Size(1920, 1080) },
+            { Resolutions.p1440, new Size(2560, 1440) },
+            { Resolutions.p4k, new Size(3840, 2160) }
+        };
+
         private static Resolutions _curResolution = Resolutions.p1080;
         public static Resolutions LevelResolution
         {
@@ -23,29 +32,29 @@ namespace drawedOut
             set
             {
                 _curResolution = value;
+                _levelSize = ResDict[value];
+                float scaleWidth = _levelSize.Width;
+                float scrollBoundPercent = 0.2F;
 
-                float scaleF = 1F;
                 switch (value)
                 {
                     case Resolutions.p720:
-                        scaleF = 1/3F;
+                        _baseScale = 1/3F;
                         break;
                     case Resolutions.p1080:
-                        scaleF = 1F;
+                        _baseScale = 1F;
                         break;
                     case Resolutions.p1440:
-                        scaleF = 4/3F;
+                        _baseScale = 4/3F;
                         break;
                     case Resolutions.p4k:
-                        scaleF = 2F;
+                        _baseScale = 4/3F;
+                        scaleWidth *= 2/3F;
                         break;
                 }
 
-                SizeF floatSize = new SizeF (_levelSize.Width*scaleF, _levelSize.Height*scaleF); 
-                _levelSize = Size.Truncate(floatSize);
-                _rightScrollBound = (int)(floatSize.Width * 0.8);
-                _leftScrollBound = (int)(floatSize.Width * 0.2);
-                _baseScale = scaleF;
+                _leftScrollBound = (int)(scaleWidth * scrollBoundPercent);
+                _rightScrollBound = (int)(scaleWidth * (1-scrollBoundPercent));
                 CalcNewCenter();
             }
         }

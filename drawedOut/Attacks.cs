@@ -4,29 +4,50 @@ namespace drawedOut
     {
         public static List<Attacks> AttacksList = new List<Attacks>();
         public AnimationPlayer Animation { get; private init; }
-        public Character Parent { get; private init; }
+        public int AtkDmg { get; private init; }
 
-        private readonly int _atkDmg, _width, _height;
+        private static List<Attacks> _disposedAttacks = new List<Attacks>();
         private readonly float _xOffset, _yOffset;
+        private readonly int _width, _height;
+        private AtkHitboxEntity? _atkHitbox;
+        private Character _parent;
         private int _despawnFrame { get; init; }
         private int _spawnFrame { get; init; }
-        private AtkHitboxEntity? _atkHitbox;
 
         public AtkHitboxEntity? AtkHitbox
         {
             get
             {
-                if (_atkHitbox is null)
-                    throw new Exception("AtkHitbox should not be accessible when null");
+                if (_atkHitbox is null) throw new Exception("AtkHitbox should not be accessible when null");
                 return _atkHitbox;
             }
             private set { _atkHitbox = value; }
         }
 
+        /// <summary>
+        /// The <see cref="Character"/> which this attack belongs to.
+        /// </summary>
+        public Character Parent { // support for static attacks in classes
+            get 
+            {
+                if (_parent is null) throw new NullReferenceException(
+                        "Parent is accessed when null"
+                        ); 
+                return _parent;
+            }
+            set 
+            {
+                if (_parent is not null) throw new NullReferenceException(
+                        "Parent attempted to be overwritten when already having value"
+                        ); 
+                _parent = value; 
+            }
+        }
+
 
         internal class AtkHitboxEntity : Entity
         {
-            public AtkHitboxEntity(PointF origin, int width, int height) 
+            internal AtkHitboxEntity(PointF origin, int width, int height) 
             : base(origin: origin, width: width, height: height)
             { }
 
@@ -37,41 +58,108 @@ namespace drawedOut
         /// <summary>
         /// Creates an attack object which can create attack hitboxes.
         /// </summary>
-        /// <param name="Parent"> The Parent <see cref="Character"/> </param>
-        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
-        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="parent"> The Parent <see cref="Character"/> </param>
         /// <param name="width"> The width of the AtkHitbox </param>
         /// <param name="height"> The height of the AtkHitbox </param>
-        /// <param name="spawn"> The first frame at which a AtkHitbox should be created </param>
-        /// <param name="despawn"> The frame at which a AtkHitbox should be removed </param>
+        /// <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="spawn"> 
+        /// The first frame at which a AtkHitbox should be created <br/>
+        /// (Default: first frame)
+        /// </param>
+        /// <param name="despawn"> 
+        /// The frame at which a AtkHitbox should be removed. <br/>
+        /// (Default: last frame)
+        /// </param>
         /// <param name="dmg"> 
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character parent, int width, int height, AnimationPlayer animation,
+        public Attacks(Character? parent, int width, int height, AnimationPlayer animation,
                 float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
         {
-            Parent = parent;
-            Animation = animation;
-            _spawnFrame = spawn;
-            _despawnFrame = (despawn == -1) ? Animation.LastFrame : despawn;
-            _xOffset = xOffset * Global.BaseScale;
-            _yOffset = yOffset * Global.BaseScale;
+            if (parent is not null) _parent = parent;
+
+            if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
+            if (spawn > animation.LastFrame || spawn < 0) 
+            {
+                throw new ArgumentException(
+                        "Spawn frame cannot be bigger than the animationLength or <0"
+                        );
+            }
+            if (despawn > animation.LastFrame || despawn < -1) 
+            {
+                throw new ArgumentException(
+                        "Despawn frame cannot be bigger than the animationLength or <-1"
+                        );
+            }
+
+            AtkDmg = dmg;
             _width = width;
             _height = height;
+            Animation = animation;
+            _spawnFrame = spawn;
+            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
+            _xOffset = xOffset * Global.BaseScale;
+            _yOffset = yOffset * Global.BaseScale;
+        }
+
+        /// <summary>
+        /// Creates an attack object which can create attack hitboxes.
+        /// </summary>
+        /// <param name="parent"> The Parent <see cref="Character"/> </param>
+        /// <param name="size"> The <see cref="Size" of the AtkHitbox </param>
+        //u <param name="xOffset"> The horizontal distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="yOffset"> The vertical distance between the Parent's centre and the AtkHitbox's centre</param>
+        /// <param name="spawn"> 
+        /// The first frame at which a AtkHitbox should be created <br/>
+        /// (Default: first frame)
+        /// </param>
+        /// <param name="despawn"> 
+        /// The frame at which a AtkHitbox should be removed. <br/>
+        /// (Default: last frame)
+        /// </param>
+        /// <param name="dmg"> 
+        /// The damage of the attack.<br/>
+        /// Default = 1
+        /// </param>
+        public Attacks(Character? parent, Size size, AnimationPlayer animation,
+                float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
+        {
+            if (parent is not null) _parent = parent;
+
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            _atkDmg = dmg;
+            if (spawn > animation.LastFrame || spawn < 0) 
+            {
+                throw new ArgumentException(
+                        "Spawn frame cannot be bigger than the animationLength or <0"
+                        );
+            }
+            if (despawn > animation.LastFrame || despawn < -1) 
+            {
+                throw new ArgumentException(
+                        "Despawn frame cannot be bigger than the animationLength or <-1"
+                        );
+            }
+
+            AtkDmg = dmg;
+            _width = size.Width;
+            _height = size.Height;
+            Animation = animation;
+            _spawnFrame = spawn;
+            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
+            _xOffset = xOffset * Global.BaseScale;
+            _yOffset = yOffset * Global.BaseScale;
         }
 
         /// <summary>
         /// Destroys the AtkHitbox of the attack
         /// </summary>
-        public void Dispose()
+        public void Dispose() 
         {
-            AttacksList.Remove(this);
-            AtkHitbox = null;
+            if (_atkHitbox is null) return;
+            _disposedAttacks.Add(this);
         }
-
 
         /// <summary>
         /// Creates a AtkHitbox
@@ -99,14 +187,10 @@ namespace drawedOut
 
         public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            if (Animation.CurFrame == _despawnFrame)
-                Dispose();
-            else if (Animation.CurFrame == _spawnFrame)
-                CreateHitbox();
-
+            if (Animation.CurFrame == _despawnFrame) Dispose();
+            else if (Animation.CurFrame == _spawnFrame) CreateHitbox();
             return Animation.NextFrame();
         }
-
 
 
         /// <summary> Update all AtkHitbox positions </summary>
@@ -126,6 +210,16 @@ namespace drawedOut
                         x: ParentCenter.X + xOffset,
                         y: ParentCenter.Y - atk._yOffset);
             }
+
+            if (_disposedAttacks.Count == 0) return;
+
+            foreach (Attacks atk in _disposedAttacks) 
+            {
+                AttacksList.Remove(atk);
+                atk.AtkHitbox = null;
+            }
+
+            _disposedAttacks.Clear();
         }
     }
 }

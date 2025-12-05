@@ -44,7 +44,16 @@ namespace drawedOut
 
         public Bitmap NextFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            Bitmap img = (Bitmap)(_animFrames[_frameNo].Clone());
+            Bitmap img;
+
+            if (_totalFrameCount == 1) 
+            {
+                img = (Bitmap)(_animFrames[0].Clone());
+                if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                return img;
+            }
+
+            img = (Bitmap)(_animFrames[_frameNo].Clone());
             if (++_frameNo >= _totalFrameCount) ResetAnimation();
             if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);
             return img;

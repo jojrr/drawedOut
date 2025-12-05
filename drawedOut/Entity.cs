@@ -58,7 +58,8 @@
         ///Distance is scalar
         ///</summary>
         protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
-        protected bool IsActive = false;
+        private bool isActive = false;
+        public bool IsActive { get => isActive; protected set => isActive = value; }
 
         private SizeF _scaledSize;
         private readonly SizeF _baseSize;
@@ -95,7 +96,7 @@
         /// Increments the horizontal position of the entity by the given amount
         /// </summary>
         /// <param name="x">amount to increment X </param>
-        public void UpdateX(double x)
+        public virtual void UpdateX(double x)
         {
             float fltX = (float)x;
             if (x == 0) return;
