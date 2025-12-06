@@ -71,19 +71,7 @@
             if (startVal < 0 || startVal > maxVal) throw new ArgumentOutOfRangeException(
                     "Starting value should be between 0 and max value"
                     );
-
-            float borderWidth = elementHeight/2 * borderScale;
-            _progressBar.Y = origin.Y + borderWidth;
-            _progressBar.X = origin.X + borderWidth;
-
-            _progressBar.Height = elementHeight - (2*borderWidth);
-            _progressBar.Width = elementWidth - (2*borderWidth);
-            _baseWidth = _progressBar.Width;
-            _bgBrush = bgBrush;
-            _barBrush = brush;
-
-            _maxVal = (float)maxVal;
-
+            setupBar(origin, elementWidth, elementHeight, borderScale, maxVal, brush, bgBrush);
             double startingVal = (startVal <= -1) ? maxVal : startVal;
             Update((float)startingVal);
         }
@@ -98,21 +86,26 @@
             if (maxVal < 0) throw new ArgumentOutOfRangeException(
                     "Max value should be bigger than 0"
                     );
+            setupBar(origin, elementWidth, elementHeight, borderScale, maxVal, brush, bgBrush);
+            Update(_maxVal);
+        }
 
-            float borderWidth = elementHeight/2 * borderScale;
-            _progressBar.Y = origin.Y + borderWidth;
-            _progressBar.X = origin.X + borderWidth;
+        private void setupBar(PointF origin, float width, float height, float borderScale, double maxVal, Brush brush, Brush? bgBrush)
+        {
+            float borderWidth = height/2 * borderScale;
+            float scaleMult = Global.BaseScale;
 
-            _progressBar.Height = elementHeight - (2*borderWidth);
-            _progressBar.Width = elementWidth - (2*borderWidth);
+            _progressBar.Y = scaleMult*(origin.Y + borderWidth);
+            _progressBar.X = scaleMult*(origin.X + borderWidth);
+
+            _progressBar.Height = scaleMult*(height - (2*borderWidth));
+            _progressBar.Width = scaleMult*(width - (2*borderWidth));
             _baseWidth = _progressBar.Width;
             _bgBrush = bgBrush;
             _barBrush = brush;
-
             _maxVal = (float)maxVal;
-
-            Update(_maxVal);
         }
+
 
         public void Update(float val)
         {
