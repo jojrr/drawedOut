@@ -303,8 +303,7 @@
             DoGravTick(dt);
 
             // stops the player going above the screen
-            // TODO: make this only when Y velocity is going up (so can fall out of the sky)
-            if (Location.Y <= 0) 
+            if (Location.Y <= 0 && yVelocity < 0)
             {
                 LocationY = 1;
                 yVelocity = 0;

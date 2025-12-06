@@ -88,7 +88,7 @@ namespace drawedOut
                 energy: 100,
                 hp: 6);
 
-            meleeOne = new MeleeEnemy( origin: new Point(350, 550) );
+            meleeOne = new MeleeEnemy( origin: new Point(1350, -550) );
 
             mainPlat = new(
                origin: new Point(1, 750),
@@ -116,7 +116,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p720;
+            Global.LevelResolution = Global.Resolutions.p1440;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
