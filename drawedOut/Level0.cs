@@ -29,9 +29,6 @@ namespace drawedOut
             movingRight = false,
             jumping = false,
 
-            playerIsHit = false,
-            isParrying = false,
-
             isPaused = false,
             slowedMov = false;
 
@@ -119,7 +116,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
+            Global.LevelResolution = Global.Resolutions.p720;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -260,7 +257,6 @@ namespace drawedOut
 
         private void attackHandler(double deltaTime)
         {
-            playerIsHit = false;
             freezeTimeS = 0;
 
             foreach (Attacks a in Attacks.AttacksList)
@@ -422,7 +418,7 @@ namespace drawedOut
             }
 
             if (Player.IsParrying) playerPen = Pens.Gray;
-            else if (playerIsHit) playerPen = Pens.Red; // visual hit indicator
+            else if (playerBox.IsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
         }
 

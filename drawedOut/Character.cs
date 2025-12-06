@@ -105,6 +105,7 @@
             {
                 if (e.endlagS <= 0) continue;
                 e.endlagS -= dt; 
+                e.IsHit = false;
             }
         }
 

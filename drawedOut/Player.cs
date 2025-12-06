@@ -8,6 +8,7 @@ namespace drawedOut
 
         private static int _energy;
         private static bool _isParrying = false;
+        private static new bool IsHit;
         private static new double _endlagS;
         private const double 
             PARRY_ENDLAG_S = 0.2,
@@ -59,7 +60,7 @@ namespace drawedOut
 
         public void DoDamage(int dmg, ref HpBarUI hpBar)
         {
-            IsHit = true;
+            Player.IsHit = true;
             Hp -= dmg;
             hpBar.ComputeHP(Hp);
         }
@@ -112,6 +113,7 @@ namespace drawedOut
         ///<param name="dt"> delta time </param>
         public static void TickEndlagS(double dt) 
         { 
+            Player.IsHit = false;
             if (Player._endlagS > 0) Player._endlagS -= dt; 
             if (Player.IsParrying) Player._parryTimeS += dt;
             if (Player._parryEndlagS > 0) Player._parryEndlagS -= dt;
