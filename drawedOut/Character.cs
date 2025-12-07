@@ -4,7 +4,7 @@
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
-        public bool IsHit;
+        public bool IsHit { get; protected set; }
 
         protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
         protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
@@ -14,17 +14,15 @@
         protected Attacks? curAttack;
         protected double endlagS = 0;
 
-        private AnimationPlayer? _idleAnim;
-        private AnimationPlayer? _runAnim;
-
         private const int GRAVITY = 4000;
-
-        private Global.YDirections? _curYColliderDirection = null;
         private Global.XDirections? _curXColliderDirection = null;
+        private Global.YDirections? _curYColliderDirection = null;
+        private AnimationPlayer? _idleAnim, _runAnim;
         private RectangleF? _xStickTarget, _yStickTarget;
         private Entity? _xStickEntity, _yStickEntity;
+        private int _maxHp, _hp, _curXAccel, _knockback_velocity;
+        private bool _knockedBack = false;
         private double _coyoteTimeS;
-        private int _maxHp, _hp, _curXAccel;
         private readonly int
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
@@ -325,14 +323,18 @@
 
             if (xVelocity == 0) return;
 
-            xVelocity = Math.Min(Math.Abs(xVelocity), _maxXVelocity) * Math.Sign(xVelocity); // clamp speed
+            if (!_knockedBack) clampSpeed(_maxXVelocity);
+            else clampSpeed(_knockback_velocity);
 
-            // if not moving horizontally -> gradually decrease horizontal velocity
-            if (_curXAccel == 0) 
-            {
-                if (Math.Abs(xVelocity) > 1)  xVelocity -= xVelocity * (15*dt); 
-                else xVelocity = 0; 
-            }
+            if (_curXAccel == 0 || _knockedBack) decelerate(dt);
+            if (xVelocity <= _maxXVelocity)  _knockedBack = false;
+        }
+
+        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min(Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
+        private void decelerate(double dt)
+        {
+            if (Math.Abs(xVelocity) > 1)  xVelocity -= xVelocity * (15*dt); 
+            else xVelocity = 0; 
         }
 
         public void ScrollChar(double dt, double scrollVelocity)
@@ -373,12 +375,21 @@
         */
 
 
-        public void DoDamage(int dmg)
+        public void DoDamage(int dmg, Entity source)
         {
             if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI as param"); }
             IsHit = true;
             _hp -= dmg;
+            ApplyKnockBack(source); 
         }
+
+        public void ApplyKnockBack(Entity source, int speed = 3000)
+        {
+            xVelocity = (source.Center.X - this.Center.X < 0) ? speed : -speed;
+            _knockback_velocity = speed;
+            _knockedBack = true;
+        }
+
 
         public override void CheckActive(){}
 

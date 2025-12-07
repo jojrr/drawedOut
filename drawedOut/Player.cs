@@ -58,11 +58,12 @@ namespace drawedOut
             Player._endlagS = 1;
         }
 
-        public void DoDamage(int dmg, ref HpBarUI hpBar)
+        public void DoDamage(int dmg, Entity source, ref HpBarUI hpBar)
         {
             Player.IsHit = true;
             Hp -= dmg;
             hpBar.ComputeHP(Hp);
+            ApplyKnockBack(source); 
         }
 
         public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }

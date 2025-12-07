@@ -266,7 +266,7 @@ namespace drawedOut
                     if (a.Parent == e) continue;
                     if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) 
                     {
-                        e.DoDamage(a.AtkDmg);
+                        e.DoDamage(a.AtkDmg, a.AtkHitbox);
                         a.Dispose();
                     }
                 }
@@ -279,7 +279,7 @@ namespace drawedOut
                         continue;
                     }
 
-                    playerBox.DoDamage(a.AtkDmg, ref hpBar);
+                    playerBox.DoDamage(a.AtkDmg, a.AtkHitbox, ref hpBar);
                     a.Dispose();
                 }
             }
@@ -326,13 +326,14 @@ namespace drawedOut
                 if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
                     return;
 
-                if (!Player.IsParrying)
-                {
-                    freezeTimeS = FREEZE_DURATION_S * 10;
-                    disposedProjectiles.Add(bullet);
-                    playerBox.DoDamage(1, ref hpBar);
-                    return;
-                }
+                // TODO: fix
+                // if (!Player.IsParrying)
+                // {
+                //     freezeTimeS = FREEZE_DURATION_S * 10;
+                //     disposedProjectiles.Add(bullet);
+                //     playerBox.DoDamage(1, ref hpBar);
+                //     return;
+                // }
 
                 bullet.rebound(playerBox);// required to prevent getting hit anyway when parrying
 
@@ -543,7 +544,7 @@ namespace drawedOut
             foreach (Projectile bullet in Projectile.ProjectileList) 
                 g.FillRectangle(Brushes.Red, bullet.Hitbox);
             foreach (Attacks a in Attacks.AttacksList) 
-                g.FillRectangle(Brushes.Red, a.AtkHitbox.Hitbox);
+                g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
         }
 
 
