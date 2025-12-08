@@ -14,13 +14,13 @@
         protected Attacks? curAttack;
         protected double endlagS = 0;
 
-        private const int GRAVITY = 4000;
+        private const int GRAVITY = 4000, FRICTION = 84;
         private Global.XDirections? _curXColliderDirection = null;
         private Global.YDirections? _curYColliderDirection = null;
         private AnimationPlayer? _idleAnim, _runAnim;
         private RectangleF? _xStickTarget, _yStickTarget;
         private Entity? _xStickEntity, _yStickEntity;
-        private int _maxHp, _hp, _curXAccel, _knockback_velocity;
+        private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
         private readonly int
@@ -313,27 +313,36 @@
             if (direction is not null)
             {
                 FacingDirection = direction.Value;
-                if (direction == Global.XDirections.left) _curXAccel = -_xAccel;
-                if (direction == Global.XDirections.right) _curXAccel = _xAccel;
+                if (!_knockedBack)
+                {
+                    if (direction == Global.XDirections.left) _curXAccel = -_xAccel;
+                    if (direction == Global.XDirections.right) _curXAccel = _xAccel;
+                }
             }
 
             xVelocity += _curXAccel;
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
-            else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
+            else Location = new PointF(
+                    Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
+                    ); 
 
             if (xVelocity == 0) return;
 
             if (!_knockedBack) clampSpeed(_maxXVelocity);
-            else clampSpeed(_knockback_velocity);
+            else clampSpeed(_xKnockbackVelocity);
 
             if (_curXAccel == 0 || _knockedBack) decelerate(dt);
-            if (xVelocity <= _maxXVelocity)  _knockedBack = false;
+            if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
         }
 
-        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min(Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
+        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min(
+                Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
+
         private void decelerate(double dt)
         {
-            if (Math.Abs(xVelocity) > 1)  xVelocity -= xVelocity * (15*dt); 
+            double deceleration = (_knockedBack) ? (FRICTION/2): FRICTION;
+            deceleration = Math.Max(1.05, deceleration*dt);
+            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
             else xVelocity = 0; 
         }
 
@@ -341,13 +350,16 @@
         {
                 if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
 
-                if (this is Player) 
-                { Location = new PointF(Location.X, Location.Y + (float)(yVelocity * dt)); }
+                if (this is Player) Location = new PointF(
+                        Location.X, Location.Y + (float)(yVelocity * dt)
+                        );
                 else 
                 { 
                     if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
-                    Location = new PointF(Location.X + (float)(xVelocity * dt), 
-                            Location.Y + (float)(yVelocity * dt)); 
+                    Location = new PointF(
+                            Location.X + (float)(xVelocity * dt), 
+                            Location.Y + (float)(yVelocity * dt)
+                            ); 
                 }
         }
 
@@ -377,16 +389,19 @@
 
         public void DoDamage(int dmg, Entity source)
         {
-            if (this is Player) { throw new Exception("Player should call DoDamage that takes hpBarUI as param"); }
+            if (this is Player) throw new Exception(
+                    "Player should call DoDamage that takes hpBarUI as param"
+                    );
             IsHit = true;
             _hp -= dmg;
             ApplyKnockBack(source); 
         }
 
-        public void ApplyKnockBack(Entity source, int speed = 3000)
+        public void ApplyKnockBack(Entity source, int xSpeed = 1500, int ySpeed = 500)
         {
-            xVelocity = (source.Center.X - this.Center.X < 0) ? speed : -speed;
-            _knockback_velocity = speed;
+            xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
+            yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
+            _xKnockbackVelocity = xSpeed;
             _knockedBack = true;
         }
 

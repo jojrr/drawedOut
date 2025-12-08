@@ -70,8 +70,8 @@ namespace drawedOut
                     size: atkSize,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: ATK_X_OFFSET,
-                    spawn: 2,
-                    despawn: 14);
+                    spawn: 7,
+                    despawn: 11);
             setRunAnim(@"fillerAnim\");
             setIdleAnim(@"fillerPic\");
         }

@@ -37,7 +37,7 @@ namespace drawedOut
             gameTickInterval;
 
         private const float 
-            ZOOM_FACTOR = 1.1F,
+            ZOOM_FACTOR = 1.05F,
             SLOW_FACTOR = 3.5F,
             SLOW_DURATION_S = 0.35F,
 
@@ -88,7 +88,7 @@ namespace drawedOut
                 energy: 100,
                 hp: 6);
 
-            meleeOne = new MeleeEnemy( origin: new Point(1350, -550) );
+            meleeOne = new MeleeEnemy( origin: new Point(2850, -550) );
 
             mainPlat = new(
                origin: new Point(1, 750),
@@ -116,7 +116,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1440;
+            Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -222,8 +222,9 @@ namespace drawedOut
             {
                 freezeTimeS -= (float)deltaTime;
                 isPaused = true;
+                deltaTime = 0;
             }
-            return deltaTime;
+            return double.Clamp(deltaTime, 0, 0.1);
         }
 
 
@@ -266,7 +267,7 @@ namespace drawedOut
                     if (a.Parent == e) continue;
                     if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) 
                     {
-                        e.DoDamage(a.AtkDmg, a.AtkHitbox);
+                        e.DoDamage(a.AtkDmg, a.Parent);
                         a.Dispose();
                     }
                 }
@@ -279,7 +280,7 @@ namespace drawedOut
                         continue;
                     }
 
-                    playerBox.DoDamage(a.AtkDmg, a.AtkHitbox, ref hpBar);
+                    playerBox.DoDamage(a.AtkDmg, a.Parent, ref hpBar);
                     a.Dispose();
                 }
             }
@@ -375,9 +376,9 @@ namespace drawedOut
             try
             {
                 Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
-                    enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center );
-                    foreach (Platform plat in Platform.ActivePlatformList)
-                    { enemy.CheckPlatformCollision(plat); }
+                        enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); 
+                        foreach (Platform plat in Platform.ActivePlatformList)
+                        { enemy.CheckPlatformCollision(plat); }
                 });
             }
             catch (OperationCanceledException) { return; }
