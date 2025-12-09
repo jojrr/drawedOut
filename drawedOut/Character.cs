@@ -110,7 +110,7 @@
         /// <summary>
         /// checks the Y direction for collision with platforms
         /// </summary>
-        /// <param name="collisionTarget"> the <see cref="Entity" that is being checked </param>
+        /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
             // Checks if there is a platform below
@@ -121,7 +121,6 @@
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
             }
             // Checks if there is a platform above the player
-            //else if ((Center.Y >= collisionTarget.Center.Y + targetHitbox.Height / 2 - Height / 4) && (yVelocity < 0))
             else if (collisionTarget.Center.Y < Hitbox.Top)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
@@ -133,7 +132,6 @@
         private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
             if (Center.X < targetHitbox.Left)
-                // Checks if there is a platform to the left/right of the player
             {
                 if (_xStickEntity is null && Center.Y > targetHitbox.Y) { xVelocity = 0; }
                 // character is on the right of the hitbox
