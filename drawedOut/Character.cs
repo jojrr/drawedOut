@@ -346,27 +346,24 @@
 
         public void ScrollChar(double dt, double scrollVelocity)
         {
-                if (_yStickEntity != null)  CheckPlatformCollision(_yStickEntity); 
+                if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity); 
 
-                if (this is Player) Location = new PointF(
-                        Location.X, Location.Y + (float)(yVelocity * dt)
-                        );
-                else 
-                { 
-                    if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
+                if (this is Player) 
+                {
                     Location = new PointF(
-                            Location.X + (float)(xVelocity * dt), 
+                            Location.X, 
                             Location.Y + (float)(yVelocity * dt)
-                            ); 
+                            );
+                    return;
                 }
-        }
 
-        public override void UpdateX(double scrollVelocity)
-        {
-            if (_xStickEntity != null) CheckPlatformCollision(_xStickEntity);
-            base.UpdateX(scrollVelocity);
-        }
+                if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity);
 
+                Location = new PointF(
+                        Location.X + (float)(xVelocity * dt), 
+                        Location.Y + (float)(yVelocity * dt)
+                        ); 
+        }
 
         /*
         public string CollisionDebugX()

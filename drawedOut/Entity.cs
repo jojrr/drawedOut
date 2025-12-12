@@ -96,7 +96,7 @@
         /// Increments the horizontal position of the entity by the given amount
         /// </summary>
         /// <param name="x">amount to increment X </param>
-        public virtual void UpdateX(double x)
+        public void UpdateX(double x)
         {
             float fltX = (float)x;
             if (x == 0) return;
