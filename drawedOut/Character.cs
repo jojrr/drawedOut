@@ -114,14 +114,14 @@
         private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
             // Checks if there is a platform below
-            if (Center.Y <= collisionTarget.Center.Y)
+            if (Hitbox.Bottom <= targetHitbox.Bottom)
             {
                 // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
                 if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
             }
             // Checks if there is a platform above the player
-            else if (collisionTarget.Center.Y < Hitbox.Top)
+            else if (targetHitbox.Top < Hitbox.Top)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
 
