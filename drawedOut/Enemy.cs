@@ -113,5 +113,15 @@ namespace drawedOut
         }
 
     }
+
+    internal class FlyingEnemy : Enemy
+    {
+
+        public FlyingEnemy(Point origin)
+            : base(origin: origin, width: 40, height: 40, hp: 3, maxXVelocity: 200)
+        {
+            
+        }
+    }
 }
 

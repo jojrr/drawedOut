@@ -2,14 +2,19 @@ namespace drawedOut
 {
     internal class Player : Character
     {
-        public int Energy { get => _energy; }
+        public double Energy { get => _energy; }
+        public double MaxEnergy { get => _maxEnergy; }
         public double XVelocity { get => xVelocity; }
         public static bool IsParrying { get => _isParrying; }
 
-        private static int _energy;
         private static bool _isParrying = false;
+        private static double _energy, _maxEnergy;
         private static new bool IsHit;
         private static new double _endlagS;
+        private const int 
+            PASSIVE_ENERGY_GAIN_S = 6,
+            PASSIVE_GAIN_LIMIT = 50,
+            PARRY_ENERGY_GAIN = 10;
         private const double 
             PARRY_ENDLAG_S = 0.2,
             PARRY_DURATION_S = 0.65,
@@ -44,7 +49,8 @@ namespace drawedOut
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
         {
-            _energy = energy;
+            _maxEnergy = 100;
+            _energy = 0;
             IsActive = true;
             _basic1.Parent = this;
             setIdleAnim(@"playerChar\idle\");
@@ -80,6 +86,7 @@ namespace drawedOut
         {
             Level0.SlowTime();
             Level0.ZoomScreen();
+            _energy += (int)(PARRY_ENERGY_GAIN*0.5);
             StopParry();
             _parryEndlagS = 0;
         }
@@ -89,6 +96,8 @@ namespace drawedOut
             if (!Hitbox.IntersectsWith(atk.AtkHitbox.Hitbox)) return false;
             if (!IsParrying) return false;
             if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) PerfectParry();
+            _energy += PARRY_ENERGY_GAIN;
+            UpdateEnergy(_energy);
             return true;
         }
 
@@ -105,6 +114,7 @@ namespace drawedOut
             return true;
         }
 
+        public static void UpdateEnergy(double energy) => _energy = Math.Min(energy, _maxEnergy);
 
         public void HealPlayer(int heal) => Hp += heal; 
 
@@ -115,6 +125,7 @@ namespace drawedOut
         public static void TickEndlagS(double dt) 
         { 
             Player.IsHit = false;
+            if (_energy < PASSIVE_GAIN_LIMIT) Player.UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
             if (Player._endlagS > 0) Player._endlagS -= dt; 
             if (Player.IsParrying) Player._parryTimeS += dt;
             if (Player._parryEndlagS > 0) Player._parryEndlagS -= dt;

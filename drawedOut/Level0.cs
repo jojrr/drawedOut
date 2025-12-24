@@ -45,7 +45,6 @@ namespace drawedOut
 
             ANIMATION_FPS = 1000/24F;
 
-
         private static float
             curZoom = 1,
             // TODO: redo freeze and slow logic
@@ -66,15 +65,14 @@ namespace drawedOut
                     barWidth: 20,
                     barHeight: 40,
                     maxHp: 6);
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
 
             energyBar = new BarUI(
                     origin: new PointF(70, 120),
-                    elementWidth: 200,
+                    elementWidth: 250,
                     elementHeight: 20,
                     brush: Brushes.Blue,
                     bgBrush: Brushes.Gray,
-                    maxVal: 50,
+                    maxVal: 1,
                     borderScale: 0.4f);
         }
 
@@ -205,6 +203,11 @@ namespace drawedOut
         {
             deltaTimeSW.Start();
 
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
+            hpBar.ComputeHP(playerBox.Hp);
+            energyBar.SetMax((float)(playerBox.MaxEnergy), true);
+            energyBar.Update((float)(playerBox.Energy));
+
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
 
@@ -290,6 +293,7 @@ namespace drawedOut
 
             Character.TickEndlags(deltaTime);
             Attacks.UpdateHitboxes();
+            energyBar.Update((float)(playerBox.Energy));
 
             if (playerBox.Hp <= 0)
             {
