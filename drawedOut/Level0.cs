@@ -8,6 +8,7 @@ namespace drawedOut
     {
         private static Player playerBox;
         private static MeleeEnemy meleeOne;
+        private static FlyingEnemy flyingOne;
         private static Platform mainPlat;
         private static Platform box3;
         private static Platform box4;
@@ -88,6 +89,8 @@ namespace drawedOut
 
             meleeOne = new MeleeEnemy( origin: new Point(2850, -550) );
 
+            flyingOne = new FlyingEnemy( origin: new Point(850, 100) );
+
             mainPlat = new(
                origin: new Point(1, 750),
                width: 5400,
@@ -143,7 +146,7 @@ namespace drawedOut
             characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
 
             foreach (Enemy e in Enemy.InactiveEnemyList)
-                characterAnimations.Add(e, e.NextAnimFrame());
+                //characterAnimations.Add(e, e.NextAnimFrame());
 
             gameTickThread = new Thread(() =>
             {

@@ -26,6 +26,15 @@
             ProjectileList.Add(this);
         }
 
+        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff)
+            : base(origin: origin, width: width, height: height)
+        {
+            _velocity = velocity;
+            _xVelocity = (float)Math.Cos(angle) * _velocity * Math.Sign(xDiff);
+            _yVelocity = (float)Math.Sin(angle) * _velocity * Math.Sign(yDiff);
+            ProjectileList.Add(this);
+        }
+
 
         /// <summary>
         /// updates the projectile's location based on the velocity and angle (x and y velocities)
@@ -54,12 +63,11 @@
             float xDiff = target.X - Location.X;
             float yDiff = target.Y - Location.Y;
 
-            double velocityAngle = Math.Atan(yDiff/xDiff);
+            // HACK: changed this to do less calculations before was doing Math.Abs during velocityCalculations instead of angleCalc.
+            float velocityAngle = (float)Math.Abs(Math.Atan(yDiff/xDiff)); 
 
-            _xVelocity = (float)Math.Abs(Math.Cos(velocityAngle)) *
-                _velocity * Math.Sign(xDiff);
-            _yVelocity = (float)Math.Abs(Math.Sin(velocityAngle)) *
-                _velocity * Math.Sign(yDiff);
+            _xVelocity = (float)Math.Cos(velocityAngle) * _velocity * Math.Sign(xDiff);
+            _yVelocity = (float)Math.Sin(velocityAngle) * _velocity * Math.Sign(yDiff);
         }
 
         /// <summary>

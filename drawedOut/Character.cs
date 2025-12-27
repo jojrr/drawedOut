@@ -8,9 +8,13 @@
 
         protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
         protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
-        protected double xVelocity { get; private set; }
-        protected double yVelocity { get; private set; }
+        protected double xVelocity { get; set; }
+        protected double yVelocity { get; set; }
+        protected int knockBackVelocity { get => _xKnockbackVelocity; }
+        protected int maxVelocity { get => _maxXVelocity; }
+        protected bool knockedBack { get => _knockedBack; set => _knockedBack = value; }
         protected int curXAccel { get => _curXAccel; }
+        protected int accel { get => _xAccel; }
         protected Attacks? curAttack;
         protected double endlagS = 0;
 
@@ -297,14 +301,7 @@
         public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
         {
             DoGravTick(dt);
-
-            // stops the player going above the screen
-            if (Location.Y <= 0 && yVelocity < 0)
-            {
-                LocationY = 1;
-                yVelocity = 0;
-            }
-            else if (Location.Y > Global.LevelSize.Height) this.Hp = 0;
+            checkInBoundary();
 
             _curXAccel=0;
 
@@ -333,8 +330,18 @@
             if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
         }
 
-        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min(
-                Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
+        // stops the character going above the screen and kills when going below screen.
+        protected void checkInBoundary() 
+        {
+             if (Location.Y <= 0)
+             {
+                 LocationY = 1;
+                 yVelocity = Math.Max(yVelocity, 0);
+             }
+             else if (Location.Y > Global.LevelSize.Height) this.Hp = 0;
+        }
+
+        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min( Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
 
         private void decelerate(double dt)
         {
@@ -396,7 +403,7 @@
         {
             xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
             yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
-            _xKnockbackVelocity = xSpeed;
+            _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
             _knockedBack = true;
         }
 
