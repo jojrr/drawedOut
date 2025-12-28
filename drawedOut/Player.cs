@@ -9,6 +9,7 @@ namespace drawedOut
 
         private static bool _isParrying = false;
         private static double _energy, _maxEnergy;
+        private static HpBarUI _hpBar;
         private static new bool IsHit;
         private static new double _endlagS;
         private const int 
@@ -57,6 +58,8 @@ namespace drawedOut
             setRunAnim(@"playerChar\run\");
         }
 
+        public static void LinkHpBar(ref HpBarUI hpBar) => _hpBar = hpBar;
+
         public void DoBasicAttack()
         {
             if (Player._endlagS > 0) return;
@@ -64,12 +67,28 @@ namespace drawedOut
             Player._endlagS = 1;
         }
 
-        public void DoDamage(int dmg, Entity source, ref HpBarUI hpBar)
+        public new void DoDamage(int dmg, Entity source)
         {
             Player.IsHit = true;
             Hp -= dmg;
-            hpBar.ComputeHP(Hp);
+            _hpBar.ComputeHP(Hp);
             ApplyKnockBack(source); 
+        }
+
+        public void DoDamage(int dmg, Entity source, int xSpeed)
+        {
+            Player.IsHit = true;
+            Hp -= dmg;
+            _hpBar.ComputeHP(Hp);
+            ApplyKnockBack(source, xSpeed); 
+        }
+
+        public void DoDamage(int dmg, Entity source, int xSpeed, int ySpeed)
+        {
+            Player.IsHit = true;
+            Hp -= dmg;
+            _hpBar.ComputeHP(Hp);
+            ApplyKnockBack(source, xSpeed, ySpeed); 
         }
 
         public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }
@@ -101,16 +120,27 @@ namespace drawedOut
             return true;
         }
 
-        public bool CheckParrying(Projectile proj)
+        /// <summary>
+        /// check for parry state against a projectile
+        /// </summary>
+        /// <param name="projectile"> the projectile to check for collision with </param>
+        /// <returns> boolean true = the projectile should be destroyed </returns>
+        public bool CheckParrying(Projectile projectile, double dt)
         {
-            if (!Hitbox.IntersectsWith(proj.Hitbox)) return false;
-            if (!IsParrying) return false;
-
-            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S)
+            if (!Hitbox.IntersectsWith(projectile.Hitbox)) return true;
+            if (!IsParrying)
             {
-                PerfectParry();
-                return false; // returns false as projectile should not be disposed when perfect parried
+                int[] knockBackVelocites = projectile.calculateKnockback(this.Center);
+                DoDamage(projectile.Dmg, projectile, knockBackVelocites[0], knockBackVelocites[1]);
+                return true;
             }
+            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) 
+            {
+                projectile.Rebound(this, dt);
+                PerfectParry(); 
+                return false;
+            }
+            _energy += PARRY_ENERGY_GAIN;
             return true;
         }
 

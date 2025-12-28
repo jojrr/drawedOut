@@ -117,10 +117,10 @@ namespace drawedOut
     internal class FlyingEnemy : Enemy
     {
 
-        private const int _PROJECTILE_VELOCITY = 3000, FRICTION = 40;
+        private const int _PROJECTILE_VELOCITY = 1000, _FRICTION = 10;
         private const float
-            _MOV_ENDLAG_S = 3,
-            _ATK_ENDLAG_S = 5,
+            _MOV_ENDLAG_S = 1,
+            _ATK_ENDLAG_S = 3,
             _MAX_MOVEMENT_TIME_S = 2;
         private readonly float
             _maxRangeSqrd,
@@ -132,12 +132,17 @@ namespace drawedOut
             _maxXSpeed,
             _maxYSpeed;
 
-        public FlyingEnemy(Point origin, int projectileWidth = 10, int projectileHeight = 10, float maxRange = 200, float minRange = 100, int projectileSpeed = _PROJECTILE_VELOCITY)
+        public FlyingEnemy(Point origin, int projectileWidth = 40, int projectileHeight = 40, float maxRange = 400, float minRange = 200, int projectileSpeed = _PROJECTILE_VELOCITY)
             : base(origin: origin, width: 40, height: 40, hp: 3, maxXVelocity: 200)
         {
-            _maxRangeSqrd = (maxRange * Global.BaseScale);
+            float _minRange = Math.Abs(minRange);
+            float _maxRange = Math.Abs(maxRange);
+
+            if (_minRange > _maxRange) _minRange = _maxRange;
+
+            _maxRangeSqrd = (_maxRange * Global.BaseScale);
             _maxRangeSqrd *= _maxRangeSqrd;
-            _minRangeSqrd = (minRange * Global.BaseScale);
+            _minRangeSqrd = (_minRange * Global.BaseScale);
             _minRangeSqrd *= _minRangeSqrd;
 
             _projectileSize = new Size(
@@ -148,7 +153,11 @@ namespace drawedOut
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)
         {
-            // if (endlagS > 0) return;
+            if (endlagS > 0) 
+            {
+                MoveCharacter(dt, 0, 0, scrollVelocity);
+                return;
+            }
 
             float xDiff = Center.X - playerCenter.X;
             float yDiff = Center.Y - playerCenter.Y;
@@ -166,7 +175,7 @@ namespace drawedOut
             }
 
             float SinAngle = (float)Math.Sin(angleToPlayer) * Math.Sign(yDiff);
-            float CosAngle = (float)Math.Sin(angleToPlayer) * Math.Sign(xDiff);
+            float CosAngle = (float)Math.Cos(angleToPlayer) * Math.Sign(xDiff); 
 
             _maxXSpeed = Math.Abs(CosAngle*maxVelocity);
             _maxYSpeed = Math.Abs(SinAngle*maxVelocity);
@@ -216,7 +225,7 @@ namespace drawedOut
 
         private void decelerate(double dt)
         {
-             float deceleration = (knockedBack) ? (FRICTION/2): FRICTION;
+             float deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
              deceleration = MathF.Max(1.05F, (float)(deceleration*dt));
              if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
              else xVelocity = 0; 
@@ -236,8 +245,9 @@ namespace drawedOut
                     height: _projectileSize.Height,
                     velocity: _PROJECTILE_VELOCITY,
                     angle: angle,
-                    xDiff: xDiff,
-                    yDiff: yDiff);
+                    xDiff: -xDiff,
+                    yDiff: -yDiff,
+                    parent: this);
         }
     }
 }

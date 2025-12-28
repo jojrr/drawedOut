@@ -21,6 +21,7 @@ namespace drawedOut
         private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
 
         private static Keys? prevLeftRight;
+        private static int gameTickInterval;
 
         private static bool
             gameTickEnabled = true,
@@ -33,18 +34,6 @@ namespace drawedOut
             isPaused = false,
             slowedMov = false;
 
-        private static int
-            gameTickFreq = 60,
-            gameTickInterval;
-
-        private const float 
-            ZOOM_FACTOR = 1.05F,
-            SLOW_FACTOR = 3.5F,
-            SLOW_DURATION_S = 0.35F,
-
-            FREEZE_DURATION_S = 0.15F,
-
-            ANIMATION_FPS = 1000/24F;
 
         private static float
             curZoom = 1,
@@ -53,11 +42,10 @@ namespace drawedOut
             freezeTimeS = 0;
 
         // threading 
-        // used for closing the thread
         private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
-        private static Thread gameTickThread;
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
+        private static Thread gameTickThread;
 
         private static void InitUI()
         {
@@ -122,9 +110,6 @@ namespace drawedOut
             this.DoubleBuffered = true;
             this.KeyPreview = true;
 
-            if (Global.LevelResolution == Global.Resolutions.p4k && gameTickFreq > 60)
-                gameTickFreq = 60;
-
             // set height and width of window
             this.Width = Global.LevelSize.Width;
             this.Height = Global.LevelSize.Height;
@@ -133,15 +118,14 @@ namespace drawedOut
             InitEntities();
             InitUI();
 
-            threadSettings.MaxDegreeOfParallelism = 4;
-            threadSettings.CancellationToken = cancelTokenSrc.Token;
-
             // sets the refresh interval
-            gameTickInterval = (int)(1000.0F / gameTickFreq);
+            gameTickInterval = (int)(1000.0F / Global.GameTickFreq);
 
             Stopwatch threadDelaySW = Stopwatch.StartNew();
             Stopwatch animTickSW = Stopwatch.StartNew();
             CancellationToken threadCT = cancelTokenSrc.Token;
+            threadSettings.CancellationToken = threadCT;
+            threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
 
             characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
 
@@ -160,8 +144,8 @@ namespace drawedOut
                     double deltaTime = slowTime(getDeltaTime());
                     double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
 
-                    if (slowTimeS > 0) animationInterval /= SLOW_FACTOR;
-                    if (animationInterval >= ANIMATION_FPS)
+                    if (slowTimeS > 0) animationInterval /= Global.SLOW_FACTOR;
+                    if (animationInterval >= Global.ANIMATION_FPS)
                     {
                         TickAnimations();
                         animTickSW.Restart();
@@ -208,6 +192,7 @@ namespace drawedOut
 
             hpBar.UpdateMaxHp(playerBox.MaxHp);
             hpBar.ComputeHP(playerBox.Hp);
+            Player.LinkHpBar(ref hpBar);
             energyBar.SetMax((float)(playerBox.MaxEnergy), true);
             energyBar.Update((float)(playerBox.Energy));
 
@@ -238,12 +223,12 @@ namespace drawedOut
         {
             if (slowTimeS > 0)
             {
-                if (ZOOM_FACTOR <= 1)
+                if (Global.ZOOM_FACTOR <= 1)
                     throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
 
                 slowedMov = true;
                 slowTimeS -= (float)deltaTime;
-                return (deltaTime /= SLOW_FACTOR);
+                return (deltaTime /= Global.SLOW_FACTOR);
             }
             else 
             {
@@ -258,9 +243,6 @@ namespace drawedOut
             }
         }
 
-
-        // stores projectiles to be disposed of (as list cannot be altered mid-loop)
-        private static List<Projectile> disposedProjectiles = new List<Projectile>();
 
         private void attackHandler(double deltaTime)
         {
@@ -286,12 +268,12 @@ namespace drawedOut
                         continue;
                     }
 
-                    playerBox.DoDamage(a.AtkDmg, a.Parent, ref hpBar);
+                    playerBox.DoDamage(a.AtkDmg, a.Parent);
                     a.Dispose();
                 }
             }
 
-            try { CheckProjectileCollisions(deltaTime); }
+            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerBox, threadSettings); }
             catch (OperationCanceledException) { return; }
 
             Character.TickEndlags(deltaTime);
@@ -307,58 +289,9 @@ namespace drawedOut
         }
 
 
-        private void CheckProjectileCollisions(double dt)
-        {
-            if (Projectile.ProjectileList.Count == 0) return;
-            Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
-            {
-                bullet.MoveProjectile(dt);
-                PointF bLoc = bullet.Center;
-
-                if (disposedProjectiles.Contains(bullet)) return;
-
-                foreach (Platform p in Platform.ActivePlatformList)
-                {
-                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
-                    disposedProjectiles.Add(bullet);
-                    break;
-                }
-
-                if (!bullet.Hitbox.IntersectsWith(ClientRectangle)) // WARNING: changed from location based to rectangle based
-                {
-                    disposedProjectiles.Add(bullet);
-                    return;
-                }
-
-                // Return if bullet not touching player
-                if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox))
-                    return;
-
-                // TODO: fix
-                // if (!Player.IsParrying)
-                // {
-                //     freezeTimeS = FREEZE_DURATION_S * 10;
-                //     disposedProjectiles.Add(bullet);
-                //     playerBox.DoDamage(1, ref hpBar);
-                //     return;
-                // }
-
-                bullet.rebound(playerBox);// required to prevent getting hit anyway when parrying
-
-                if (playerBox.CheckParrying(bullet)) disposedProjectiles.Add(bullet);
-
-                if (disposedProjectiles.Count == 0) return;
-                foreach (Projectile p in disposedProjectiles)
-                    Projectile.ProjectileList.Remove(p);
-
-                disposedProjectiles.Clear();
 
 
-            });
-        }
-
-
-        public static void SlowTime() => slowTimeS = SLOW_DURATION_S;
+        public static void SlowTime() => slowTimeS = Global.SLOW_DURATION_S;
 
 
         private void movementTick(double deltaTime)
@@ -439,7 +372,7 @@ namespace drawedOut
         // (Center Player on screen method)
         public static void ZoomScreen() 
         {
-            curZoom = ZOOM_FACTOR;
+            curZoom = Global.ZOOM_FACTOR;
 
             float playerX = playerBox.Center.X;
             float playerY = playerBox.Center.Y;
@@ -530,17 +463,18 @@ namespace drawedOut
 
         private void ShowFPSInfo(Graphics g)
         {
+            float baseScale = Global.BaseScale;
 
             g.DrawString(
                     prevFrameFPS.ToString()+"fps",
-                    new Font("Arial", 10*Global.BaseScale),
+                    new Font("Arial", 10*baseScale),
                     Brushes.Black,
-                    new PointF(60*Global.BaseScale,220*Global.BaseScale));
+                    new PointF(60*baseScale,220*baseScale));
             g.DrawString(
                     prevFrameTime.ToString("F3")+"ms",
-                    new Font("Arial", 10*Global.BaseScale),
+                    new Font("Arial", 10*baseScale),
                     Brushes.Black,
-                    new PointF(60*Global.BaseScale,240*Global.BaseScale));
+                    new PointF(60*baseScale,240*baseScale));
         }
 
         private void drawHitboxes(Graphics g)

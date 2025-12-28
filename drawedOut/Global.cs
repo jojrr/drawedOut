@@ -5,6 +5,30 @@ namespace drawedOut
     ///</summary>
     public static class Global
     {
+        public const int MAX_THREADS_TO_USE = 4;
+        public const float 
+            ZOOM_FACTOR = 1.05F,
+            SLOW_FACTOR = 3.5F,
+            SLOW_DURATION_S = 0.35F,
+            FREEZE_DURATION_S = 0.15F,
+            ANIMATION_FPS = 1000/24F;
+
+        private static int _gameTickFreq = 60;
+        public static int GameTickFreq 
+        {
+            get  
+            {
+                if (_curResolution == Resolutions.p4k && _gameTickFreq > 60) return 60;
+                return _gameTickFreq; 
+            }
+            set 
+            {
+                if ( 0 > value) _gameTickFreq = 0;
+                if ( 120 < value) _gameTickFreq = 120;
+                _gameTickFreq = value; 
+            }
+        }
+
         private static float _baseScale = 1F;
         public static float BaseScale 
         { 

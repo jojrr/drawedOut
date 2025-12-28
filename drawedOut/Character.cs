@@ -391,9 +391,6 @@
 
         public void DoDamage(int dmg, Entity source)
         {
-            if (this is Player) throw new Exception(
-                    "Player should call DoDamage that takes hpBarUI as param"
-                    );
             IsHit = true;
             _hp -= dmg;
             ApplyKnockBack(source); 
