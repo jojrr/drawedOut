@@ -7,12 +7,18 @@ namespace drawedOut
 
         public Enemy(Point origin, int width, int height, int hp, int xAccel=100, int maxXVelocity=600)
             : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
-        {
-            InactiveEnemyList.Add(this);
-        }
+        { InactiveEnemyList.Add(this); }
 
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
+
+        public static void ClearAll() 
+        {
+            foreach (Enemy e in Enemy.ActiveEnemyList) EntityList.Remove(e); 
+            foreach (Enemy e in Enemy.InactiveEnemyList) EntityList.Remove(e); 
+            ActiveEnemyList.Clear();
+            InactiveEnemyList.Clear();
+        }
 
         public override void CheckActive()
         {
@@ -22,6 +28,7 @@ namespace drawedOut
                 ActiveEnemyList.Remove(this);
                 InactiveEnemyList.Remove(this);
                 if (this.curAttack is not null) this.curAttack.Dispose();
+                this.Delete();
                 return;
             }
 
@@ -149,6 +156,8 @@ namespace drawedOut
                     projectileWidth, 
                     projectileHeight
                     );
+
+            setIdleAnim(@"fillerAnim\");
         }
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)
@@ -248,6 +257,21 @@ namespace drawedOut
                     xDiff: -xDiff,
                     yDiff: -yDiff,
                     parent: this);
+        }
+
+        public override Bitmap NextAnimFrame()
+        {
+            if (curAttack is not null)
+            {
+                if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
+                {
+                    Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                    curAttack = null;
+                    return atkAnim;
+                }
+                return curAttack.NextAnimFrame(FacingDirection);
+            }
+            return idleAnim.NextFrame(FacingDirection);
         }
     }
 }

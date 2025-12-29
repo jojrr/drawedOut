@@ -9,6 +9,8 @@ namespace drawedOut
         private static Player playerBox;
         private static MeleeEnemy meleeOne;
         private static FlyingEnemy flyingOne;
+        private static Checkpoint checkpointOne;
+
         private static Platform mainPlat;
         private static Platform box3;
         private static Platform box4;
@@ -32,7 +34,9 @@ namespace drawedOut
             jumping = false,
 
             isPaused = false,
-            slowedMov = false;
+            slowedMov = false,
+
+            levelLoaded = false;
 
 
         private static float
@@ -63,21 +67,33 @@ namespace drawedOut
                     bgBrush: Brushes.Gray,
                     maxVal: 1,
                     borderScale: 0.4f);
+            energyBar.SetMax((float)(playerBox.MaxEnergy), true);
         }
 
         private static void InitEntities()
         {
+            if (levelLoaded) 
+            {
+                foreach (Enemy e in Enemy.ActiveEnemyList) e.Reset();
+                foreach (Enemy e in Enemy.InactiveEnemyList) e.Reset();
+                playerBox.Reset();
+                Platform.ResetLocation();
+                return;
+            }
+
             playerBox = new Player(
-                origin: new Point(850, 550),
-                width: 30,
-                height: 160,
-                attackPower: 1,
-                energy: 100,
-                hp: 6);
+                    origin: new Point(850, 550),
+                    width: 30,
+                    height: 160,
+                    attackPower: 1,
+                    energy: 100,
+                    hp: 3);
 
-            meleeOne = new MeleeEnemy( origin: new Point(2850, -550) );
+            meleeOne = new(origin:new Point(2850, -550));
+            flyingOne = new(origin:new Point(850, 100));
 
-            flyingOne = new FlyingEnemy( origin: new Point(850, 100) );
+            checkpointOne = new(origin: new Point(200, 600));
+
 
             mainPlat = new(
                origin: new Point(1, 750),
@@ -115,9 +131,6 @@ namespace drawedOut
             this.Height = Global.LevelSize.Height;
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            InitEntities();
-            InitUI();
-
             // sets the refresh interval
             gameTickInterval = (int)(1000.0F / Global.GameTickFreq);
 
@@ -127,10 +140,7 @@ namespace drawedOut
             threadSettings.CancellationToken = threadCT;
             threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
 
-            characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
-
-            foreach (Enemy e in Enemy.InactiveEnemyList)
-                //characterAnimations.Add(e, e.NextAnimFrame());
+            ResetLevel();
 
             gameTickThread = new Thread(() =>
             {
@@ -190,16 +200,30 @@ namespace drawedOut
         {
             deltaTimeSW.Start();
 
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
-            hpBar.ComputeHP(playerBox.Hp);
-            Player.LinkHpBar(ref hpBar);
-            energyBar.SetMax((float)(playerBox.MaxEnergy), true);
-            energyBar.Update((float)(playerBox.Energy));
-
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
 
             togglePause(false);
+            levelLoaded = true;
+        }
+
+        private void ResetLevel()
+        {
+            foreach (Attacks a in Attacks.AttacksList) a.Dispose();
+            InitEntities();
+            RelinkAnimations();
+            InitUI();
+            hpBar.UpdateMaxHp(playerBox.MaxHp);
+            hpBar.ComputeHP(playerBox.Hp);
+            Player.LinkHpBar(ref hpBar);
+            energyBar.Update((float)(playerBox.Energy));
+        }
+
+        private void RelinkAnimations()
+        {
+            characterAnimations.Clear();
+            characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
+            foreach (Enemy e in Enemy.InactiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
         }
 
 
@@ -250,17 +274,20 @@ namespace drawedOut
 
             foreach (Attacks a in Attacks.AttacksList)
             {
+                RectangleF atkBox = a.AtkHitbox.Hitbox;
                 foreach (Enemy e in Enemy.ActiveEnemyList)
                 {
                     if (a.Parent == e) continue;
-                    if (a.AtkHitbox.Hitbox.IntersectsWith(e.Hitbox)) 
-                    {
-                        e.DoDamage(a.AtkDmg, a.Parent);
-                        a.Dispose();
-                    }
+                    if (!atkBox.IntersectsWith(e.Hitbox)) continue; 
+                    e.DoDamage(a.AtkDmg, a.Parent);
+                    a.Dispose();
                 }
-                if (a.Parent is Player) continue;
-                if (a.AtkHitbox.Hitbox.IntersectsWith(playerBox.Hitbox)) 
+                if (a.Parent is Player) 
+                {
+                    foreach (Checkpoint c in Checkpoint.CheckPointList)
+                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(); }
+                }
+                else if (atkBox.IntersectsWith(playerBox.Hitbox)) 
                 {
                     if (playerBox.CheckParrying(a)) 
                     {
@@ -278,17 +305,20 @@ namespace drawedOut
 
             Character.TickEndlags(deltaTime);
             Attacks.UpdateHitboxes();
+            Entity.DisposeRemoved();
             energyBar.Update((float)(playerBox.Energy));
 
-            if (playerBox.Hp <= 0)
-            {
-                togglePause(true);
-                MessageBox.Show(this, "you are dead", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.Close();
-            }
+            if (playerBox.Hp <= 0) PlayerDeath();
         }
 
-
+        private void PlayerDeath()
+        {
+            togglePause(true);
+            // TryInvoke(new Action( ()=> MessageBox.Show(this, "you are dead", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information)));
+            ResetLevel();
+            Checkpoint.LoadState();
+            togglePause(false);
+        }
 
 
         public static void SlowTime() => slowTimeS = Global.SLOW_DURATION_S;
@@ -329,7 +359,7 @@ namespace drawedOut
 
         public void ScrollEntities(double velocity, double deltaTime)
         {
-            foreach( Entity e in Entity.EntityList)
+            foreach(Entity e in Entity.EntityList)
             {
                 if (e is Player) { continue; }
                 e.UpdateX(velocity * deltaTime);
@@ -365,7 +395,10 @@ namespace drawedOut
         }
 
         // pause game
-        private void togglePause(bool pause) => isPaused = !isPaused; 
+        private static void togglePause() => isPaused = !isPaused; 
+
+        // pause game
+        private static void togglePause(bool pause) => isPaused = pause; 
 
 
         // TODO: remove this logic and use graphics scaling instead.
@@ -389,7 +422,6 @@ namespace drawedOut
 
                 obj.ScaleHitbox(curZoom);
                 obj.Center = new PointF (newX, newY);
-                //Invalidate(); // WARNING: unsure if needed
             }
 
 
@@ -445,18 +477,15 @@ namespace drawedOut
                 g.DrawImage(img.Value, img.Key.AnimRect);
             }
             
-            //Bitmap platformSprite = Platform.PlatformSprite;
             foreach (Platform plat in Platform.ActivePlatformList)
             {
                 RectangleF hitbox = plat.Hitbox;
                 using (Pen blackPen = new Pen(Color.Black, 6))
                 { g.DrawRectangle(blackPen, hitbox); }
-                //if (plat.IsMainPlat) continue;
-                //g.DrawImage(platformSprite, hitbox);
             }
-
+            
             if (showHitbox) drawHitboxes(g);
-
+            Checkpoint.Draw(g);
             ShowFPSInfo(g);
         }
 
@@ -479,14 +508,16 @@ namespace drawedOut
 
         private void drawHitboxes(Graphics g)
         {
-            g.DrawRectangle(playerPen, playerBox.Hitbox);
-
+            foreach (Entity e in Entity.EntityList) 
+                g.DrawRectangle(Pens.Aqua, e.Hitbox);
             foreach (Enemy e in Enemy.ActiveEnemyList) 
                 g.DrawRectangle(Pens.Blue, e.Hitbox);
             foreach (Projectile bullet in Projectile.ProjectileList) 
                 g.FillRectangle(Brushes.Red, bullet.Hitbox);
             foreach (Attacks a in Attacks.AttacksList) 
                 g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
+
+            g.DrawRectangle(playerPen, playerBox.Hitbox);
         }
 
 

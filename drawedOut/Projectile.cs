@@ -99,7 +99,7 @@
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
         }
 
-        public void Dipose() => ProjectileList.Remove(this);
+        public void Dipose() => disposedProjectiles.Add(this); 
 
         public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dipose(); }
 
@@ -145,7 +145,10 @@
 
             if (disposedProjectiles.Count == 0) return;
             foreach (Projectile p in disposedProjectiles)
+            {
                 ProjectileList.Remove(p);
+                EntityList.Remove(p);
+            }
 
             disposedProjectiles.Clear();
         }

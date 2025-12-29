@@ -7,7 +7,9 @@
         /// </summary>
         public static List<Platform> ActivePlatformList = new List<Platform>();
         public static List<Platform> InactivePlatformList = new List<Platform>();
+
         public bool IsMainPlat { get; init; }
+        private PointF _originalLocation;
 
         public static Bitmap PlatformSprite { get; private set; }
         private static string _spritePath = @"sprites/platforms/platformSprite/platformSprite.png";
@@ -26,6 +28,7 @@
         public Platform(Point origin, int width, int height, bool isMainPlat=false)
             : base(origin, width, height)
         {
+            _originalLocation = origin;
             InactivePlatformList.Add(this);
             if (isMainPlat) 
             {
@@ -34,6 +37,12 @@
                 IsActive = true;
             }
         } 
+
+        public static void ResetLocation()
+        {
+            foreach (Platform p in ActivePlatformList) p.Location = p._originalLocation;
+            foreach (Platform p in InactivePlatformList) p.Location = p._originalLocation;
+        }
 
         public override void CheckActive()
         {

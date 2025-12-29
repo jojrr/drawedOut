@@ -27,8 +27,8 @@ namespace drawedOut
         private static readonly Attacks 
             _basic1 = new Attacks(
                     parent: null,
-                    width: 380,
-                    height: 220,
+                    width: 180,
+                    height: 180,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: 100,
                     spawn: 2,
@@ -89,6 +89,15 @@ namespace drawedOut
             Hp -= dmg;
             _hpBar.ComputeHP(Hp);
             ApplyKnockBack(source, xSpeed, ySpeed); 
+        }
+
+        ///<summary>
+        ///Reset the player to the state that the player was initialised in
+        ///</summary>
+        public override void Reset()
+        {
+            base.Reset();
+            _energy = 0;
         }
 
         public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }

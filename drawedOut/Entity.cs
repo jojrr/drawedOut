@@ -5,6 +5,25 @@
     /// </summary>
     internal class Entity
     {
+        public static List<Entity> EntityList = new List<Entity>();
+        private static List<Entity> _toRemoveList = new List<Entity>();
+
+        public SizeF Size { get => _scaledSize; }
+        public float Width { get => _scaledSize.Width; }
+        public float Height { get => _scaledSize.Height; }
+        public RectangleF Hitbox { get => _calcHitbox(); }
+        public bool IsActive { get => isActive; protected set => isActive = value; }
+
+        ///<summary>
+        ///The distance between the object's center and the center of the screen.
+        ///Distance is scalar
+        ///</summary>
+        protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
+
+        private bool isActive = false;
+        private SizeF _scaledSize;
+        private RectangleF _hitbox;
+        private readonly SizeF _baseSize;
         private PointF 
             _location,
             _center;
@@ -53,26 +72,6 @@
             }
         }
 
-        ///<summary>
-        ///The distance between the object's center and the center of the screen.
-        ///Distance is scalar
-        ///</summary>
-        protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
-        private bool isActive = false;
-        public bool IsActive { get => isActive; protected set => isActive = value; }
-
-        private SizeF _scaledSize;
-        private readonly SizeF _baseSize;
-        public SizeF Size { get => _scaledSize;  }
-        public float Width { get => _scaledSize.Width;  }
-        public float Height { get => _scaledSize.Height;  }
-
-        private RectangleF _hitbox;
-        public RectangleF Hitbox { get => _calcHitbox(); }
-
-        public static List<Entity> EntityList = new List<Entity>();
-
-
         /// <summary>
         /// Creates a hitbox at specified paramters
         /// </summary>
@@ -92,6 +91,12 @@
             EntityList.Add(this);
         }
 
+        public static void DisposeRemoved()
+        {
+            foreach (Entity e in _toRemoveList) EntityList.Remove(e);
+            _toRemoveList.Clear();
+        }
+
         /// <summary>
         /// Increments the horizontal position of the entity by the given amount
         /// </summary>
@@ -103,6 +108,11 @@
             _location.X += fltX;
             _center.X += fltX;
         }
+
+        ///<summary>
+        ///removes this entity from the EntityList
+        ///</summary>
+        public void Delete() => _toRemoveList.Add(this);
 
         private RectangleF _calcHitbox() 
         {

@@ -27,6 +27,7 @@
         private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
+        private readonly PointF _originalLocation;
         private readonly int
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
@@ -50,6 +51,7 @@
             yVelocity = 0;
             _hp = hp;
             _maxHp = hp;
+            _originalLocation = Location;
             _xAccel = (int)(xAccel * Global.BaseScale);
             _gravity = (int)(Global.BaseScale * GRAVITY);
             _maxXVelocity = (int)(Global.BaseScale * maxXVelocity);
@@ -404,10 +406,18 @@
             _knockedBack = true;
         }
 
-
         public override void CheckActive(){}
 
-        public virtual Bitmap? NextAnimFrame()
+        ///<summary>
+        ///Reset the player to the state that the player was initialised in
+        ///</summary>
+        public virtual void Reset()
+        {
+            Location = _originalLocation;
+            Hp = MaxHp;
+        }
+
+        public virtual Bitmap NextAnimFrame()
         {
             if (curAttack is not null)
             {
@@ -426,7 +436,6 @@
                 return runAnim.NextFrame(FacingDirection);
             }
             return idleAnim.NextFrame(FacingDirection);
-
         }
     }
 }

@@ -35,13 +35,7 @@ namespace drawedOut
                         ); 
                 return _parent;
             }
-            set 
-            {
-                if (_parent is not null) throw new NullReferenceException(
-                        "Parent attempted to be overwritten when already having value"
-                        ); 
-                _parent = value; 
-            }
+            set => _parent = value; 
         }
 
 
@@ -216,6 +210,8 @@ namespace drawedOut
             foreach (Attacks atk in _disposedAttacks) 
             {
                 AttacksList.Remove(atk);
+                if (atk.AtkHitbox is null) continue;
+                atk.AtkHitbox.Delete();
                 atk.AtkHitbox = null;
             }
 
