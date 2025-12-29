@@ -243,7 +243,7 @@
                 if (_curYColliderDirection == Global.YDirections.top)
                 {
                     LocationY = _yStickTarget.Value.Bottom + 1;
-                    yVelocity = 0;
+                    yVelocity = Math.Max(yVelocity,0);
                 }
 
                 // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
@@ -403,7 +403,20 @@
             xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
             yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
             _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
+            if (_curXColliderDirection == Global.XDirections.left) xVelocity = Math.Min(0,xVelocity);
+            if (_curXColliderDirection == Global.XDirections.right) xVelocity = Math.Max(0,xVelocity);
             _knockedBack = true;
+        }
+
+        public void AutoCheckPlatformCollision()
+        { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p); }
+
+
+        public void AutoCheckPlatformCollision(ParallelOptions threadSettings)
+        { 
+            try
+            { Parallel.ForEach(Platform.ActivePlatformList, threadSettings, platform => {CheckPlatformCollision(platform);}); }
+            catch (OperationCanceledException) { return; }
         }
 
         public override void CheckActive(){}

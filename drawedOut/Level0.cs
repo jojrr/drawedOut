@@ -340,15 +340,13 @@ namespace drawedOut
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
-            foreach (Platform plat in Platform.ActivePlatformList)
-                playerBox.CheckPlatformCollision(plat); 
+            playerBox.AutoCheckPlatformCollision();
 
             try
             {
                 Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
                         enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); 
-                        foreach (Platform plat in Platform.ActivePlatformList)
-                        { enemy.CheckPlatformCollision(plat); }
+                        enemy.AutoCheckPlatformCollision();
                 });
             }
             catch (OperationCanceledException) { return; }
@@ -548,6 +546,8 @@ namespace drawedOut
                     }
                     movingRight = true;
                     break;
+
+                case Keys.S: throw new Exception("");
 
                 case Keys.Escape:
                     this.Close();
