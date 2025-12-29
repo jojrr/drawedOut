@@ -74,10 +74,7 @@ namespace drawedOut
         {
             if (levelLoaded) 
             {
-                foreach (Enemy e in Enemy.ActiveEnemyList) e.Reset();
-                foreach (Enemy e in Enemy.InactiveEnemyList) e.Reset();
-                playerBox.Reset();
-                Platform.ResetLocation();
+                foreach (Entity e in Entity.EntityList) e.Reset();
                 return;
             }
 

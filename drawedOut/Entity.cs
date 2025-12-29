@@ -25,6 +25,7 @@
         private RectangleF _hitbox;
         private readonly SizeF _baseSize;
         private PointF 
+            _originalLocation,
             _location,
             _center;
 
@@ -87,6 +88,7 @@
             _scaledSize = _baseSize;
             _hitbox = new RectangleF(_location, _scaledSize); 
             _center = new PointF (_hitbox.X + _scaledSize.Width/2, _hitbox.Y + _scaledSize.Height/2);
+            _originalLocation = _location;
 
             EntityList.Add(this);
         }
@@ -113,6 +115,11 @@
         ///removes this entity from the EntityList
         ///</summary>
         public void Delete() => _toRemoveList.Add(this);
+
+        ///<summary>
+        ///Reset the entity to the state that the player was initialised in
+        ///</summary>
+        public virtual void Reset() => Location = _originalLocation;
 
         private RectangleF _calcHitbox() 
         {

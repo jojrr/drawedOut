@@ -27,7 +27,6 @@
         private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
-        private readonly PointF _originalLocation;
         private readonly int
             _terminalVelocity = 2300,
             _jumpVelocity = 1500,
@@ -51,7 +50,6 @@
             yVelocity = 0;
             _hp = hp;
             _maxHp = hp;
-            _originalLocation = Location;
             _xAccel = (int)(xAccel * Global.BaseScale);
             _gravity = (int)(Global.BaseScale * GRAVITY);
             _maxXVelocity = (int)(Global.BaseScale * maxXVelocity);
@@ -419,14 +417,10 @@
             catch (OperationCanceledException) { return; }
         }
 
-        public override void CheckActive(){}
-
-        ///<summary>
-        ///Reset the player to the state that the player was initialised in
-        ///</summary>
-        public virtual void Reset()
+        public override void Reset()
         {
-            Location = _originalLocation;
+            base.Reset();
+            endlagS = 0;
             Hp = MaxHp;
         }
 
@@ -450,5 +444,7 @@
             }
             return idleAnim.NextFrame(FacingDirection);
         }
+
+        public override void CheckActive() => throw new Exception("CheckActive not implemented in a character");
     }
 }
