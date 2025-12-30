@@ -4,7 +4,6 @@
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
-        public bool IsHit { get; protected set; }
 
         protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
         protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
@@ -105,9 +104,8 @@
             Player.TickEndlagS(dt);
             foreach (Enemy e in Enemy.ActiveEnemyList) 
             {
-            
+                e.IncDownTimer(dt);
                 e.endlagS -= dt; 
-                e.IsHit = false;
             }
         }
 
@@ -398,7 +396,6 @@
 
         public void DoDamage(int dmg, Entity source)
         {
-            IsHit = true;
             _hp -= dmg;
             ApplyKnockBack(source); 
         }

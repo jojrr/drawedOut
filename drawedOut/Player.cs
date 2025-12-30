@@ -7,10 +7,10 @@ namespace drawedOut
         public double XVelocity { get => xVelocity; }
         public static bool IsParrying { get => _isParrying; }
 
+        public static bool IsHit { get; private set; }
         private static bool _isParrying = false;
         private static double _energy, _maxEnergy;
         private static HpBarUI _hpBar;
-        private static new bool IsHit;
         private static new double _endlagS;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,

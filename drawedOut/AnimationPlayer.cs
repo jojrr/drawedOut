@@ -8,9 +8,8 @@ namespace drawedOut
             _frameNo = 0,
             _totalFrameCount;
 
-        private static readonly string 
-            PROJ_PATH = Global.GetProjFolder(),
-            SPRITE_FOLDER = @"sprites\";
+        private const string SPRITE_FOLDER = @"sprites\";
+        private static readonly string PROJ_PATH = Global.GetProjFolder();
 
         public int CurFrame { get => _frameNo; }
         public int LastFrame { get => _totalFrameCount-1; }
@@ -59,6 +58,7 @@ namespace drawedOut
             return img;
         }
 
+        public Bitmap GetFrame(int frameNo) => _animFrames[frameNo];
 
         public void ResetAnimation() => _frameNo = 0;
     }

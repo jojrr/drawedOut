@@ -2,34 +2,42 @@ namespace drawedOut
 {
     internal class FlyingEnemy : Enemy
     {
-
-        private const int _PROJECTILE_VELOCITY = 1000, _FRICTION = 10;
+        private const int 
+            _DEFAULT_PROJECTILE_VELOCITY = 1000, 
+            _DEFAULT_PREFERRED_HEIGHT = 160,
+            _FRICTION = 20;
         private const float
             _MOV_ENDLAG_S = 1,
-        _ATK_ENDLAG_S = 3,
-        _MAX_MOVEMENT_TIME_S = 2;
-        private readonly float
-            _maxRangeSqrd,
-        _minRangeSqrd;
+            _ATK_ENDLAG_S = 3,
+            _MAX_MOVEMENT_TIME_S = 2;
+        private static Bitmap _downedSprite;
+        private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
+        private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
+        private float _maxXSpeed, _maxYSpeed;
+        private double _movementTimer = 0;
 
-        private double _movementTimer=0;
-        private float
-            _maxXSpeed,
-        _maxYSpeed;
+        static FlyingEnemy()
+        {
+            string downedSpriteFolder = @"six\";
+            _downedSprite = getDownedSprite(downedSpriteFolder);
+        }
 
-        public FlyingEnemy(Point origin, int projectileWidth = 40, int projectileHeight = 40, float maxRange = 400, float minRange = 200, int projectileSpeed = _PROJECTILE_VELOCITY)
+        public FlyingEnemy(Point origin,
+                int projectileWidth = 40, int projectileHeight = 40, float maxRange = 400, float minRange = 200, 
+                int projectileSpeed=_DEFAULT_PROJECTILE_VELOCITY, int preferredHeight=_DEFAULT_PREFERRED_HEIGHT)
             : base(origin: origin, width: 40, height: 40, hp: 3, maxXVelocity: 200)
         {
             float _minRange = Math.Abs(minRange);
             float _maxRange = Math.Abs(maxRange);
-
             if (_minRange > _maxRange) _minRange = _maxRange;
 
             _maxRangeSqrd = (_maxRange * Global.BaseScale);
             _maxRangeSqrd *= _maxRangeSqrd;
             _minRangeSqrd = (_minRange * Global.BaseScale);
             _minRangeSqrd *= _minRangeSqrd;
+            _preferredHeight = preferredHeight*Global.BaseScale;
+            _projectileSpeed = (int)(projectileSpeed*Global.BaseScale);
 
             _projectileSize = new Size(
                     projectileWidth, 
@@ -41,6 +49,12 @@ namespace drawedOut
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)
         {
+            if (isDowned) 
+            {
+                MoveCharacter(dt, null, scrollVelocity);
+                return;
+            }
+
             float xDiff = Center.X - playerCenter.X;
             if (endlagS > 0) 
             {
@@ -50,8 +64,10 @@ namespace drawedOut
             }
 
             float yDiff = Center.Y - playerCenter.Y;
+            if (yDiff > -_preferredHeight) yDiff = Global.LevelSize.Height;
             double angleToPlayer = Math.Abs(Math.Atan(yDiff/xDiff));
             float distToPlayerSqrd = yDiff*yDiff + xDiff*xDiff;
+
 
             float xAccel=0;
             float yAccel=0;
@@ -132,7 +148,7 @@ namespace drawedOut
                     origin: this.Center,
                     width: _projectileSize.Width,
                     height: _projectileSize.Height,
-                    velocity: _PROJECTILE_VELOCITY,
+                    velocity: _projectileSpeed,
                     angle: angle,
                     xDiff: -xDiff,
                     yDiff: -yDiff,
@@ -141,6 +157,7 @@ namespace drawedOut
 
         public override Bitmap NextAnimFrame()
         {
+            if (isDowned) return _downedSprite;
             if (curAttack is not null)
             {
                 if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)

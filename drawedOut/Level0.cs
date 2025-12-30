@@ -277,7 +277,7 @@ namespace drawedOut
                 {
                     if (a.Parent == e) continue;
                     if (!atkBox.IntersectsWith(e.Hitbox)) continue; 
-                    e.DoDamage(a.AtkDmg, a.Parent);
+                    e.DoDamage(a.AtkDmg, a.Parent, false);
                     a.Dispose();
                 }
                 if (a.Parent is Player) 
@@ -380,7 +380,7 @@ namespace drawedOut
             }
 
             if (Player.IsParrying) playerPen = Pens.Gray;
-            else if (playerBox.IsHit) playerPen = Pens.Red; // visual hit indicator
+            else if (Player.IsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
         }
 
