@@ -406,8 +406,6 @@
             xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
             yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
             _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
-            if (_curXColliderDirection == Global.XDirections.left) xVelocity = Math.Min(0,xVelocity);
-            if (_curXColliderDirection == Global.XDirections.right) xVelocity = Math.Max(0,xVelocity);
             _knockedBack = true;
         }
 
