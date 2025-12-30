@@ -31,6 +31,7 @@
             _knockbackSpeed = knockback;
             calculateVelocities(target);
             ProjectileList.Add(this);
+            Center = origin;
         }
 
         public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, int dmg=1, int knockback=1000)
@@ -43,6 +44,7 @@
             _xVelocity = (float)Math.Cos(angle) * _velocity * Math.Sign(xDiff);
             _yVelocity = (float)Math.Sin(angle) * _velocity * Math.Sign(yDiff);
             ProjectileList.Add(this);
+            Center = origin;
         }
 
 

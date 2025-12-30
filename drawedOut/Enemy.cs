@@ -207,12 +207,12 @@ namespace drawedOut
             xVelocity += xAccel;
             yVelocity += yAccel;
 
+            CheckAllPlatformCollision();
+
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF(
                     Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
                     ); 
-
-            if (xVelocity == 0 && yVelocity == 0) return;
 
             yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
             if (!knockedBack) xVelocity = clampSpeedF(xVelocity, _maxXSpeed);

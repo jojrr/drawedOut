@@ -84,7 +84,7 @@ namespace drawedOut
                     height: 160,
                     attackPower: 1,
                     energy: 100,
-                    hp: 3);
+                    hp: 6);
 
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
@@ -118,7 +118,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
+            Global.LevelResolution = Global.Resolutions.p1440;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -337,15 +337,9 @@ namespace drawedOut
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
-            playerBox.CheckAllPlatformCollision();
-
-            try
-            {
-                Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
-                        enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); 
-                        enemy.CheckAllPlatformCollision();
-                });
-            }
+            try { Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => 
+                    { enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); }
+                );}
             catch (OperationCanceledException) { return; }
 
             ScrollEntities(scrollVelocity, deltaTime);
