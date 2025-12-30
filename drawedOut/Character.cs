@@ -323,11 +323,13 @@
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
+            if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
+            if (xVelocity == 0) return;
+
             if (!_knockedBack) clampSpeed(_maxXVelocity);
             else clampSpeed(_xKnockbackVelocity);
 
             if (_curXAccel == 0 || _knockedBack) decelerate(dt);
-            if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
         }
 
         // stops the character going above the screen and kills when going below screen.
