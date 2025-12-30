@@ -118,14 +118,14 @@
         private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
             // Checks if there is a platform below
-            if (Hitbox.Bottom <= targetHitbox.Bottom)
+            if (Hitbox.Bottom <= targetHitbox.Bottom && Hitbox.Top < targetHitbox.Top)
             {
                 // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
                 if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
             }
             // Checks if there is a platform above the player
-            else if (targetHitbox.Top < Hitbox.Top)
+            else if (targetHitbox.Top < Hitbox.Top && Hitbox.Bottom > targetHitbox.Bottom)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
 
@@ -298,7 +298,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
+        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity, ParallelOptions? threadSettings=null)
         {
             DoGravTick(dt);
             checkInBoundary();
@@ -316,12 +316,12 @@
             }
 
             xVelocity += _curXAccel;
-            if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
-            else Location = new PointF(
-                    Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
-                    ); 
 
-            if (xVelocity == 0) return;
+            if (threadSettings is null) CheckAllPlatformCollision();
+            else CheckAllPlatformCollision(threadSettings);
+
+            if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
+            else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
 
             if (!_knockedBack) clampSpeed(_maxXVelocity);
             else clampSpeed(_xKnockbackVelocity);
@@ -372,14 +372,19 @@
                         ); 
         }
 
-        /*
+        
+        /*    
         public string CollisionDebugX()
         {
-            if (_curXColliderDirection == Global.XDirections.left) return ($"left {(_xStickEntity==_yStickEntity).ToString()}");
-            else if (_curXColliderDirection == Global.XDirections.right) return ($"right {(_xStickEntity==_yStickEntity).ToString()}");
-            return "null";
-        }
+            string s = "null";
+            if (_curXColliderDirection == Global.XDirections.left) s= "left ";
+            else if (_curXColliderDirection == Global.XDirections.right) s="right ";
+
+            if (_xStickEntity is not null) s += _xStickEntity.ToString();
+            if (_xStickTarget is not null) s += _xStickTarget.ToString();
             
+            return s;
+        }
         public string CollisionDebugY()
         {
             if (_curYColliderDirection == Global.YDirections.top) return "top";

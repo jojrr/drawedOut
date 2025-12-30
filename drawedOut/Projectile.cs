@@ -3,7 +3,6 @@
     internal class Projectile : Entity
     {
         public static List<Projectile> ProjectileList = new List<Projectile>();
-        public int KnockbackSpeed { get => _knockbackSpeed; }
         public int Dmg { get => _dmg; }
 
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
@@ -84,7 +83,7 @@
             float yDiff = target.Y - Center.Y;
             float knockbackAngle = (float)(Math.Abs(Math.Atan(yDiff/xDiff) + Math.PI/9));
             double xKnockback = Math.CopySign( Math.Cos(knockbackAngle)*_knockbackSpeed, xDiff );
-            double yKnockback = -Math.Sin(knockbackAngle)*_knockbackSpeed;
+            double yKnockback = Math.CopySign( Math.Sin(knockbackAngle)*_knockbackSpeed, yDiff );
             return [(int)xKnockback, (int)yKnockback];
         }
 

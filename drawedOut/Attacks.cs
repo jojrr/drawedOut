@@ -35,7 +35,13 @@ namespace drawedOut
                         ); 
                 return _parent;
             }
-            set => _parent = value; 
+            set
+            {
+                if (_parent is not null) throw new NullReferenceException(
+                        "Parent attempted to be overwritten when already having value"
+                        ); 
+                _parent = value; _parent = value; 
+            }
         }
 
 
