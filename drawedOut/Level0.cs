@@ -277,7 +277,7 @@ namespace drawedOut
                 {
                     if (a.Parent == e) continue;
                     if (!atkBox.IntersectsWith(e.Hitbox)) continue; 
-                    e.DoDamage(a.AtkDmg, a.Parent, false);
+                    e.DoDamage(a.AtkDmg, a.Parent, a.IsLethal);
                     a.Dispose();
                 }
                 if (a.Parent is Player) 

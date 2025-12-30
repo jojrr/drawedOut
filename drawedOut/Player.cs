@@ -32,7 +32,8 @@ namespace drawedOut
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: 100,
                     spawn: 2,
-                    despawn: 14), 
+                    despawn: 14,
+                    isLethal:true), 
             _basic2; 
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();

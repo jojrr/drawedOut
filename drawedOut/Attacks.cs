@@ -4,6 +4,7 @@ namespace drawedOut
     {
         public static List<Attacks> AttacksList = new List<Attacks>();
         public AnimationPlayer Animation { get; private init; }
+        public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
 
         private static List<Attacks> _disposedAttacks = new List<Attacks>();
@@ -76,10 +77,8 @@ namespace drawedOut
         /// Default = 1
         /// </param>
         public Attacks(Character? parent, int width, int height, AnimationPlayer animation,
-                float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
+                float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
-            if (parent is not null) _parent = parent;
-
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             if (spawn > animation.LastFrame || spawn < 0) 
             {
@@ -94,9 +93,12 @@ namespace drawedOut
                         );
             }
 
+            if (parent is not null) _parent = parent;
+
             AtkDmg = dmg;
             _width = width;
             _height = height;
+            IsLethal = isLethal;
             Animation = animation;
             _spawnFrame = spawn;
             _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
@@ -124,10 +126,8 @@ namespace drawedOut
         /// Default = 1
         /// </param>
         public Attacks(Character? parent, Size size, AnimationPlayer animation,
-                float xOffset = 0, float yOffset = 0, int spawn = 0, int despawn = -1, int dmg = 1)
+                float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
-            if (parent is not null) _parent = parent;
-
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
             if (spawn > animation.LastFrame || spawn < 0) 
             {
@@ -142,9 +142,12 @@ namespace drawedOut
                         );
             }
 
+            if (parent is not null) _parent = parent;
+
             AtkDmg = dmg;
             _width = size.Width;
             _height = size.Height;
+            IsLethal = isLethal;
             Animation = animation;
             _spawnFrame = spawn;
             _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
