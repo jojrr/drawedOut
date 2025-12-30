@@ -12,14 +12,6 @@ namespace drawedOut
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
 
-        public static void ClearAll() 
-        {
-            foreach (Enemy e in Enemy.ActiveEnemyList) EntityList.Remove(e); 
-            foreach (Enemy e in Enemy.InactiveEnemyList) EntityList.Remove(e); 
-            ActiveEnemyList.Clear();
-            InactiveEnemyList.Clear();
-        }
-
         public override void CheckActive()
         {
             if (Hp <= 0) 

@@ -337,13 +337,13 @@ namespace drawedOut
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
-            playerBox.AutoCheckPlatformCollision();
+            playerBox.CheckAllPlatformCollision();
 
             try
             {
                 Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => {
                         enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); 
-                        enemy.AutoCheckPlatformCollision();
+                        enemy.CheckAllPlatformCollision();
                 });
             }
             catch (OperationCanceledException) { return; }

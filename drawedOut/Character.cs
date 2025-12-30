@@ -406,11 +406,11 @@
             _knockedBack = true;
         }
 
-        public void AutoCheckPlatformCollision()
+        public void CheckAllPlatformCollision()
         { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p); }
 
 
-        public void AutoCheckPlatformCollision(ParallelOptions threadSettings)
+        public void CheckAllPlatformCollision(ParallelOptions threadSettings)
         { 
             try
             { Parallel.ForEach(Platform.ActivePlatformList, threadSettings, platform => {CheckPlatformCollision(platform);}); }
