@@ -156,7 +156,7 @@ namespace drawedOut
                     {
                         TickAnimations();
                         animTickSW.Restart();
-                        if (++gcCounter == 16) 
+                        if (++gcCounter == 32) 
                         {
                             GC.Collect();
                             gcCounter = 0;
@@ -202,6 +202,7 @@ namespace drawedOut
 
             togglePause(false);
             levelLoaded = true;
+            GC.Collect();
         }
 
         private void ResetLevel()
