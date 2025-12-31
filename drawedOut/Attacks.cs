@@ -2,13 +2,14 @@ namespace drawedOut
 {
     internal class Attacks
     {
-        public static List<Attacks> AttacksList = new List<Attacks>();
+        public static HashSet<Attacks> AttacksList = new HashSet<Attacks>();
         public AnimationPlayer Animation { get; private init; }
+        public bool IsActive { get => (_atkHitbox is not null); }
         public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
 
-        private static List<Attacks> _disposedAttacks = new List<Attacks>();
-        private readonly float _xOffset, _yOffset;
+        private static HashSet<Attacks> _disposedAttacks = new HashSet<Attacks>();
+        private readonly float _xOffset, _yOffset, _endlagS;
         private readonly int _width, _height;
         private AtkHitboxEntity? _atkHitbox;
         private Character _parent;
@@ -76,10 +77,11 @@ namespace drawedOut
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character? parent, int width, int height, AnimationPlayer animation,
+        public Attacks(Character? parent, int width, int height, AnimationPlayer animation, float endlag,
                 float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
+            if (_endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -95,9 +97,11 @@ namespace drawedOut
 
             if (parent is not null) _parent = parent;
 
+
             AtkDmg = dmg;
             _width = width;
             _height = height;
+            _endlagS = endlag;
             IsLethal = isLethal;
             Animation = animation;
             _spawnFrame = spawn;
@@ -125,10 +129,11 @@ namespace drawedOut
         /// The damage of the attack.<br/>
         /// Default = 1
         /// </param>
-        public Attacks(Character? parent, Size size, AnimationPlayer animation,
+        public Attacks(Character? parent, Size size, AnimationPlayer animation, float endlag,
                 float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
+            if (_endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -147,6 +152,7 @@ namespace drawedOut
             AtkDmg = dmg;
             _width = size.Width;
             _height = size.Height;
+            _endlagS = endlag;
             IsLethal = isLethal;
             Animation = animation;
             _spawnFrame = spawn;
@@ -190,7 +196,11 @@ namespace drawedOut
 
         public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            if (Animation.CurFrame == _despawnFrame) Dispose();
+            if (Animation.CurFrame == _despawnFrame) 
+            {
+                Dispose();
+                Parent.ApplyEndlag(_endlagS);
+            }
             else if (Animation.CurFrame == _spawnFrame) CreateHitbox();
             return Animation.NextFrame();
         }
@@ -219,7 +229,6 @@ namespace drawedOut
             foreach (Attacks atk in _disposedAttacks) 
             {
                 AttacksList.Remove(atk);
-                if (atk.AtkHitbox is null) continue;
                 atk.AtkHitbox.Delete();
                 atk.AtkHitbox = null;
             }

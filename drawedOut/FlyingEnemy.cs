@@ -5,7 +5,7 @@ namespace drawedOut
         private const int 
             _DEFAULT_PROJECTILE_VELOCITY = 1000, 
             _DEFAULT_PREFERRED_HEIGHT = 160,
-            _FRICTION = 20;
+            _FRICTION = 90;
         private const float
             _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
@@ -90,7 +90,7 @@ namespace drawedOut
             _maxXSpeed = Math.Abs(CosAngle*maxVelocity);
             _maxYSpeed = Math.Abs(SinAngle*maxVelocity);
 
-            if (distToPlayerSqrd < _minRangeSqrd)
+            if (distToPlayerSqrd < _minRangeSqrd) //TODO: add "move to point" and "move away from point";
             {
                 xAccel += CosAngle*accel;
                 yAccel += SinAngle*accel;
@@ -135,11 +135,11 @@ namespace drawedOut
 
         private void decelerate(double dt)
         {
-            float deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
-            deceleration = MathF.Max(1.05F, (float)(deceleration*dt));
-            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
+            double deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
+            deceleration = Math.Max(1.05F, deceleration*dt);
+            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration*deceleration;
             else xVelocity = 0; 
-            if (Math.Abs(yVelocity) > deceleration)  yVelocity /= deceleration;
+            if (Math.Abs(yVelocity) > deceleration)  yVelocity /= deceleration*deceleration;
             else yVelocity = 0; 
         }
 

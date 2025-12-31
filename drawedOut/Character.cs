@@ -12,10 +12,11 @@
         protected int maxVelocity { get => _maxXVelocity; }
         protected int curXAccel { get => _curXAccel; }
         protected int accel { get => _xAccel; }
-        protected double xVelocity { get; set; }
-        protected double yVelocity { get; set; }
-        protected double endlagS = 0;
         protected Attacks? curAttack;
+        protected double
+            xVelocity, yVelocity,
+            iFrames,
+            endlagS = 0;
 
         private const int GRAVITY = 4000, FRICTION = 84;
         private Global.XDirections? _curXColliderDirection = null;
@@ -69,6 +70,11 @@
             _runAnim = new AnimationPlayer(filePath);
         }
 
+        protected void TickEndlag(double dt) => endlagS = Math.Max((endlagS-dt),0); 
+        protected void TickIFrames(double dt) => iFrames = Math.Max((iFrames-dt),0); 
+        protected void TickAllCounters(double dt)
+        { TickIFrames(dt); TickEndlag(dt); }
+
         public int Hp 
         { 
             get => _hp;
@@ -99,14 +105,10 @@
             }
         }
 
-        public static void TickEndlags(double dt)
+        public void ApplyEndlag(double endlag, bool overrideCurrent=false)
         {
-            Player.TickEndlagS(dt);
-            foreach (Enemy e in Enemy.ActiveEnemyList) 
-            {
-                e.IncDownTimer(dt);
-                e.endlagS -= dt; 
-            }
+            if (endlagS > 0 && !overrideCurrent) return;
+            endlagS = endlag;
         }
 
         /// <summary>
@@ -394,8 +396,9 @@
         */
 
 
-        public void DoDamage(int dmg, Entity source)
+        public virtual void DoDamage(int dmg, Entity source)
         {
+            if (iFrames > 0) return;
             _hp -= dmg;
             ApplyKnockBack(source); 
         }

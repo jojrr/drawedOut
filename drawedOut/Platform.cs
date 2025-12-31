@@ -5,8 +5,8 @@
         /// <summary>
         /// 2D array: [level] [chunk]
         /// </summary>
-        public static List<Platform> ActivePlatformList = new List<Platform>();
-        public static List<Platform> InactivePlatformList = new List<Platform>();
+        public static HashSet<Platform> ActivePlatformList = new HashSet<Platform>();
+        public static HashSet<Platform> InactivePlatformList = new HashSet<Platform>();
 
         public bool IsMainPlat { get; init; }
         private PointF _originalLocation;

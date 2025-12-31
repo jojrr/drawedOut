@@ -2,8 +2,8 @@ namespace drawedOut
 {
     internal abstract class Enemy : Character
     {
-        public static List<Enemy> ActiveEnemyList = new List<Enemy>();
-        public static List<Enemy> InactiveEnemyList = new List<Enemy>();
+        public static HashSet<Enemy> ActiveEnemyList = new HashSet<Enemy>();
+        public static HashSet<Enemy> InactiveEnemyList = new HashSet<Enemy>();
 
         protected bool isDowned = false;
 
@@ -24,27 +24,28 @@ namespace drawedOut
 
         public void DoDamage(int dmg, Entity source, bool isFinisher)
         {
+            DoDamage(dmg, source);
+            if (Hp <= 0) isDowned = true;
             if (isDowned && isFinisher) 
             {
                 isDowned = false;
                 return;
             }
-            DoDamage(dmg, source);
-            if (Hp <= 0) isDowned = true;
         }
 
-        public void IncDownTimer(double dt) 
+        private void IncDownTimer(double dt) 
         {
             if (!isDowned) return;
             if (_downTimer >= _maxDownTime)
             {
+                iFrames = 0;
                 _downTimer = 0;
                 isDowned = false;
                 Hp = (int)Math.Ceiling((double)MaxHp/2);
                 return;
             }
-
             _downTimer += dt;
+            iFrames = 67;
         }
 
         private void doDeath()
@@ -54,6 +55,22 @@ namespace drawedOut
             InactiveEnemyList.Remove(this);
             if (this.curAttack is not null) this.curAttack.Dispose();
             this.Delete();
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            _downTimer = 0;
+            isDowned=false;
+        }
+
+        public static void TickCounters(double dt)
+        {
+            foreach (Enemy e in Enemy.ActiveEnemyList) 
+            { 
+                e.TickAllCounters(dt); 
+                e.IncDownTimer(dt);
+            }
         }
 
         public override void CheckActive()
@@ -117,7 +134,8 @@ namespace drawedOut
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: ATK_X_OFFSET,
                     spawn: 7,
-                    despawn: 11);
+                    despawn: 11,
+                    endlag: ATK_ENDLAG_S);
             setRunAnim(@"fillerAnim\");
             setIdleAnim(@"fillerPic\");
         }
@@ -148,7 +166,11 @@ namespace drawedOut
                 MoveCharacter(dt, direction, scrollVelocity);
                 _movementTimer += dt;
             }
-            else DoBasicAttack(); 
+            else 
+            {
+                DoBasicAttack(); 
+                MoveCharacter(dt, null, scrollVelocity);
+            }
 
             if (_movementTimer >= MAX_MOVEMENT_TIME_S)
             {
@@ -157,11 +179,7 @@ namespace drawedOut
             }
         }
 
-        private void DoBasicAttack()
-        {
-            curAttack = _mainAtk;
-            endlagS = ATK_ENDLAG_S;
-        }
+        private void DoBasicAttack() => curAttack = _mainAtk;
 
         public override Bitmap NextAnimFrame()
         {

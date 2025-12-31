@@ -5,8 +5,8 @@
     /// </summary>
     internal class Entity
     {
-        public static List<Entity> EntityList = new List<Entity>();
-        private static List<Entity> _toRemoveList = new List<Entity>();
+        public static HashSet<Entity> EntityList = new HashSet<Entity>();
+        private static HashSet<Entity> _toRemoveList = new HashSet<Entity>();
 
         public SizeF Size { get => _scaledSize; }
         public float Width { get => _scaledSize.Width; }

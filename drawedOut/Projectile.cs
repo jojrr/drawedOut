@@ -2,11 +2,11 @@
 {
     internal class Projectile : Entity
     {
-        public static List<Projectile> ProjectileList = new List<Projectile>();
+        public static HashSet<Projectile> ProjectileList = new HashSet<Projectile>();
         public int Dmg { get => _dmg; }
 
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
-        private static List<Projectile> disposedProjectiles = new List<Projectile>();
+        private static HashSet<Projectile> disposedProjectiles = new HashSet<Projectile>();
         private Entity _parent;
         private float 
             _xVelocity, 

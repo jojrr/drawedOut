@@ -5,24 +5,24 @@ namespace drawedOut
         public double Energy { get => _energy; }
         public double MaxEnergy { get => _maxEnergy; }
         public double XVelocity { get => xVelocity; }
-        public static bool IsParrying { get => _isParrying; }
+        public bool IsParrying { get => _isParrying; }
 
-        public static bool IsHit { get; private set; }
-        private static bool _isParrying = false;
-        private static double _energy, _maxEnergy;
         private static HpBarUI _hpBar;
-        private static new double _endlagS;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
             PASSIVE_GAIN_LIMIT = 50,
             PARRY_ENERGY_GAIN = 10;
         private const double 
+            _HIT_IFRAMES_S = 0.5,
             PARRY_ENDLAG_S = 0.2,
             PARRY_DURATION_S = 0.65,
             PERFECT_PARRY_WINDOW_S = 0.25;
-        private static double 
+        private double 
             _parryTimeS = 0,
             _parryEndlagS = 0;
+        public bool IsHit { get; private set; }
+        private bool _isParrying = false;
+        private double _energy, _maxEnergy;
 
         private static readonly Attacks 
             _basic1 = new Attacks(
@@ -32,15 +32,33 @@ namespace drawedOut
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     xOffset: 100,
                     spawn: 2,
-                    despawn: 14,
-                    isLethal:true), 
-            _basic2; 
+                    despawn: 6,
+                    endlag: 1),
+            _basic2 = new Attacks(
+                    parent: null,
+                    width: 240,
+                    height: 180,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    xOffset: 100,
+                    spawn: 2,
+                    despawn: 8,
+                    endlag: 1.5F),
+            _special1 = new Attacks(
+                    parent: null,
+                    width: 500,
+                    height: 100,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    spawn: 4,
+                    xOffset: 300,
+                    despawn: 12,
+                    endlag: 0.5F,
+                    isLethal: true);
 
         private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
 
         static Player()
         {
-            _unlockedMoves.Add("move1", false);
+            _unlockedMoves.Add("move1", true);
             _unlockedMoves.Add("move2", false);
             _unlockedMoves.Add("move3", false);
         }
@@ -51,45 +69,65 @@ namespace drawedOut
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
         {
-            _maxEnergy = 100;
             _energy = 0;
+            _maxEnergy = 100;
             IsActive = true;
             _basic1.Parent = this;
+            _basic2.Parent = this;
+            _special1.Parent = this;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
         }
 
         public static void LinkHpBar(ref HpBarUI hpBar) => _hpBar = hpBar;
 
+        public void DoSpecial1()
+        {
+            const int energyCost = 30;
+            if (!_unlockedMoves["move1"]) return;
+            if (_energy < energyCost) return;
+            _energy -= energyCost;
+            curAttack = _special1;
+        }
+
         public void DoBasicAttack()
         {
-            if (Player._endlagS > 0) return;
+            if (endlagS > 0) 
+            {
+                if (curAttack == _basic1 && !curAttack.IsActive) DoBasicAttack2();
+                return;
+            }
             curAttack = _basic1;
-            Player._endlagS = 1;
         }
+        public void DoBasicAttack2() => curAttack = _basic2;
 
         public new void DoDamage(int dmg, Entity source)
         {
-            Player.IsHit = true;
-            Hp -= dmg;
+            if (iFrames>0) return;
+            base.DoDamage(dmg, source);
+            IsHit = true;
             _hpBar.ComputeHP(Hp);
-            ApplyKnockBack(source); 
+            iFrames += _HIT_IFRAMES_S;
         }
 
         public void DoDamage(int dmg, Entity source, int xSpeed)
         {
-            Player.IsHit = true;
+            if (iFrames>0) return;
+            IsHit = true;
             Hp -= dmg;
             _hpBar.ComputeHP(Hp);
             ApplyKnockBack(source, xSpeed); 
+            iFrames += _HIT_IFRAMES_S;
         }
 
         public void DoDamage(int dmg, Entity source, int xSpeed, int ySpeed)
         {
-            Player.IsHit = true;
+            if (iFrames>0) return;
+            IsHit = true;
             Hp -= dmg;
             _hpBar.ComputeHP(Hp);
             ApplyKnockBack(source, xSpeed, ySpeed); 
+            iFrames += _HIT_IFRAMES_S;
         }
 
         ///<summary>
@@ -103,7 +141,7 @@ namespace drawedOut
 
         public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }
 
-        public static void StopParry()
+        public void StopParry()
         {
             if (!_isParrying) return;
             _parryEndlagS = PARRY_ENDLAG_S;
@@ -154,22 +192,26 @@ namespace drawedOut
             return true;
         }
 
-        public static void UpdateEnergy(double energy) => _energy = Math.Min(energy, _maxEnergy);
-
+        public void UpdateEnergy(double energy) => _energy = Math.Min(energy, _maxEnergy);
         public void HealPlayer(int heal) => Hp += heal; 
+
+        private new void TickAllCounters(double dt)
+        { 
+            base.TickAllCounters(dt); 
+            _parryEndlagS = Math.Max((_parryEndlagS-dt),0); 
+        }
 
         ///<summary>
         ///reduces endlag by <paramref name="dt"/>
         ///</summary>
         ///<param name="dt"> delta time </param>
-        public static void TickEndlagS(double dt) 
+        public void TickCounters(double dt) 
         { 
-            Player.IsHit = false;
-            if (_energy < PASSIVE_GAIN_LIMIT) Player.UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
-            if (Player._endlagS > 0) Player._endlagS -= dt; 
-            if (Player.IsParrying) Player._parryTimeS += dt;
-            if (Player._parryEndlagS > 0) Player._parryEndlagS -= dt;
-            if (Player._parryTimeS >= PARRY_DURATION_S) Player.StopParry();
+            IsHit = false;
+            TickAllCounters(dt);
+            if (IsParrying) _parryTimeS += dt;
+            if (_parryTimeS >= PARRY_DURATION_S) StopParry();
+            if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
         }
 
 

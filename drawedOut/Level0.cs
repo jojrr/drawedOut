@@ -300,7 +300,8 @@ namespace drawedOut
             try { Projectile.CheckProjectileCollisions(deltaTime, this, playerBox, threadSettings); }
             catch (OperationCanceledException) { return; }
 
-            Character.TickEndlags(deltaTime);
+            playerBox.TickCounters(deltaTime);
+            Enemy.TickCounters(deltaTime);
             Attacks.UpdateHitboxes();
             Entity.DisposeRemoved();
             energyBar.Update((float)(playerBox.Energy));
@@ -378,8 +379,8 @@ namespace drawedOut
                 prevFrameTime = (float)dt; 
             }
 
-            if (Player.IsParrying) playerPen = Pens.Gray;
-            else if (Player.IsHit) playerPen = Pens.Red; // visual hit indicator
+            if (playerBox.IsParrying) playerPen = Pens.Gray;
+            else if (playerBox.IsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
         }
 
@@ -538,7 +539,9 @@ namespace drawedOut
                     movingRight = true;
                     break;
 
-                case Keys.S: throw new Exception("");
+                case Keys.E:
+                    playerBox.DoSpecial1();
+                    break;
 
                 case Keys.Escape:
                     this.Close();
@@ -596,7 +599,7 @@ namespace drawedOut
             {
                 // stops parrying when mouseup but doesnt reset timer > only on mouse down 
                 case MouseButtons.Right:
-                    Player.StopParry();
+                    playerBox.StopParry();
                     break;
             }
         }
