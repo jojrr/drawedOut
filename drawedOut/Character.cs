@@ -19,7 +19,9 @@
             endlagS = 0;
 
         private const int GRAVITY = 4000, FRICTION = 84;
+        /// <summary> the horizontal direction of the platfrom from the player that is colliding </summary>
         private Global.XDirections? _curXColliderDirection = null;
+        /// <summary> the vertical direction of the platfrom from the player that is colliding </summary>
         private Global.YDirections? _curYColliderDirection = null;
         private AnimationPlayer? _idleAnim, _runAnim;
         private RectangleF? _xStickTarget, _yStickTarget;
@@ -135,17 +137,24 @@
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
-            if (Center.X < targetHitbox.Left)
+            float centerX = Center.X;
+            float finalX = centerX + (float)xVelocity;
+            float left = Math.Min(finalX, centerX);
+            float right = Math.Max(finalX, centerX);
+            if (left <= targetHitbox.Right && right >= targetHitbox.Left)
             {
-                if (_xStickEntity is null && Center.Y > targetHitbox.Y) { xVelocity = 0; }
-                // character is on the right of the hitbox
-                SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); 
-            }
-            else if (Center.X > targetHitbox.Right)
-            {
-                if (_xStickEntity is null && Center.Y > targetHitbox.Y) { xVelocity = 0; }
-                // character is on the left of the hitbox
-                SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); 
+                if (xVelocity > 0)
+                {
+                    if (_xStickEntity is null && LocationY > targetHitbox.Y) { xVelocity = 0; }
+                    // platform is on right of character
+                    SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); 
+                }
+                else
+                {
+                    if (_xStickEntity is null && LocationY > targetHitbox.Y) { xVelocity = 0; }
+                    // platform is on left of character
+                    SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); 
+                }
             }
         }
 
@@ -168,14 +177,15 @@
             }
 
             // if this' center is between the left and the right of the hitbox 
-            if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left)
+            if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left) 
                 checkYCollider(targetHitbox, collisionTarget);
+            if (_yStickEntity == collisionTarget) 
+                return targetHitbox;
 
             if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
                 SetXCollider(null, null, collisionTarget);
             else
                 checkXCollider(targetHitbox, collisionTarget);
-
 
             return targetHitbox;
         }
@@ -222,7 +232,7 @@
 
 
         /// <summary>
-        /// set the Y velocity to go 1 if character is still in the middle of a jumo and stop jumping
+        /// set the Y velocity to go 1 if character is still in the middle of a jump and stop jumping
         /// </summary>
         public void StopJump() => yVelocity = (yVelocity < 0) ? 1 : yVelocity; 
 
