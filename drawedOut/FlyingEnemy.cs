@@ -7,20 +7,23 @@ namespace drawedOut
             _DEFAULT_PREFERRED_HEIGHT = 160,
             _FRICTION = 20;
         private const float
+            _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
             _ATK_ENDLAG_S = 3,
             _MAX_MOVEMENT_TIME_S = 2;
-        private static Bitmap _downedSprite;
+        private static readonly Bitmap _downedSprite;
+        private readonly AnimationPlayer _attackAnimation;
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
         private float _maxXSpeed, _maxYSpeed;
         private double _movementTimer = 0;
+        private bool _attacking = false;
 
         static FlyingEnemy()
         {
             string downedSpriteFolder = @"six\";
-            _downedSprite = getDownedSprite(downedSpriteFolder);
+            _downedSprite = Global.GetSingleImage(downedSpriteFolder);
         }
 
         public FlyingEnemy(Point origin,
@@ -44,6 +47,7 @@ namespace drawedOut
                     projectileHeight
                     );
 
+            _attackAnimation = new AnimationPlayer(animationFolder: @"fillerAnim\");
             setIdleAnim(@"fillerAnim\");
         }
 
@@ -75,7 +79,8 @@ namespace drawedOut
             if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd)
             {
                 MoveCharacter(dt, xAccel, yAccel, scrollVelocity);
-                createProjectile(angleToPlayer, xDiff, yDiff);
+                _attacking = true;
+                if (_attackAnimation.CurFrame == _ATTACK_FRAME) createProjectile(angleToPlayer, xDiff, yDiff);
                 return;
             }
 
@@ -158,15 +163,10 @@ namespace drawedOut
         public override Bitmap NextAnimFrame()
         {
             if (isDowned) return _downedSprite;
-            if (curAttack is not null)
+            if (_attacking)
             {
-                if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
-                {
-                    Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
-                    curAttack = null;
-                    return atkAnim;
-                }
-                return curAttack.NextAnimFrame(FacingDirection);
+                if (_attackAnimation.CurFrame == _attackAnimation.LastFrame) _attacking = false;
+                return _attackAnimation.NextFrame(FacingDirection);
             }
             return idleAnim.NextFrame(FacingDirection);
         }

@@ -11,17 +11,6 @@ namespace drawedOut
         private readonly float _maxDownTime;
         private double _downTimer = 0;
 
-        protected static Bitmap getDownedSprite(string folderName)
-        {
-            string filePath = Path.Combine(Global.GetProjFolder(), @"sprites\", folderName);
-            string fileName = Directory.GetFiles(filePath)[0];
-            return new Bitmap(
-                Image.FromFile(fileName),
-                (int)(256*Global.BaseScale), 
-                (int)(256*Global.BaseScale)
-                );
-        }
-
         public Enemy(Point origin, int width, int height, int hp,
                 int xAccel=100, int maxXVelocity=600, float maxDownTime=_DEFAULT_DOWN_TIME_S)
             : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
@@ -111,7 +100,7 @@ namespace drawedOut
         static MeleeEnemy()
         {
             string downedSpriteFolder = @"seven\";
-            _downedSprite = getDownedSprite(downedSpriteFolder);
+            _downedSprite = Global.GetSingleImage(downedSpriteFolder);
         }
 
         public MeleeEnemy(Point origin)

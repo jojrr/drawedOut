@@ -7,15 +7,15 @@
 
         protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
         protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
-        protected double xVelocity { get; set; }
-        protected double yVelocity { get; set; }
+        protected bool knockedBack { get => _knockedBack; set => _knockedBack = value; }
         protected int knockBackVelocity { get => _xKnockbackVelocity; }
         protected int maxVelocity { get => _maxXVelocity; }
-        protected bool knockedBack { get => _knockedBack; set => _knockedBack = value; }
         protected int curXAccel { get => _curXAccel; }
         protected int accel { get => _xAccel; }
-        protected Attacks? curAttack;
+        protected double xVelocity { get; set; }
+        protected double yVelocity { get; set; }
         protected double endlagS = 0;
+        protected Attacks? curAttack;
 
         private const int GRAVITY = 4000, FRICTION = 84;
         private Global.XDirections? _curXColliderDirection = null;

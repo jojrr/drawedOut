@@ -61,7 +61,6 @@
             }
         }
 
-
         public PointF Center
         {
             get => _center;

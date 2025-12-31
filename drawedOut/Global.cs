@@ -5,6 +5,19 @@ namespace drawedOut
     ///</summary>
     public static class Global
     {
+        public enum XDirections { left, right }
+        public enum YDirections { top, bottom }
+        public enum Resolutions { p720, p1080, p1440, p4k }
+
+        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
+        {
+            { Resolutions.p720, new Size(1280, 720) },
+            { Resolutions.p1080, new Size(1920, 1080) },
+            { Resolutions.p1440, new Size(2560, 1440) },
+            { Resolutions.p4k, new Size(3840, 2160) }
+        };
+
+
         public const int MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
@@ -38,16 +51,6 @@ namespace drawedOut
                 return _baseScale;
             }
         }
-
-        public enum Resolutions { p720, p1080, p1440, p4k }
-
-        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
-        {
-            { Resolutions.p720, new Size(1280, 720) },
-            { Resolutions.p1080, new Size(1920, 1080) },
-            { Resolutions.p1440, new Size(2560, 1440) },
-            { Resolutions.p4k, new Size(3840, 2160) }
-        };
 
         private static Resolutions _curResolution = Resolutions.p1080;
         public static Resolutions LevelResolution
@@ -101,16 +104,13 @@ namespace drawedOut
         private static Point _centerOfScreen;
         public static Point CenterOfScreen { get => _centerOfScreen; }
 
+        /// <summary> Calculates the new Center of the screen </summary>
         public static void CalcNewCenter()
         {
-
             _centerOfScreen = new Point(
                     _levelSize.Width/2,
                     _levelSize.Height/2);
         }
-
-        public enum XDirections { left, right }
-        public enum YDirections { top, bottom }
 
         /// <summary>
         /// Returns the current project's working directory that contains .csproj
@@ -122,6 +122,47 @@ namespace drawedOut
             if (dir is null) throw new DirectoryNotFoundException("csproj directory not found");
             return dir.FullName;
         }
+
+        /// <summary>
+        /// Convert retrived image file into a bitmap with a standardised scaling used across the game.
+        /// </summary>
+        /// <param name="fileDirectory"> The full directory of the file to convert. </param>
+        /// <returns> A <see cref="Bitmap"/>, in the shape of a square, scaled to fit the resolution </returns>
+        public static Bitmap ImageToBitmap(string fileDirectory)
+        {
+            return new Bitmap(
+                    Image.FromFile(fileDirectory), 
+                    (int)(256*Global.BaseScale), 
+                    (int)(256*Global.BaseScale)
+                    );
+        }
+
+        /// <summary>
+        /// get a single image from the specified folder.
+        /// </summary>
+        /// <param name="folderName"> the name of the folder stored within the "sprites/" directory </param>
+        /// <param name="fileName"> 
+        /// The name of the file within the specified folder <br/>
+        /// Default: null (returns first item) 
+        /// </param>
+        /// <returns> 
+        /// A single <see cref="Bitmap"/> image of the specified file in the folder. <br/>
+        /// By default if fileName is unset, will return the first item in the folder.
+        /// </returns>
+        public static Bitmap GetSingleImage(string folderName, string? fileName=null)
+        {
+            string filePath = Path.Combine(GetProjFolder(), @"sprites\", folderName);
+
+            if (fileName is null) 
+            {
+                fileName = Directory.GetFiles(filePath)[0];
+                return ImageToBitmap(fileName);
+            }
+
+            filePath = Path.Combine(filePath, fileName);
+            return ImageToBitmap(filePath);
+        }
+
     }
 }
 

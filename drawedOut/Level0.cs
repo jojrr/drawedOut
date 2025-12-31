@@ -89,9 +89,6 @@ namespace drawedOut
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
 
-            checkpointOne = new(origin: new Point(200, 600));
-
-
             mainPlat = new(
                origin: new Point(1, 750),
                width: 5400,
@@ -112,13 +109,15 @@ namespace drawedOut
                origin: new Point(1500, 550),
                width: 200,
                height: 250);
+
+            checkpointOne = new(origin: new Point(200, 600));
         }
 
 
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1440;
+            Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
