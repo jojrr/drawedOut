@@ -33,7 +33,7 @@ namespace drawedOut
             }
         }
 
-        public virtual void DoDamage(Projectile sourceProjectile, bool isLethal)
+        public void DoDamage(Projectile sourceProjectile, bool isLethal)
         {
             DoDamage(sourceProjectile);
             if (Hp <= 0) isDowned = true;

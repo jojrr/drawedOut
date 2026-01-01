@@ -5,7 +5,7 @@ namespace drawedOut
         private const int 
             _DEFAULT_PROJECTILE_VELOCITY = 1000, 
             _DEFAULT_PREFERRED_HEIGHT = 160,
-            _FRICTION = 90;
+            _FRICTION = 140;
         private const float
             _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
@@ -16,7 +16,7 @@ namespace drawedOut
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
-        private float _maxXSpeed, _maxYSpeed, _yKnockbackVelocity, _xKnockbackVelocity;
+        private float _maxXSpeed, _maxYSpeed;
         private double _movementTimer = 0;
         private bool _attacking = false;
 
@@ -130,45 +130,24 @@ namespace drawedOut
                 xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
                 yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
             }
-            else 
-            {
-                xVelocity = clampSpeedF(xVelocity, _xKnockbackVelocity);
-                yVelocity = clampSpeedF(yVelocity, _yKnockbackVelocity);
-            }
-
 
             if (xAccel == 0 || knockedBack) decelerate(dt);
-            if (Math.Abs(xVelocity) <= _maxXSpeed) knockedBack = false;
+            if (xVelocity == 0 && yVelocity == 0)  knockedBack = false;
 
             checkInBoundary();
-        }
-
-        public override void DoDamage(Projectile sourceProjectile, bool isLethal)
-        {
-            if (iFrames>0) return;
-            Hp -= sourceProjectile.Dmg;
-            int[] knockBackVelocities = sourceProjectile.calculateKnockback(this.Center);
-            xVelocity = knockBackVelocities[0];
-            yVelocity = knockBackVelocities[1];
-            _xKnockbackVelocity = (float)Math.Max(Math.Abs(xVelocity), _maxXSpeed);
-            _yKnockbackVelocity = (float)Math.Max(Math.Abs(yVelocity), _maxYSpeed);
-            knockedBack = true;
-
-            if (Hp <= 0) isDowned = true;
-            if (isDowned && isLethal) isDowned = false;
         }
 
         private void decelerate(double dt)
         {
             double deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
-            deceleration = Math.Max(1.05F, deceleration*dt);
-            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
+            deceleration = Math.Max(1.0001F, deceleration*dt);
+            if (Math.Abs(xVelocity) > 0.0001)  xVelocity /= deceleration;
             else xVelocity = 0; 
-            if (Math.Abs(yVelocity) > deceleration)  yVelocity /= deceleration;
+            if (Math.Abs(yVelocity) > 0.0001)  yVelocity /= deceleration;
             else yVelocity = 0; 
         }
 
-        private double clampSpeedF(double speed, float maxSpeed) => (Math.Abs(speed) > maxSpeed) ? Math.CopySign(maxSpeed, speed) : speed;
+        private double clampSpeedF(double velocity, float maxSpeed) => (Math.Abs(velocity) > maxSpeed) ? Math.CopySign(maxSpeed, velocity) : velocity;
 
 
         private void createProjectile(double angle, double xDiff, double yDiff)
