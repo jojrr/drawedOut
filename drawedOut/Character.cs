@@ -409,10 +409,25 @@
             ApplyKnockBack(source); 
         }
 
+        public void DoDamage(Projectile sourceProjectile)
+        {
+            if (iFrames>0) return;
+            Hp -= sourceProjectile.Dmg;
+            int[] knockBackVelocites = sourceProjectile.calculateKnockback(this.Center);
+            ApplyKnockBack(sourceProjectile, knockBackVelocites[0], knockBackVelocites[1]); 
+        }
+
         public void ApplyKnockBack(Entity source, int xSpeed = 1500, int ySpeed = 500)
         {
             xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
             yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
+            _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
+            _knockedBack = true;
+        }
+        public void ApplyKnockBack(Projectile source, int xSpeed, int ySpeed)
+        {
+            xVelocity = xSpeed;
+            yVelocity = ySpeed;
             _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
             _knockedBack = true;
         }

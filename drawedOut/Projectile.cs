@@ -4,6 +4,7 @@
     {
         public static HashSet<Projectile> ProjectileList = new HashSet<Projectile>();
         public int Dmg { get => _dmg; }
+        public bool IsLethal { get; private set; }
 
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
         private static HashSet<Projectile> disposedProjectiles = new HashSet<Projectile>();
@@ -22,7 +23,8 @@
         /// <param name="height"></param>
         /// <param name="velocity"></param>
         /// <param name="target"></param>
-        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, int dmg=1, int knockback=1000)
+        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, 
+                int dmg=1, int knockback=1500, bool isLethal=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
@@ -31,10 +33,12 @@
             _knockbackSpeed = knockback;
             calculateVelocities(target);
             ProjectileList.Add(this);
+            IsLethal = isLethal;
             Center = origin;
         }
 
-        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, int dmg=1, int knockback=1000)
+        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent,
+                int dmg=1, int knockback=1500, bool isLethal=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
@@ -44,9 +48,11 @@
             _xVelocity = (float)Math.Cos(angle) * _velocity * Math.Sign(xDiff);
             _yVelocity = (float)Math.Sin(angle) * _velocity * Math.Sign(yDiff);
             ProjectileList.Add(this);
+            IsLethal = isLethal;
             Center = origin;
         }
 
+        public void ToggleLethal(bool? isLethal) => IsLethal = (isLethal is null) ? !IsLethal : isLethal.Value;
 
         /// <summary>
         /// updates the projectile's location based on the velocity and angle (x and y velocities)
@@ -58,8 +64,6 @@
 
             Location = new PointF(Location.X+xVelocity, Location.Y+yVelocity);
         }
-
-
 
         // calculates the required y and x velocities for the projectile
         // angle and distances used for debugging
@@ -81,20 +85,18 @@
         /// <returns> integer array [xKnockback, yKnockback] </returns>
         public int[] calculateKnockback(PointF target)
         {
-            float xDiff = target.X - Center.X;
-            float yDiff = target.Y - Center.Y;
-            float knockbackAngle = (float)(Math.Abs(Math.Atan(yDiff/xDiff) + Math.PI/9));
-            double xKnockback = Math.CopySign( Math.Cos(knockbackAngle)*_knockbackSpeed, xDiff );
-            double yKnockback = Math.CopySign( Math.Sin(knockbackAngle)*_knockbackSpeed, yDiff );
+            float knockbackAngle = (float)(Math.Abs(Math.Atan(_yVelocity/_xVelocity) ));
+            double xKnockback = Math.CopySign( Math.Cos(knockbackAngle)*_knockbackSpeed, _xVelocity );
+            double yKnockback = Math.CopySign( Math.Sin(knockbackAngle)*_knockbackSpeed, _yVelocity );
             return [(int)xKnockback, (int)yKnockback];
         }
 
         /// <summary>
         /// makes the projectile rebound off [target]
         /// </summary>
-        public void Rebound(Entity target, double dt)
+        public void Rebound(double dt, Entity? target)
         {
-            _parent = target;
+            if (target is not null) _parent = target;
             _xVelocity = -_xVelocity;
             _yVelocity = -_yVelocity;
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
@@ -121,15 +123,6 @@
                     disposedProjectiles.Add(bullet);
                     return;
                 }
-                foreach (Enemy e in Enemy.ActiveEnemyList)
-                {
-                    if (e == bullet._parent) continue;
-                    if (!(e.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
-
-                    disposedProjectiles.Add(bullet);
-                    e.DoDamage(bullet._dmg, bullet);
-                    return;
-                }
 
                 if (!bullet.Hitbox.IntersectsWith(form.ClientRectangle))
                 {
@@ -137,11 +130,23 @@
                     return;
                 }
 
-                // Return if bullet not touching player
-                if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox)) return;
+                if (bullet._parent is Player)
+                {
+                    foreach (Enemy e in Enemy.ActiveEnemyList)
+                    {
+                        if (!(e.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
 
-                bool shouldDispose = playerBox.CheckParrying(bullet, dt);
-                if (shouldDispose) disposedProjectiles.Add(bullet);
+                        disposedProjectiles.Add(bullet);
+                        e.DoDamage(bullet, bullet.IsLethal);
+                        return;
+                    }
+                }
+                else
+                {
+                    // Return if bullet not touching player
+                    if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox)) return;
+                    if (playerBox.CheckParrying(bullet, dt)) disposedProjectiles.Add(bullet);
+                }
             });
 
             if (disposedProjectiles.Count == 0) return;

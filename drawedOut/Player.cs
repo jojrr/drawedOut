@@ -101,6 +101,18 @@ namespace drawedOut
         }
         public void DoBasicAttack2() => curAttack = _basic2;
 
+        public void DoDamage(Projectile sourceProjectile)
+        {
+            if (iFrames>0) return;
+            IsHit = true;
+            Hp -= sourceProjectile.Dmg;
+            _hpBar.ComputeHP(Hp);
+            int[] knockBackVelocites = sourceProjectile.calculateKnockback(this.Center);
+            ApplyKnockBack(sourceProjectile, knockBackVelocites[0], knockBackVelocites[1]); 
+            iFrames += _HIT_IFRAMES_S;
+        }
+
+
         public new void DoDamage(int dmg, Entity source)
         {
             if (iFrames>0) return;
@@ -179,12 +191,13 @@ namespace drawedOut
             if (!IsParrying)
             {
                 int[] knockBackVelocites = projectile.calculateKnockback(this.Center);
-                DoDamage(projectile.Dmg, projectile, knockBackVelocites[0], knockBackVelocites[1]);
+                DoDamage(projectile);
                 return true;
             }
             if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) 
             {
-                projectile.Rebound(this, dt);
+                projectile.Rebound(dt, this);
+                projectile.ToggleLethal(true);
                 PerfectParry(); 
                 return false;
             }

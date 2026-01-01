@@ -16,7 +16,7 @@ namespace drawedOut
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
-        private float _maxXSpeed, _maxYSpeed;
+        private float _maxXSpeed, _maxYSpeed, _yKnockbackVelocity, _xKnockbackVelocity;
         private double _movementTimer = 0;
         private bool _attacking = false;
 
@@ -72,7 +72,6 @@ namespace drawedOut
             double angleToPlayer = Math.Abs(Math.Atan(yDiff/xDiff));
             float distToPlayerSqrd = yDiff*yDiff + xDiff*xDiff;
 
-
             float xAccel=0;
             float yAccel=0;
 
@@ -102,7 +101,7 @@ namespace drawedOut
                 xAccel -= CosAngle*accel;
                 yAccel -= SinAngle*accel;
             }
-            if (yDiff + yVelocity > _preferredHeight) yAccel = 0; // reduces the effect of stutter when flying down
+            if (yDiff + yVelocity > _preferredHeight && !knockedBack) yAccel = 0; // reduces the effect of stutter when flying down
 
             _movementTimer += dt;
             MoveCharacter(dt, xAccel, yAccel, scrollVelocity);
@@ -126,9 +125,17 @@ namespace drawedOut
                     Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
                     ); 
 
-            yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
-            if (!knockedBack) xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
-            else xVelocity = clampSpeedF(xVelocity, knockBackVelocity);
+            if (!knockedBack) 
+            {
+                xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
+                yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
+            }
+            else 
+            {
+                xVelocity = clampSpeedF(xVelocity, _xKnockbackVelocity);
+                yVelocity = clampSpeedF(yVelocity, _yKnockbackVelocity);
+            }
+
 
             if (xAccel == 0 || knockedBack) decelerate(dt);
             if (Math.Abs(xVelocity) <= _maxXSpeed) knockedBack = false;
@@ -136,13 +143,28 @@ namespace drawedOut
             checkInBoundary();
         }
 
+        public override void DoDamage(Projectile sourceProjectile, bool isLethal)
+        {
+            if (iFrames>0) return;
+            Hp -= sourceProjectile.Dmg;
+            int[] knockBackVelocities = sourceProjectile.calculateKnockback(this.Center);
+            xVelocity = knockBackVelocities[0];
+            yVelocity = knockBackVelocities[1];
+            _xKnockbackVelocity = (float)Math.Max(Math.Abs(xVelocity), _maxXSpeed);
+            _yKnockbackVelocity = (float)Math.Max(Math.Abs(yVelocity), _maxYSpeed);
+            knockedBack = true;
+
+            if (Hp <= 0) isDowned = true;
+            if (isDowned && isLethal) isDowned = false;
+        }
+
         private void decelerate(double dt)
         {
             double deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
             deceleration = Math.Max(1.05F, deceleration*dt);
-            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration*deceleration;
+            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
             else xVelocity = 0; 
-            if (Math.Abs(yVelocity) > deceleration)  yVelocity /= deceleration*deceleration;
+            if (Math.Abs(yVelocity) > deceleration)  yVelocity /= deceleration;
             else yVelocity = 0; 
         }
 

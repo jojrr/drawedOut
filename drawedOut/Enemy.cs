@@ -33,6 +33,13 @@ namespace drawedOut
             }
         }
 
+        public virtual void DoDamage(Projectile sourceProjectile, bool isLethal)
+        {
+            DoDamage(sourceProjectile);
+            if (Hp <= 0) isDowned = true;
+            if (isDowned && isLethal) isDowned = false;
+        }
+
         private void IncDownTimer(double dt) 
         {
             if (!isDowned) return;
