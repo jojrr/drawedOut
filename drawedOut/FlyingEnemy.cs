@@ -68,7 +68,7 @@ namespace drawedOut
             }
 
             float yDiff = Center.Y - playerCenter.Y;
-            if (yDiff > -_preferredHeight) yDiff = Global.LevelSize.Height;
+            //if (yDiff > -_preferredHeight) yDiff = Global.LevelSize.Height;
             double angleToPlayer = Math.Abs(Math.Atan(yDiff/xDiff));
             float distToPlayerSqrd = yDiff*yDiff + xDiff*xDiff;
 
@@ -76,9 +76,11 @@ namespace drawedOut
             float xAccel=0;
             float yAccel=0;
 
+            if (yDiff > -_preferredHeight) yAccel = -accel;
+
             if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd)
             {
-                MoveCharacter(dt, xAccel, yAccel, scrollVelocity);
+                MoveCharacter(dt, 0, yAccel, scrollVelocity);
                 _attacking = true;
                 if (_attackAnimation.CurFrame == _ATTACK_FRAME) createProjectile(angleToPlayer, xDiff, yDiff);
                 return;
@@ -95,11 +97,12 @@ namespace drawedOut
                 xAccel += CosAngle*accel;
                 yAccel += SinAngle*accel;
             }
-            else
+            else if (distToPlayerSqrd > _maxRangeSqrd)
             {
                 xAccel -= CosAngle*accel;
                 yAccel -= SinAngle*accel;
             }
+            if (yDiff + yVelocity > _preferredHeight) yAccel = 0; // reduces the effect of stutter when flying down
 
             _movementTimer += dt;
             MoveCharacter(dt, xAccel, yAccel, scrollVelocity);

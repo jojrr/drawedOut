@@ -49,7 +49,7 @@ namespace drawedOut
                     height: 100,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     spawn: 4,
-                    xOffset: 300,
+                    xOffset: 100,
                     despawn: 12,
                     endlag: 0.5F,
                     isLethal: true);

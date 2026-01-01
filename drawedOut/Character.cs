@@ -137,24 +137,21 @@
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
+            if (xVelocity == 0) return;
             float centerX = Center.X;
             float finalX = centerX + (float)xVelocity;
             float left = Math.Min(finalX, centerX);
             float right = Math.Max(finalX, centerX);
             if (left <= targetHitbox.Right && right >= targetHitbox.Left)
             {
-                if (xVelocity > 0)
-                {
-                    if (_xStickEntity is null && LocationY > targetHitbox.Y) { xVelocity = 0; }
-                    // platform is on right of character
-                    SetXCollider(Global.XDirections.right, targetHitbox, collisionTarget); 
-                }
-                else
-                {
-                    if (_xStickEntity is null && LocationY > targetHitbox.Y) { xVelocity = 0; }
-                    // platform is on left of character
-                    SetXCollider(Global.XDirections.left, targetHitbox, collisionTarget); 
-                }
+                Global.XDirections collidingDirection;
+
+                if (xVelocity >= 0) collidingDirection = Global.XDirections.right; // platform is on right of character
+                else collidingDirection = Global.XDirections.left; // platform is on left of character
+
+                if (_xStickEntity is null && LocationY > targetHitbox.Y) xVelocity = 0; 
+
+                SetXCollider(collidingDirection, targetHitbox, collisionTarget); 
             }
         }
 
@@ -179,8 +176,8 @@
             // if this' center is between the left and the right of the hitbox 
             if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left) 
                 checkYCollider(targetHitbox, collisionTarget);
-            if (_yStickEntity == collisionTarget) 
-                return targetHitbox;
+
+            if (_yStickEntity == collisionTarget) return targetHitbox;
 
             if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
                 SetXCollider(null, null, collisionTarget);
@@ -308,7 +305,7 @@
         /// Moves the player according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity, ParallelOptions? threadSettings=null)
+        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
         {
             DoGravTick(dt);
             checkInBoundary();
@@ -327,8 +324,7 @@
 
             xVelocity += _curXAccel;
 
-            if (threadSettings is null) CheckAllPlatformCollision();
-            else CheckAllPlatformCollision(threadSettings);
+            CheckAllPlatformCollision(); // check collider after xVelocity as been decided as checkXCollider uses xVelocity
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
@@ -423,14 +419,6 @@
 
         public void CheckAllPlatformCollision()
         { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p); }
-
-
-        public void CheckAllPlatformCollision(ParallelOptions threadSettings)
-        { 
-            try
-            { Parallel.ForEach(Platform.ActivePlatformList, threadSettings, platform => {CheckPlatformCollision(platform);}); }
-            catch (OperationCanceledException) { return; }
-        }
 
         public override void Reset()
         {
