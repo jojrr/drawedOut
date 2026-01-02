@@ -5,7 +5,7 @@ namespace drawedOut
         private const int 
             _DEFAULT_PROJECTILE_VELOCITY = 1000, 
             _DEFAULT_PREFERRED_HEIGHT = 160,
-            _FRICTION = 2400;
+            _FRICTION = 200;
         private const float
             _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
@@ -127,8 +127,13 @@ namespace drawedOut
 
         private void MoveCharacter(double dt, float xAccel, float yAccel, double scrollVelocity)
         {
-            xVelocity += xAccel;
-            yVelocity += yAccel;
+            if (!knockedBack) 
+            {
+                xVelocity += xAccel;
+                yVelocity += yAccel;
+                xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
+                yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
+            }
 
             CheckAllPlatformCollision();
 
@@ -137,13 +142,7 @@ namespace drawedOut
                     Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
                     ); 
 
-            if (!knockedBack) 
-            {
-                xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
-                yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
-            }
-
-            if (xAccel == 0 || knockedBack) decelerate(dt);
+            if ((xAccel == 0 && yAccel == 0) || knockedBack) decelerate(dt);
             if (xVelocity == 0 && yVelocity == 0)  knockedBack = false;
 
             checkInBoundary();
@@ -152,6 +151,7 @@ namespace drawedOut
         private void decelerate(double dt)
         {
             double deceleration = _FRICTION*dt;
+            if (knockedBack) deceleration *= 10;
             double xSpeed = Math.Abs(xVelocity);
             double ySpeed = Math.Abs(yVelocity);
             if (Math.Abs(xVelocity) > deceleration)  xVelocity = Math.CopySign(xSpeed-deceleration, xVelocity);
