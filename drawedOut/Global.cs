@@ -26,7 +26,7 @@ namespace drawedOut
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
 
-        private static int _gameTickFreq = 60;
+        private static int _gameTickFreq = 20;
         public static int GameTickFreq 
         {
             get  

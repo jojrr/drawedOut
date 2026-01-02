@@ -18,7 +18,7 @@
             iFrames,
             endlagS = 0;
 
-        private const int GRAVITY = 4000, FRICTION = 84;
+        private const int GRAVITY = 4000, FRICTION=2000;
         /// <summary> the horizontal direction of the platfrom from the player that is colliding </summary>
         private Global.XDirections? _curXColliderDirection = null;
         /// <summary> the vertical direction of the platfrom from the player that is colliding </summary>
@@ -353,9 +353,10 @@
 
         private void decelerate(double dt)
         {
-            double deceleration = (_knockedBack) ? (FRICTION/2): FRICTION;
-            deceleration = Math.Max(1.05, deceleration*dt);
-            if (Math.Abs(xVelocity) > deceleration)  xVelocity /= deceleration;
+            //double deceleration = (_knockedBack) ? (FRICTION*0.9): FRICTION;
+            double deceleration = FRICTION*dt;
+            double xSpeed = Math.Abs(xVelocity);
+            if (xSpeed > deceleration)  xVelocity = Math.CopySign(xSpeed-deceleration, xVelocity);
             else xVelocity = 0; 
         }
 
@@ -417,7 +418,7 @@
             ApplyKnockBack(sourceProjectile, knockBackVelocites[0], knockBackVelocites[1]); 
         }
 
-        public void ApplyKnockBack(Entity source, int xSpeed = 1500, int ySpeed = 500)
+        public void ApplyKnockBack(Entity source, int xSpeed = 1000, int ySpeed = 500)
         {
             xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
             yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;

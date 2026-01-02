@@ -5,7 +5,7 @@ namespace drawedOut
         private const int 
             _DEFAULT_PROJECTILE_VELOCITY = 1000, 
             _DEFAULT_PREFERRED_HEIGHT = 160,
-            _FRICTION = 140;
+            _FRICTION = 2400;
         private const float
             _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
@@ -151,11 +151,12 @@ namespace drawedOut
 
         private void decelerate(double dt)
         {
-            double deceleration = (knockedBack) ? (_FRICTION/2): _FRICTION;
-            deceleration = Math.Max(1.0001F, deceleration*dt);
-            if (Math.Abs(xVelocity) > 0.0001)  xVelocity /= deceleration;
+            double deceleration = _FRICTION*dt;
+            double xSpeed = Math.Abs(xVelocity);
+            double ySpeed = Math.Abs(yVelocity);
+            if (Math.Abs(xVelocity) > deceleration)  xVelocity = Math.CopySign(xSpeed-deceleration, xVelocity);
             else xVelocity = 0; 
-            if (Math.Abs(yVelocity) > 0.0001)  yVelocity /= deceleration;
+            if (Math.Abs(yVelocity) > deceleration)  yVelocity = Math.CopySign(ySpeed-deceleration, yVelocity);
             else yVelocity = 0; 
         }
 
