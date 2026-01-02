@@ -3,20 +3,18 @@ namespace drawedOut
     internal class FlyingEnemy : Enemy
     {
         private const int 
-            _DEFAULT_PROJECTILE_VELOCITY = 1000, 
-            _DEFAULT_PREFERRED_HEIGHT = 160,
-            _FRICTION = 200;
-        private const float
+            _FRICTION = 200,
             _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
             _ATK_ENDLAG_S = 3,
-            _MAX_MOVEMENT_TIME_S = 2;
+            _MAX_MOVEMENT_TIME_S = 2,
+            _DEFAULT_PREFERRED_HEIGHT = 160,
+            _DEFAULT_PROJECTILE_VELOCITY = 1000;
         private static readonly Bitmap _downedSprite;
         private readonly ProjectileAttack _projectileAttack;
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
-        private new ProjectileAttack? curAttack;
         private float _maxXSpeed, _maxYSpeed;
         private double _movementTimer = 0;
         private double? 
@@ -55,6 +53,7 @@ namespace drawedOut
                     parent: this,
                     animation: new AnimationPlayer(animationFolder: @"fillerAnim\"),
                     endlag: _ATK_ENDLAG_S,
+                    spawn:_ATTACK_FRAME,
                     projectileEvent: createProjectile
                     );
 

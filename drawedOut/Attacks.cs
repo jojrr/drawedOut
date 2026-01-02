@@ -198,7 +198,7 @@ namespace drawedOut
         }
 
 
-        public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
+        public virtual Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
             if (Animation.CurFrame == despawnFrame) 
             {
@@ -247,9 +247,9 @@ namespace drawedOut
     {
         private Action _launchProjectile;
 
-        public ProjectileAttack(Character? parent, AnimationPlayer animation, float endlag, 
-                Action? projectileEvent=null, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
-            : base (parent:parent, width:0, height:0, animation:animation, endlag:endlag, spawn:spawn, despawn:despawn, dmg:dmg, isLethal:isLethal)
+        public ProjectileAttack(Character? parent, AnimationPlayer animation, float endlag, int spawn,
+                Action? projectileEvent=null, int dmg=1, bool isLethal=false)
+            : base (parent:parent, width:0, height:0, animation:animation, endlag:endlag, spawn:spawn, dmg:dmg, isLethal:isLethal)
         {
             AttacksList.Remove(this);
             if (projectileEvent is not null) _launchProjectile = projectileEvent;
@@ -266,7 +266,7 @@ namespace drawedOut
         }
 
 
-        public new Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
+        public override Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
             if (Animation.CurFrame == spawnFrame) 
             {
