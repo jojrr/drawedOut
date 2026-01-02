@@ -110,7 +110,7 @@ namespace drawedOut
                width: 200,
                height: 250);
 
-            checkpointOne = new(origin: new Point(200, 600));
+            checkpointOne = new(origin: new Point(2200, 600));
         }
 
 

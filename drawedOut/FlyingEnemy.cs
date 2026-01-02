@@ -18,11 +18,11 @@ namespace drawedOut
         private readonly Size _projectileSize;
         private new ProjectileAttack? curAttack;
         private float _maxXSpeed, _maxYSpeed;
-        private double 
+        private double _movementTimer = 0;
+        private double? 
             _xDiff, 
             _yDiff,
-            _angleToFire,
-            _movementTimer = 0;
+            _angleToFire;
 
         static FlyingEnemy()
         {
@@ -164,15 +164,21 @@ namespace drawedOut
 
         private void createProjectile()
         {
+            if (_xDiff is null || _yDiff is null || _angleToFire is null) throw new NullReferenceException();
+
             Projectile flyingEnemyProj = new Projectile(
                     origin: this.Center,
                     width: _projectileSize.Width,
                     height: _projectileSize.Height,
                     velocity: _projectileSpeed,
-                    angle: _angleToFire,
-                    xDiff: -_xDiff,
-                    yDiff: -_yDiff,
+                    angle: _angleToFire.Value,
+                    xDiff: -_xDiff.Value,
+                    yDiff: -_yDiff.Value,
                     parent: this);
+
+            _angleToFire = null;
+            _xDiff = null;
+            _yDiff = null;
         }
 
         public override Bitmap NextAnimFrame()
