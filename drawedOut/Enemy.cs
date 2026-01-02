@@ -22,21 +22,29 @@ namespace drawedOut
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
 
-        public void DoDamage(int dmg, Entity source, bool isFinisher)
+        public void DoDamage(int dmg, Entity source, bool isLethal)
         {
             DoDamage(dmg, source);
-            if (Hp <= 0) isDowned = true;
-            if (isDowned && isFinisher) 
-            {
-                isDowned = false;
-                return;
-            }
+            CheckDowned(isLethal);
         }
 
         public void DoDamage(Projectile sourceProjectile, bool isLethal)
         {
             DoDamage(sourceProjectile);
-            if (Hp <= 0) isDowned = true;
+            CheckDowned(isLethal);
+        }
+
+        private void CheckDowned(bool isLethal)
+        {
+            if (Hp <= 0)
+            {
+                isDowned = true;
+                if (curAttack is not null)
+                {
+                    curAttack.Dispose();
+                    curAttack = null;
+                }
+            }
             if (isDowned && isLethal) isDowned = false;
         }
 
@@ -68,6 +76,7 @@ namespace drawedOut
         {
             base.Reset();
             _downTimer = 0;
+            curAttack = null;
             isDowned=false;
         }
 

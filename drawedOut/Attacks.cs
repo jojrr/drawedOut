@@ -8,13 +8,17 @@ namespace drawedOut
         public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
 
+        protected readonly float endlagS;
+        protected int despawnFrame { get; init; }
+        protected int spawnFrame { get; init; }
+        protected int height { get; }
+        protected int width { get; }
+
         private static HashSet<Attacks> _disposedAttacks = new HashSet<Attacks>();
-        private readonly float _xOffset, _yOffset, _endlagS;
-        private readonly int _width, _height;
         private AtkHitboxEntity? _atkHitbox;
+        private readonly float _xOffset, _yOffset;
+        private readonly int _width, _height;
         private Character _parent;
-        private int _despawnFrame { get; init; }
-        private int _spawnFrame { get; init; }
 
         public AtkHitboxEntity? AtkHitbox
         {
@@ -81,7 +85,7 @@ namespace drawedOut
                 float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            if (_endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
+            if (endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -101,11 +105,11 @@ namespace drawedOut
             AtkDmg = dmg;
             _width = width;
             _height = height;
-            _endlagS = endlag;
+            endlagS = endlag;
             IsLethal = isLethal;
             Animation = animation;
-            _spawnFrame = spawn;
-            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
+            spawnFrame = spawn;
+            despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
         }
@@ -133,7 +137,7 @@ namespace drawedOut
                 float xOffset=0, float yOffset=0, int spawn=0, int despawn=-1, int dmg=1, bool isLethal=false)
         {
             if (dmg<=0) throw new ArgumentException("atk dmg should be bigger than 0");
-            if (_endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
+            if (endlagS < 0) throw new ArgumentException( "Endlag cannot be smaller than 0" ); 
             if (spawn > animation.LastFrame || spawn < 0) 
             {
                 throw new ArgumentException(
@@ -152,11 +156,11 @@ namespace drawedOut
             AtkDmg = dmg;
             _width = size.Width;
             _height = size.Height;
-            _endlagS = endlag;
+            endlagS = endlag;
             IsLethal = isLethal;
             Animation = animation;
-            _spawnFrame = spawn;
-            _despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
+            spawnFrame = spawn;
+            despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
             _xOffset = xOffset * Global.BaseScale;
             _yOffset = yOffset * Global.BaseScale;
         }
@@ -196,12 +200,12 @@ namespace drawedOut
 
         public Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
-            if (Animation.CurFrame == _despawnFrame) 
+            if (Animation.CurFrame == despawnFrame) 
             {
                 Dispose();
-                Parent.ApplyEndlag(_endlagS);
+                Parent.ApplyEndlag(endlagS);
             }
-            else if (Animation.CurFrame == _spawnFrame) CreateHitbox();
+            else if (Animation.CurFrame == spawnFrame) CreateHitbox();
             return Animation.NextFrame();
         }
 
@@ -217,7 +221,7 @@ namespace drawedOut
 
                 float xOffset = atk._xOffset;
                 if (atk.Parent.FacingDirection == Global.XDirections.left)
-                    xOffset = -atk._xOffset;
+                    xOffset = -xOffset;
 
                 atk.UpdateHitboxCenter( 
                         x: ParentCenter.X + xOffset,

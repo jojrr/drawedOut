@@ -12,13 +12,17 @@ namespace drawedOut
             _ATK_ENDLAG_S = 3,
             _MAX_MOVEMENT_TIME_S = 2;
         private static readonly Bitmap _downedSprite;
-        private readonly AnimationPlayer _attackAnimation;
+        private readonly ProjectileAttack _projectileAttack;
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
+        private new ProjectileAttack? curAttack;
         private float _maxXSpeed, _maxYSpeed;
-        private double _movementTimer = 0;
-        private bool _attacking = false;
+        private double 
+            _xDiff, 
+            _yDiff,
+            _angleToFire,
+            _movementTimer = 0;
 
         static FlyingEnemy()
         {
@@ -47,7 +51,13 @@ namespace drawedOut
                     projectileHeight
                     );
 
-            _attackAnimation = new AnimationPlayer(animationFolder: @"fillerAnim\");
+            _projectileAttack = new ProjectileAttack(
+                    parent: this,
+                    animation: new AnimationPlayer(animationFolder: @"fillerAnim\"),
+                    endlag: _ATK_ENDLAG_S,
+                    projectileEvent: createProjectile
+                    );
+
             setIdleAnim(@"fillerAnim\");
         }
 
@@ -80,8 +90,10 @@ namespace drawedOut
             if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd)
             {
                 MoveCharacter(dt, 0, yAccel, scrollVelocity);
-                _attacking = true;
-                if (_attackAnimation.CurFrame == _ATTACK_FRAME) createProjectile(angleToPlayer, xDiff, yDiff);
+                _angleToFire = angleToPlayer;
+                _xDiff = xDiff;
+                _yDiff = yDiff;
+                curAttack = _projectileAttack;
                 return;
             }
 
@@ -150,27 +162,31 @@ namespace drawedOut
         private double clampSpeedF(double velocity, float maxSpeed) => (Math.Abs(velocity) > maxSpeed) ? Math.CopySign(maxSpeed, velocity) : velocity;
 
 
-        private void createProjectile(double angle, double xDiff, double yDiff)
+        private void createProjectile()
         {
-            endlagS += _ATK_ENDLAG_S;
             Projectile flyingEnemyProj = new Projectile(
                     origin: this.Center,
                     width: _projectileSize.Width,
                     height: _projectileSize.Height,
                     velocity: _projectileSpeed,
-                    angle: angle,
-                    xDiff: -xDiff,
-                    yDiff: -yDiff,
+                    angle: _angleToFire,
+                    xDiff: -_xDiff,
+                    yDiff: -_yDiff,
                     parent: this);
         }
 
         public override Bitmap NextAnimFrame()
         {
             if (isDowned) return _downedSprite;
-            if (_attacking)
+            if (curAttack is not null)
             {
-                if (_attackAnimation.CurFrame == _attackAnimation.LastFrame) _attacking = false;
-                return _attackAnimation.NextFrame(FacingDirection);
+                if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
+                {
+                    Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                    curAttack = null;
+                    return atkAnim;
+                }
+                return curAttack.NextAnimFrame(FacingDirection);
             }
             return idleAnim.NextFrame(FacingDirection);
         }

@@ -361,23 +361,23 @@
 
         public void ScrollChar(double dt, double scrollVelocity)
         {
-                if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity); 
+            if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity); 
 
-                if (this is Player) 
-                {
-                    Location = new PointF(
-                            Location.X, 
-                            Location.Y + (float)(yVelocity * dt)
-                            );
-                    return;
-                }
-
-                if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity);
-
+            if (this is Player) 
+            {
                 Location = new PointF(
-                        Location.X + (float)(xVelocity * dt), 
+                        Location.X, 
                         Location.Y + (float)(yVelocity * dt)
-                        ); 
+                        );
+                return;
+            }
+
+            if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity);
+
+            Location = new PointF(
+                    Location.X + (float)(xVelocity * dt), 
+                    Location.Y + (float)(yVelocity * dt)
+                    ); 
         }
 
         
