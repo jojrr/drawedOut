@@ -9,6 +9,8 @@ namespace drawedOut
         private static Player playerBox;
         private static MeleeEnemy meleeOne;
         private static FlyingEnemy flyingOne;
+        private static FirstBoss firstBoss;
+
         private static Checkpoint checkpointOne;
 
         private static Platform mainPlat;
@@ -88,6 +90,10 @@ namespace drawedOut
 
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
+            firstBoss = new(
+                    origin:new Point(850, 100), 
+                    width: 500,
+                    height: 500);
 
             mainPlat = new(
                origin: new Point(1, 750),
@@ -221,6 +227,7 @@ namespace drawedOut
             characterAnimations.Clear();
             characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
             foreach (Enemy e in Enemy.InactiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
+            foreach (Enemy e in Enemy.ActiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
         }
 
 

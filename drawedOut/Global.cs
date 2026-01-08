@@ -3,7 +3,7 @@ namespace drawedOut
     ///<summary>
     ///globally used static functions or values
     ///</summary>
-    public static class Global
+    internal static class Global
     {
         public enum XDirections { left, right }
         public enum YDirections { top, bottom }
