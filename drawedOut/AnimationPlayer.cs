@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    public class AnimationPlayer
+    internal class AnimationPlayer
     {
         private Bitmap[] _animFrames;
 

@@ -410,7 +410,7 @@
             ApplyKnockBack(source); 
         }
 
-        public void DoDamage(Projectile sourceProjectile)
+        public virtual void DoDamage(Projectile sourceProjectile)
         {
             if (iFrames>0) return;
             Hp -= sourceProjectile.Dmg;

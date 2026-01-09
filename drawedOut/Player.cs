@@ -101,7 +101,7 @@ namespace drawedOut
         }
         public void DoBasicAttack2() => curAttack = _basic2;
 
-        public void DoDamage(Projectile sourceProjectile)
+        public override void DoDamage(Projectile sourceProjectile)
         {
             if (iFrames>0) return;
             IsHit = true;
