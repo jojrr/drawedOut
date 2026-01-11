@@ -5,14 +5,10 @@ namespace drawedOut
         private const int 
             ATK_ENDLAG_S = 1,
             ATK_X_OFFSET = 100,
-            MOV_ENDLAG_S = 3,
-            MAX_MOVEMENT_TIME_S = 3;
-        private readonly double 
-            _maxRange,
-            _jumpRange;
+            MOV_ENDLAG_S = 6;
+        private readonly Attacks _attackOne, _rangedAttackOne;
+        private readonly double _maxRange, _jumpRange;
         private static Bitmap _downedSprite;
-        private readonly Attacks _attackOne;
-        private readonly Attacks _rangedAttackOne;
         private int _curState = 0;
         private double 
             _movementTimer,
@@ -23,9 +19,9 @@ namespace drawedOut
         public FirstBoss(Point origin, int width, int height, int hp=3)
             :base(origin:origin, width:width, height:height, hp:hp)
         {
-            Size atkSize = new Size(380,520);
+            Size atkSize = new Size(380,220);
 
-            _maxRange = Width*0.5;
+            _maxRange = Width*2.5;
             _jumpRange = 1.5*Height;
 
             _attackOne = new Attacks(
@@ -35,13 +31,16 @@ namespace drawedOut
                     xOffset: ATK_X_OFFSET,
                     spawn: 7,
                     despawn: 11,
-                    endlag: ATK_ENDLAG_S);
+                    endlag: ATK_ENDLAG_S,
+                    dmg: 2);
             _rangedAttackOne = new ProjectileAttack(
                     parent:this,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     endlag: ATK_ENDLAG_S,
                     spawn: 5,
-                    projectileEvent: DoAttack);
+                    projectileEvent: DoAttack,
+                    dmg: 3,
+                    isLethal: false);
 
             string downedSpriteFolder = @"seven\";
             _downedSprite = Global.GetSingleImage(downedSpriteFolder);
@@ -70,7 +69,7 @@ namespace drawedOut
 
             if ( yDistance > _jumpRange ) DoJump();
 
-            switch (_curState)
+            switch (_curState%2)
             {
                 case 0:
                     AttackOneLogic(
@@ -90,47 +89,52 @@ namespace drawedOut
             }
 
 
-            if (_movementTimer >= MAX_MOVEMENT_TIME_S)
+            if (_curState == 5)
             {
                 endlagS = MOV_ENDLAG_S;
-                _movementTimer = 0;
-            }
-        }
-
-        private void AttackOneLogic(Global.XDirections direction, double xDistance, double scrollVelocity, double dt)
-        {
-            if (Math.Abs(xDistance) > _maxRange)
-            {
-                direction = (direction == Global.XDirections.left) ? Global.XDirections.right : Global.XDirections.left;
-                MoveCharacter(dt, direction, scrollVelocity);
-                _movementTimer += dt;
-            }
-            else 
-            {
-                curAttack = _attackOne;
-                MoveCharacter(dt, null, scrollVelocity);
-                _curState = 1;
-            }
-        }
-
-        private void AttackTwoLogic(Global.XDirections direction, double xDistance, double scrollVelocity, double dt, PointF playerCenter)
-        {
-            if ( Math.Abs(xDistance) < _maxRange )
-            {
-                direction = (direction == Global.XDirections.left) ? Global.XDirections.right : Global.XDirections.left;
-                MoveCharacter(dt, direction, scrollVelocity);
-                _movementTimer += dt;
-            }
-            else 
-            {
-                calculateVelocities(playerCenter);
-                curAttack = _rangedAttackOne;
-                MoveCharacter(dt, null, scrollVelocity);
                 _curState = 0;
             }
         }
 
-        private void calculateVelocities(PointF target)
+        private void AttackOneLogic(Global.XDirections? direction, double xDistance, double scrollVelocity, double dt)
+        {
+            if (curAttack is not null) 
+            {
+                MoveCharacter(dt, null, scrollVelocity);
+                return;
+            }
+            if (Math.Abs(xDistance) < Hitbox.Width/2+ATK_X_OFFSET && curAttack is null)
+            {
+                curAttack = _attackOne;
+                _curState = 1;
+                direction=null;
+            }
+            else _movementTimer += dt; 
+            MoveCharacter(dt, direction, scrollVelocity);
+        }
+
+        private void AttackTwoLogic(Global.XDirections? direction, double xDistance, double scrollVelocity, double dt, PointF playerCenter)
+        {
+            if (curAttack is not null) 
+            {
+                MoveCharacter(dt, null, scrollVelocity);
+                return;
+            }
+            if ( Math.Abs(xDistance) > _maxRange)
+            {
+                calculateAngles(playerCenter);
+                curAttack = _rangedAttackOne;
+                _curState = 0;
+                direction=null;
+            }
+            {
+                direction = (direction == Global.XDirections.left) ? Global.XDirections.right : Global.XDirections.left;
+                _movementTimer += dt;
+            }
+            MoveCharacter(dt, direction, scrollVelocity);
+        }
+
+        private void calculateAngles(PointF target)
         {
             _xDiffToPlayer = target.X - Center.X;
             _yDiffToPlayer = target.Y - Center.Y;
@@ -140,7 +144,7 @@ namespace drawedOut
 
         public void DoAttack()
         {
-            Size projectileSize = new Size(160,160);
+            Size projectileSize = new Size(60,60);
 
             Projectile flyingEnemyProj = new Projectile(
                     origin: this.Center,

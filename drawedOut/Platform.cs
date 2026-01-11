@@ -8,8 +8,8 @@
         public static HashSet<Platform> ActivePlatformList = new HashSet<Platform>();
         public static HashSet<Platform> InactivePlatformList = new HashSet<Platform>();
 
-        public bool IsMainPlat { get; init; }
         private PointF _originalLocation;
+        private bool _toggleable;
 
         public static Bitmap PlatformSprite { get; private set; }
         private static string _spritePath = @"sprites/platforms/platformSprite/platformSprite.png";
@@ -25,18 +25,41 @@
 
         static Platform() => _setPlatformSprite();
 
-        public Platform(Point origin, int width, int height, bool isMainPlat=false)
+        public Platform(Point origin, int width, int height)
             : base(origin, width, height)
         {
-            _originalLocation = origin;
             InactivePlatformList.Add(this);
-            if (isMainPlat) 
-            {
-                IsMainPlat = true;
-                ActivePlatformList.Add(this);
-                IsActive = true;
-            }
+            _originalLocation = origin;
+            _toggleable=false;
         } 
+
+        public Platform(Point origin, int width, int height, bool toggleable, bool defaultState=false)
+            : base(origin, width, height)
+        {
+            _toggleable=toggleable;
+            _originalLocation = origin;
+            IsActive = defaultState;
+            if (defaultState) ActivePlatformList.Add(this);
+            else InactivePlatformList.Add(this);
+        }
+
+        public void Activate() 
+        {
+            if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
+            if (IsActive) return;
+            IsActive = true;
+            InactivePlatformList.Remove(this);
+            ActivePlatformList.Add(this);
+        }
+
+        public void Deactivate()
+        {
+            if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
+            if (!IsActive) return;
+            IsActive = false;
+            ActivePlatformList.Remove(this);
+            InactivePlatformList.Add(this);
+        }
 
         public static void ResetLocation()
         {
@@ -46,7 +69,7 @@
 
         public override void CheckActive()
         {
-            if (IsMainPlat) return;
+            if (_toggleable) return;
             if (this.DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;

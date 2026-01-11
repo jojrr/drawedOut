@@ -197,7 +197,6 @@ namespace drawedOut
             if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) 
             {
                 projectile.Rebound(dt, this);
-                projectile.ToggleLethal(true);
                 PerfectParry(); 
                 return false;
             }

@@ -13,10 +13,14 @@ namespace drawedOut
 
         private static Checkpoint checkpointOne;
 
-        private static Platform mainPlat;
-        private static Platform box3;
-        private static Platform box4;
-        private static Platform box5;
+        private static Platform 
+            mainPlat,
+            box3,
+            box4,
+            box5,
+            endWall,
+            roomWall,
+            roomDoor;
 
         private static HpBarUI hpBar;
         private static BarUI energyBar;
@@ -84,18 +88,20 @@ namespace drawedOut
                     energy: 100,
                     hp: 6);
 
-            meleeOne = new(origin:new Point(2850, -550));
-            flyingOne = new(origin:new Point(850, 100));
+            // meleeOne = new(origin:new Point(2850, -550));
+            // flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
-                    origin:new Point(3050, 100), 
+                    origin:new Point(5100, 100), 
                     width: 250,
-                    height: 250);
+                    height: 250,
+                    hp: 6);
 
             mainPlat = new(
                origin: new Point(1, 750),
                width: 5400,
                height: 550,
-               isMainPlat: true);
+               toggleable: true,
+               defaultState: true);
 
             box3 = new(
                origin: new Point(300, 250),
@@ -111,6 +117,23 @@ namespace drawedOut
                origin: new Point(1500, 550),
                width: 200,
                height: 250);
+
+            endWall = new(
+                    origin: new Point(5390, 0),
+                    width: 100,
+                    height: 750);
+
+            roomWall = new(
+                    origin: new Point(5400-1920, 0),
+                    width: 40,
+                    height: 550);
+
+            roomDoor = new(
+                    origin: new Point(5400-1920, 550),
+                    width: 30,
+                    height: 200,
+                    toggleable: true,
+                    defaultState: false);
 
             checkpointOne = new(origin: new Point(2200, 600));
         }
@@ -335,11 +358,15 @@ namespace drawedOut
                 e.CheckActive();
 
             if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            if (movingLeft) playerMovDir = Global.XDirections.left;
-            if (movingRight) playerMovDir = Global.XDirections.right;
             if (isScrolling) scrollVelocity -= playerBox.XVelocity;
 
+            if (movingLeft) playerMovDir = Global.XDirections.left;
+            else if (movingRight) playerMovDir = Global.XDirections.right;
+
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
+
+            if (playerBox.Hitbox.Left > roomDoor.Hitbox.Right) roomDoor.Activate();
+            else if (playerBox.Hitbox.Right < roomDoor.Hitbox.Left) roomDoor.Deactivate();
 
             try { Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => 
                     { enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); }

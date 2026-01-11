@@ -54,8 +54,7 @@ namespace drawedOut
                     animation: new AnimationPlayer(animationFolder: @"fillerAnim\"),
                     endlag: _ATK_ENDLAG_S,
                     spawn:_ATTACK_FRAME,
-                    projectileEvent: createProjectile
-                    );
+                    projectileEvent: createProjectile);
 
             setIdleAnim(@"fillerAnim\");
         }

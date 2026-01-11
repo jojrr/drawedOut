@@ -248,7 +248,7 @@ namespace drawedOut
         private Action _launchProjectile;
 
         public ProjectileAttack(Character parent, AnimationPlayer animation, float endlag, int spawn,
-                Action projectileEvent, int dmg=1, bool isLethal=false)
+                Action projectileEvent, int dmg=1, bool isLethal=true)
             : base (parent:parent, width:0, height:0, animation:animation, endlag:endlag, spawn:spawn, dmg:dmg, isLethal:isLethal)
         {
             AttacksList.Remove(this);
