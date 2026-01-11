@@ -18,11 +18,12 @@
             iFrames,
             endlagS = 0;
 
-        private const int GRAVITY = 4000, FRICTION=2000;
         /// <summary> the horizontal direction of the platfrom from the player that is colliding </summary>
         private Global.XDirections? _curXColliderDirection = null;
         /// <summary> the vertical direction of the platfrom from the player that is colliding </summary>
         private Global.YDirections? _curYColliderDirection = null;
+
+        private const int GRAVITY = 4000, FRICTION=2000;
         private AnimationPlayer? _idleAnim, _runAnim;
         private RectangleF? _xStickTarget, _yStickTarget;
         private Entity? _xStickEntity, _yStickEntity;

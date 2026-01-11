@@ -25,7 +25,7 @@ namespace drawedOut
         {
             Size atkSize = new Size(380,520);
 
-            _maxRange = Width+(atkSize.Width * Global.BaseScale);
+            _maxRange = Width*0.5;
             _jumpRange = 1.5*Height;
 
             _attackOne = new Attacks(

@@ -67,9 +67,8 @@ namespace drawedOut
         {
             IsActive = false;
             ActiveEnemyList.Remove(this);
-            InactiveEnemyList.Remove(this);
+            InactiveEnemyList.Add(this);
             if (this.curAttack is not null) this.curAttack.Dispose();
-            this.Delete();
         }
 
         public override void Reset()

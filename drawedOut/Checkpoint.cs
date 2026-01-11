@@ -9,6 +9,7 @@ namespace drawedOut
         private const int
             _BASE_WIDTH = 200,
             _BASE_HEIGHT = 140;
+        private static float _levelXOffset; 
 
         static Checkpoint()
         {
@@ -33,16 +34,13 @@ namespace drawedOut
         }
 
 
-        public void SaveState()
+        public void SaveState(Player player, Platform basePlat)
         {
             if (_lastSavedPoint == this) return;
 
             _entityPosKeys.Clear();
-            foreach (Entity entity in EntityList)
-            {
-                if (entity is Projectile) continue;
-                _entityPosKeys.Add(entity, entity.Location);
-            }
+            _levelXOffset = basePlat.OriginLocation.X - basePlat.LocationX;
+            _entityPosKeys.Add(player, player.Location);
             _lastSavedPoint = this;
         }
 
@@ -66,10 +64,16 @@ namespace drawedOut
         ///<summary>
         ///Loads the state of the entities stored in the dictionary.
         ///</summary>
-        public static void LoadState() 
+        public static void LoadState()
         { 
             if (_lastSavedPoint is null) return;
-            foreach (Entity entity in EntityList) entity.Location = _entityPosKeys[entity];
+            foreach (Projectile p in Projectile.ProjectileList) p.Dipose();
+            foreach (Entity entity in EntityList) 
+            {
+                entity.Reset();
+                if (entity is Player) entity.Location = _entityPosKeys[entity];
+                else entity.LocationX -= _levelXOffset;
+            }
         }
 
         public static void Draw(Graphics g)

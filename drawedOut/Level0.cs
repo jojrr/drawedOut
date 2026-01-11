@@ -74,11 +74,7 @@ namespace drawedOut
 
         private static void InitEntities()
         {
-            if (levelLoaded) 
-            {
-                foreach (Entity e in Entity.EntityList) e.Reset();
-                return;
-            }
+            if (levelLoaded) return;
 
             playerBox = new Player(
                     origin: new Point(850, 550),
@@ -91,9 +87,9 @@ namespace drawedOut
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
-                    origin:new Point(850, 100), 
-                    width: 500,
-                    height: 500);
+                    origin:new Point(3050, 100), 
+                    width: 250,
+                    height: 250);
 
             mainPlat = new(
                origin: new Point(1, 750),
@@ -289,7 +285,7 @@ namespace drawedOut
                 if (a.Parent is Player) 
                 {
                     foreach (Checkpoint c in Checkpoint.CheckPointList)
-                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(); }
+                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerBox, mainPlat); }
                 }
                 else if (atkBox.IntersectsWith(playerBox.Hitbox)) 
                 {
@@ -501,6 +497,11 @@ namespace drawedOut
                     new Font("Arial", 10*baseScale),
                     Brushes.Black,
                     new PointF(60*baseScale,240*baseScale));
+            g.DrawString(
+                    mainPlat.LocationX.ToString(),
+                    new Font("Arial", 10*baseScale),
+                    Brushes.Black,
+                    new PointF(60*baseScale,260*baseScale));
         }
 
         private void drawHitboxes(Graphics g)

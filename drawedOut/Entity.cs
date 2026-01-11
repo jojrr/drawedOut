@@ -12,6 +12,7 @@
         public float Width { get => _scaledSize.Width; }
         public float Height { get => _scaledSize.Height; }
         public RectangleF Hitbox { get => _calcHitbox(); }
+        public PointF OriginLocation { get => _originalLocation; } 
         public bool IsActive { get => isActive; protected set => isActive = value; }
 
         ///<summary>
@@ -43,7 +44,7 @@
         public float LocationX
         {
             get => _location.X;
-            protected set 
+            set 
             {
                 _location.X = value;
                 _center = new PointF(value + _scaledSize.Width/2, _center.Y);
