@@ -88,8 +88,8 @@ namespace drawedOut
                     energy: 100,
                     hp: 6);
 
-            // meleeOne = new(origin:new Point(2850, -550));
-            // flyingOne = new(origin:new Point(850, 100));
+            meleeOne = new(origin:new Point(2850, -550));
+            flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
                     origin:new Point(5100, 100), 
                     width: 250,
@@ -162,6 +162,7 @@ namespace drawedOut
             threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
 
             ResetLevel();
+            LinkAnimations();
 
             gameTickThread = new Thread(() =>
             {
@@ -233,7 +234,7 @@ namespace drawedOut
         {
             foreach (Attacks a in Attacks.AttacksList) a.Dispose();
             InitEntities();
-            RelinkAnimations();
+            playerBox.Reset();
             InitUI();
             hpBar.UpdateMaxHp(playerBox.MaxHp);
             hpBar.ComputeHP(playerBox.Hp);
@@ -241,7 +242,7 @@ namespace drawedOut
             energyBar.Update((float)(playerBox.Energy));
         }
 
-        private void RelinkAnimations()
+        private void LinkAnimations()
         {
             characterAnimations.Clear();
             characterAnimations.Add(playerBox, playerBox.NextAnimFrame());

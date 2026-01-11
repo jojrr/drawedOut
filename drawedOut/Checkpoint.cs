@@ -3,8 +3,8 @@ namespace drawedOut
     internal class Checkpoint: Entity
     {
         public static List<Checkpoint> CheckPointList = new List<Checkpoint>();
-        private static Dictionary<Entity, PointF> _entityPosKeys = new Dictionary<Entity, PointF>();
         private static Checkpoint? _lastSavedPoint = null;
+        private static PointF? _storePlayerLocation = null;
         private static Bitmap _defaultSprite, _usedSprite;
         private const int
             _BASE_WIDTH = 200,
@@ -37,10 +37,8 @@ namespace drawedOut
         public void SaveState(Player player, Platform basePlat)
         {
             if (_lastSavedPoint == this) return;
-
-            _entityPosKeys.Clear();
             _levelXOffset = basePlat.OriginLocation.X - basePlat.LocationX;
-            _entityPosKeys.Add(player, player.Location);
+            _storePlayerLocation = player.Location;
             _lastSavedPoint = this;
         }
 
@@ -66,13 +64,16 @@ namespace drawedOut
         ///</summary>
         public static void LoadState()
         { 
-            if (_lastSavedPoint is null) return;
             foreach (Projectile p in Projectile.ProjectileList) p.Dipose();
             foreach (Entity entity in EntityList) 
             {
+                if (entity is Player && _storePlayerLocation is not null)
+                { 
+                    entity.Location = _storePlayerLocation.Value; 
+                    continue;
+                }
                 entity.Reset();
-                if (entity is Player) entity.Location = _entityPosKeys[entity];
-                else entity.LocationX -= _levelXOffset;
+                entity.LocationX -= _levelXOffset;
             }
         }
 
