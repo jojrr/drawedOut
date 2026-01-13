@@ -146,7 +146,7 @@ namespace drawedOut
         /// Default: null (returns first item) 
         /// </param>
         /// <returns> 
-        /// A single <see cref="Bitmap"/> image of the specified file in the folder. <br/>
+        /// A single <see cref="Bitmap"/> image of the specified file in the folder.<br/>
         /// By default if fileName is unset, will return the first item in the folder.
         /// </returns>
         public static Bitmap GetSingleImage(string folderName, string? fileName=null)

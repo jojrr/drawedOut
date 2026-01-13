@@ -97,8 +97,8 @@
         public void Rebound(double dt, Entity? target)
         {
             if (target is not null) _parent = target;
-            _xVelocity = -_xVelocity;
-            _yVelocity = -_yVelocity;
+            _xVelocity *= -1;
+            _yVelocity *= -1;
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
         }
 

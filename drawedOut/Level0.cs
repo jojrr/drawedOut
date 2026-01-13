@@ -79,7 +79,6 @@ namespace drawedOut
         private static void InitEntities()
         {
             if (levelLoaded) return;
-
             playerBox = new Player(
                     origin: new Point(850, 550),
                     width: 30,
@@ -87,7 +86,13 @@ namespace drawedOut
                     attackPower: 1,
                     energy: 100,
                     hp: 6);
+            InitEnemies();
+            InitPlatforms();
+            InitCheckpoints();
+        }
 
+        private void InitEnemies()
+        {
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
@@ -95,7 +100,10 @@ namespace drawedOut
                     width: 250,
                     height: 250,
                     hp: 6);
+        }
 
+        private void InitPlatforms()
+        {
             mainPlat = new(
                origin: new Point(1, 750),
                width: 5400,
@@ -134,7 +142,10 @@ namespace drawedOut
                     height: 200,
                     toggleable: true,
                     defaultState: false);
+        }
 
+        private void InitCheckpoints()
+        {
             checkpointOne = new(origin: new Point(2200, 600));
         }
 
@@ -489,8 +500,6 @@ namespace drawedOut
                 g.ScaleTransform(3/2F, 3/2F);
             }
 
-            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
-
             // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
             {
@@ -504,9 +513,10 @@ namespace drawedOut
                 using (Pen blackPen = new Pen(Color.Black, 6))
                 { g.DrawRectangle(blackPen, hitbox); }
             }
+            Checkpoint.Draw(g);
             
             if (showHitbox) drawHitboxes(g);
-            Checkpoint.Draw(g);
+            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
         }
 
@@ -525,11 +535,6 @@ namespace drawedOut
                     new Font("Arial", 10*baseScale),
                     Brushes.Black,
                     new PointF(60*baseScale,240*baseScale));
-            g.DrawString(
-                    mainPlat.LocationX.ToString(),
-                    new Font("Arial", 10*baseScale),
-                    Brushes.Black,
-                    new PointF(60*baseScale,260*baseScale));
         }
 
         private void drawHitboxes(Graphics g)
