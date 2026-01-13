@@ -440,6 +440,8 @@
         public override void Reset()
         {
             base.Reset();
+            xVelocity = 0;
+            yVelocity = 0;
             endlagS = 0;
             Hp = MaxHp;
         }

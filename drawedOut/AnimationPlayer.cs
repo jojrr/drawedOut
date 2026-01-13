@@ -20,27 +20,18 @@ namespace drawedOut
         ///<param name="animationFolder"> the name of the folder within project/sprites/ </param>
         public AnimationPlayer(string animationFolder)
         {
-            if (true)
-            {
-                if(true)
-                {
-                    if (true)
-                    {
-                        if (true)
-                        {
-                            if (true)
-                            {            
-                             string animPath = Path.Combine(PROJ_PATH, SPRITE_FOLDER, animationFolder);
 
-                             if ( !Directory.Exists(animPath) )
-                                 throw new DirectoryNotFoundException($"Directory {animPath} not found");
+            string animPath = Path.Combine(PROJ_PATH, SPRITE_FOLDER, animationFolder);
 
-                             string[] fileNames = Directory.GetFiles(animPath);
-                             _totalFrameCount = fileNames.Count();
+            if ( !Directory.Exists(animPath) )
+                throw new DirectoryNotFoundException($"Directory {animPath} not found");
 
-                             _animFrames = new Bitmap[_totalFrameCount];
-                             for (int i = 0; i < _totalFrameCount; i++) 
-                             { _animFrames[i] = Global.ImageToBitmap(fileNames[i]); }}}}}}
+            string[] fileNames = Directory.GetFiles(animPath);
+            _totalFrameCount = fileNames.Count();
+
+            _animFrames = new Bitmap[_totalFrameCount];
+            for (int i = 0; i < _totalFrameCount; i++) 
+            { _animFrames[i] = Global.ImageToBitmap(fileNames[i]); }
         }
 
 

@@ -86,27 +86,28 @@ namespace drawedOut
                     attackPower: 1,
                     energy: 100,
                     hp: 6);
-            InitEnemies();
             InitPlatforms();
             InitCheckpoints();
+            InitEnemies();
         }
 
-        private void InitEnemies()
+        private static void InitEnemies()
         {
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
-                    origin:new Point(5100, 100), 
-                    width: 250,
+                    activationDoor: ref roomDoor,
+                    origin:new Point(8200, 100), 
                     height: 250,
+                    width: 250,
                     hp: 6);
         }
 
-        private void InitPlatforms()
+        private static void InitPlatforms()
         {
             mainPlat = new(
                origin: new Point(1, 750),
-               width: 5400,
+               width: 8400,
                height: 550,
                toggleable: true,
                defaultState: true);
@@ -127,26 +128,26 @@ namespace drawedOut
                height: 250);
 
             endWall = new(
-                    origin: new Point(5390, 0),
+                    origin: new Point((int)(mainPlat.Hitbox.Right-20), 0),
                     width: 100,
                     height: 750);
 
             roomWall = new(
-                    origin: new Point(5400-1920, 0),
+                    origin: new Point(8400-1920, 0),
                     width: 40,
                     height: 550);
 
             roomDoor = new(
-                    origin: new Point(5400-1920, 550),
+                    origin: new Point(8400-1920, 550),
                     width: 30,
                     height: 200,
                     toggleable: true,
                     defaultState: false);
         }
 
-        private void InitCheckpoints()
+        private static void InitCheckpoints()
         {
-            checkpointOne = new(origin: new Point(2200, 600));
+            checkpointOne = new(origin: new Point(6200, 600));
         }
 
 

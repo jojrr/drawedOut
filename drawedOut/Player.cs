@@ -282,6 +282,7 @@ namespace drawedOut
                 scrollDirection = Global.XDirections.right;
 
             if (onWorldBoundary == scrollDirection) return false;
+            if (onWorldBoundary == Global.XDirections.right) return false;
             if (scrollDirection is null) return false;
             return true;
         }

@@ -6,6 +6,7 @@ namespace drawedOut
             ATK_ENDLAG_S = 1,
             ATK_X_OFFSET = 100,
             MOV_ENDLAG_S = 6;
+        private readonly Platform _activationDoor; 
         private readonly Attacks _attackOne, _rangedAttackOne;
         private readonly double _maxRange, _jumpRange;
         private static Bitmap _downedSprite;
@@ -16,13 +17,15 @@ namespace drawedOut
             _xDiffToPlayer,
             _yDiffToPlayer;
 
-        public FirstBoss(Point origin, int width, int height, int hp=3)
+        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor,
+                int hp=3)
             :base(origin:origin, width:width, height:height, hp:hp)
         {
             Size atkSize = new Size(380,220);
 
             _maxRange = Width*2.5;
             _jumpRange = 1.5*Height;
+            _activationDoor = activationDoor;
 
             _attackOne = new Attacks(
                     parent: this,
@@ -155,6 +158,19 @@ namespace drawedOut
                     xDiff: _xDiffToPlayer,
                     yDiff: _yDiffToPlayer,
                     parent: this);
+        }
+
+        public override void CheckActive()
+        {
+            base.CheckActive();
+            if (IsActive) return;
+            if (_activationDoor.IsActive && Hp > 0)
+            {
+                IsActive = true;
+                ActiveEnemyList.Add(this);
+                InactiveEnemyList.Remove(this);
+                return;
+            }
         }
     }
 }
