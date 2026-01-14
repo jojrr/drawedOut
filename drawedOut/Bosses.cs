@@ -12,7 +12,6 @@ namespace drawedOut
         private static Bitmap _downedSprite;
         private int _curState = 0;
         private double 
-            _movementTimer,
             _angleToPlayer,
             _xDiffToPlayer,
             _yDiffToPlayer;
@@ -112,7 +111,6 @@ namespace drawedOut
                 _curState = 1;
                 direction=null;
             }
-            else _movementTimer += dt; 
             MoveCharacter(dt, direction, scrollVelocity);
         }
 
@@ -123,16 +121,14 @@ namespace drawedOut
                 MoveCharacter(dt, null, scrollVelocity);
                 return;
             }
-            if ( Math.Abs(xDistance) > _maxRange)
+
+            direction = (direction == Global.XDirections.left) ? Global.XDirections.right : Global.XDirections.left;
+            if ( Math.Abs(xDistance) > _maxRange || MovingIntoWall )
             {
                 calculateAngles(playerCenter);
                 curAttack = _rangedAttackOne;
                 _curState = 0;
                 direction=null;
-            }
-            {
-                direction = (direction == Global.XDirections.left) ? Global.XDirections.right : Global.XDirections.left;
-                _movementTimer += dt;
             }
             MoveCharacter(dt, direction, scrollVelocity);
         }

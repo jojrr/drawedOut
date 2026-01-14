@@ -4,6 +4,15 @@
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
+        public bool MovingIntoWall 
+        {
+            get 
+            {
+                if (_lastXDirection is null || _curXColliderDirection is null) return false;
+                if (_curXColliderDirection == _lastXDirection) return true;
+                return false;
+            }
+        }
 
         protected AnimationPlayer? idleAnim { get => _idleAnim; private set => _idleAnim = value; }
         protected AnimationPlayer? runAnim { get => _runAnim; private set => _runAnim = value; }
@@ -25,9 +34,10 @@
 
         private const int GRAVITY = 4000, FRICTION=2000;
         private AnimationPlayer? _idleAnim, _runAnim;
-        private RectangleF? _xStickTarget, _yStickTarget;
         private Entity? _xStickEntity, _yStickEntity;
         private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
+        private RectangleF? _xStickTarget, _yStickTarget;
+        private Global.XDirections? _lastXDirection;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
         private readonly int
@@ -310,6 +320,7 @@
         {
             DoGravTick(dt);
             checkInBoundary();
+            _lastXDirection = direction;
 
             _curXAccel=0;
 

@@ -372,7 +372,11 @@ namespace drawedOut
 
             playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
-            if (playerBox.Hitbox.Left > roomDoor.Hitbox.Right) roomDoor.Activate();
+            if (playerBox.Hitbox.Left > roomDoor.Hitbox.Right) 
+            {
+                roomDoor.Activate(); 
+                scrollTillEnd(deltaTime);
+            }
             else if (playerBox.Hitbox.Right < roomDoor.Hitbox.Left) roomDoor.Deactivate();
 
             try { Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => 
@@ -384,15 +388,21 @@ namespace drawedOut
         }
 
 
-        public void ScrollEntities(double velocity, double deltaTime)
+        public void ScrollEntities(double velocity, double deltaTime, bool includePlayer=false)
         {
             foreach(Entity e in Entity.EntityList)
             {
-                if (e is Player) { continue; }
+                if (e is Player && !includePlayer) { continue; }
                 e.UpdateX(velocity * deltaTime);
             }
         }
 
+
+        public void scrollTillEnd(double dt)
+        {
+            if (mainPlat.Hitbox.Right > Global.LevelSize.Width && curZoom == 1) 
+                ScrollEntities(-1200, dt, true);
+        }
 
 
         private ushort prevFrameFPS = 0;
