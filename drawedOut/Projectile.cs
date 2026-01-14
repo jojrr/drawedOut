@@ -146,7 +146,7 @@
                         if (!(e.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
 
                         _disposedProjectiles.Add(bullet);
-                        e.DoDamage(bullet, bullet.IsLethal);
+                        e.DoDamage(bullet);
                         return;
                     }
                 }

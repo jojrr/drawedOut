@@ -101,44 +101,28 @@ namespace drawedOut
         }
         public void DoBasicAttack2() => curAttack = _basic2;
 
-        public override void DoDamage(Projectile sourceProjectile)
+        public void DoDamage(Projectile sourceProjectile)
         {
             if (iFrames>0) return;
             IsHit = true;
             Hp -= sourceProjectile.Dmg;
             _hpBar.ComputeHP(Hp);
             int[] knockBackVelocites = sourceProjectile.calculateKnockback(this.Center);
-            ApplyKnockBack(sourceProjectile, knockBackVelocites[0], knockBackVelocites[1]); 
+            ApplyKnockBack(knockBackVelocites[0], knockBackVelocites[1], 0, 0);
             iFrames += _HIT_IFRAMES_S;
         }
 
 
-        public new void DoDamage(int dmg, Entity source)
-        {
-            if (iFrames>0) return;
-            base.DoDamage(dmg, source);
-            IsHit = true;
-            _hpBar.ComputeHP(Hp);
-            iFrames += _HIT_IFRAMES_S;
-        }
-
-        public void DoDamage(int dmg, Entity source, int xSpeed)
+        public void DoDamage(Attacks sourceAttack, int xSpeed=1000, int ySpeed=500)
         {
             if (iFrames>0) return;
             IsHit = true;
-            Hp -= dmg;
+            Hp -= sourceAttack.AtkDmg;
             _hpBar.ComputeHP(Hp);
-            ApplyKnockBack(source, xSpeed); 
-            iFrames += _HIT_IFRAMES_S;
-        }
-
-        public void DoDamage(int dmg, Entity source, int xSpeed, int ySpeed)
-        {
-            if (iFrames>0) return;
-            IsHit = true;
-            Hp -= dmg;
-            _hpBar.ComputeHP(Hp);
-            ApplyKnockBack(source, xSpeed, ySpeed); 
+            PointF sourceCenter = sourceAttack.Parent.Center;
+            if (sourceCenter.X - this.Center.X > 0) xSpeed *= -1;
+            if (sourceCenter.Y - this.Center.Y > 0) ySpeed *= -1;
+            ApplyKnockBack(xSpeed, ySpeed, 0, 0); 
             iFrames += _HIT_IFRAMES_S;
         }
 

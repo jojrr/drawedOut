@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    internal class Character : Entity
+    internal abstract class Character : Entity
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
@@ -415,35 +415,38 @@
         */
 
 
-        public virtual void DoDamage(int dmg, Entity source)
+        protected virtual void DoDamage(Attacks atk, int xVel, int yVel, int xDampen=0, int yDampen=0)
         {
             if (iFrames > 0) return;
-            _hp -= dmg;
-            ApplyKnockBack(source); 
+            _hp -= atk.AtkDmg;
+            PointF sourceCenter = atk.Parent.Center;
+            if (sourceCenter.X - this.Center.X > 0) xVel *= -1;
+            if (sourceCenter.Y - this.Center.Y > 0) yVel *= -1;
+            ApplyKnockBack(xVel, yVel, xDampen, yDampen); 
         }
 
-        public virtual void DoDamage(Projectile sourceProjectile)
+        protected virtual void DoDamage(Projectile sourceProjectile, int xDampen=0, int yDampen=0)
         {
             if (iFrames>0) return;
-            Hp -= sourceProjectile.Dmg;
+            _hp -= sourceProjectile.Dmg;
             int[] knockBackVelocites = sourceProjectile.calculateKnockback(this.Center);
-            ApplyKnockBack(sourceProjectile, knockBackVelocites[0], knockBackVelocites[1]); 
+            ApplyKnockBack(knockBackVelocites[0], knockBackVelocites[1], xDampen, yDampen); 
         }
 
-        public void ApplyKnockBack(Entity source, int xSpeed = 1000, int ySpeed = 500)
+        public void ApplyKnockBack(int xVel, int yVel, int xDampen, int yDampen)
         {
-            xVelocity = (source.Center.X - this.Center.X < 0) ? xSpeed : -xSpeed;
-            yVelocity = (source.Center.Y - this.Center.Y < 0) ? ySpeed : -ySpeed;
-            _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
+            xVelocity = Math.CopySign(Math.Max(0, Math.Abs(xVel)-xDampen), xVel);
+            yVelocity = Math.CopySign(Math.Max(0, Math.Abs(yVel)-yDampen), yVel);
+            _xKnockbackVelocity = Math.Max(Math.Abs(xVel), _maxXVelocity);
             _knockedBack = true;
         }
-        public void ApplyKnockBack(Projectile source, int xSpeed, int ySpeed)
-        {
-            xVelocity = xSpeed;
-            yVelocity = ySpeed;
-            _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
-            _knockedBack = true;
-        }
+        // public void ApplyKnockBack(int xSpeed, int ySpeed, int xDampen, int yDampen)
+        // {
+        //     xVelocity = Math.Max(0, xSpeed-xDampen);
+        //     yVelocity = Math.Max(0, ySpeed-yDampen);
+        //     _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
+        //     _knockedBack = true;
+        // }
 
         public void CheckAllPlatformCollision()
         { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p); }

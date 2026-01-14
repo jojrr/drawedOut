@@ -9,14 +9,21 @@ namespace drawedOut
 
         private static HashSet<Enemy> _activeEnemyList = new HashSet<Enemy>();
         private static HashSet<Enemy> _inactiveEnemyList = new HashSet<Enemy>();
+        private const int 
+            _DEFAULT_X_KNOCKBACK = 1000, 
+            _DEFAULT_Y_KNOCKBACK = 500;
         private const float _DEFAULT_DOWN_TIME_S = 5;
+        private readonly int _xKnockDampen, _yKnockDampen;
         private readonly float _maxDownTime;
         private double _downTimer = 0;
 
         public Enemy(Point origin, int width, int height, int hp,
-                int xAccel=100, int maxXVelocity=600, float maxDownTime=_DEFAULT_DOWN_TIME_S)
+                int xAccel=100, int maxXVelocity=600, int xKnockDampen=0, int yKnockDampen=0,
+                float maxDownTime=_DEFAULT_DOWN_TIME_S)
             : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
         { 
+            _xKnockDampen = xKnockDampen;
+            _yKnockDampen = yKnockDampen;
             _maxDownTime = maxDownTime;
             _inactiveEnemyList.Add(this); 
         }
@@ -24,16 +31,16 @@ namespace drawedOut
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
 
-        public void DoDamage(int dmg, Entity source, bool isLethal)
+        public void DoDamage(Attacks sourceAtk, int xKnock=_DEFAULT_X_KNOCKBACK, int yKnock=_DEFAULT_Y_KNOCKBACK)
         {
-            DoDamage(dmg, source);
-            CheckDowned(isLethal);
+            base.DoDamage(sourceAtk, xKnock, yKnock, _xKnockDampen, _yKnockDampen);
+            CheckDowned(sourceAtk.IsLethal);
         }
 
-        public void DoDamage(Projectile sourceProjectile, bool isLethal)
+        public void DoDamage(Projectile sourceProjectile)
         {
-            DoDamage(sourceProjectile);
-            CheckDowned(isLethal);
+            base.DoDamage(sourceProjectile, _xKnockDampen, _yKnockDampen);
+            CheckDowned(sourceProjectile.IsLethal);
         }
 
         public override void Reset()

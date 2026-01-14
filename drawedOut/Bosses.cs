@@ -5,7 +5,9 @@ namespace drawedOut
         private const int 
             ATK_ENDLAG_S = 1,
             ATK_X_OFFSET = 100,
-            MOV_ENDLAG_S = 6;
+            _X_KNOCK_DAMPEN = 800,
+            _Y_KNOCK_DAMPEN = 300,
+            MOV_ENDLAG_S = 3;
         private readonly Platform _activationDoor; 
         private readonly Attacks _attackOne, _rangedAttackOne;
         private readonly double _maxRange, _jumpRange;
@@ -16,9 +18,8 @@ namespace drawedOut
             _xDiffToPlayer,
             _yDiffToPlayer;
 
-        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor,
-                int hp=3)
-            :base(origin:origin, width:width, height:height, hp:hp)
+        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor, int hp=3)
+            :base(origin:origin, width:width, height:height, hp:hp, xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN)
         {
             Size atkSize = new Size(380,220);
 
@@ -90,7 +91,6 @@ namespace drawedOut
                     break;
             }
 
-
             if (_curState == 5)
             {
                 endlagS = MOV_ENDLAG_S;
@@ -108,7 +108,7 @@ namespace drawedOut
             if (Math.Abs(xDistance) < Hitbox.Width/2+ATK_X_OFFSET && curAttack is null)
             {
                 curAttack = _attackOne;
-                _curState = 1;
+                _curState += 1;
                 direction=null;
             }
             MoveCharacter(dt, direction, scrollVelocity);
@@ -127,7 +127,7 @@ namespace drawedOut
             {
                 calculateAngles(playerCenter);
                 curAttack = _rangedAttackOne;
-                _curState = 0;
+                _curState += 1;
                 direction=null;
             }
             MoveCharacter(dt, direction, scrollVelocity);
