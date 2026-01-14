@@ -178,7 +178,6 @@ namespace drawedOut
 
             gameTickThread = new Thread(() =>
             {
-                int gcCounter = 0;
                 while (true)
                 {
                     if (threadCT.IsCancellationRequested) return;
@@ -193,11 +192,6 @@ namespace drawedOut
                     {
                         TickAnimations();
                         animTickSW.Restart();
-                        if (++gcCounter == 32) 
-                        {
-                            GC.Collect();
-                            gcCounter = 0;
-                        }
                     }
 
                     threadDelaySW.Restart();
