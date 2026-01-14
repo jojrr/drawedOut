@@ -2,7 +2,9 @@ namespace drawedOut
 {
     internal class Checkpoint: Entity
     {
-        public static List<Checkpoint> CheckPointList = new List<Checkpoint>();
+        public static IReadOnlyCollection<Checkpoint> CheckPointList => _checkPointList;
+
+        private static List<Checkpoint> _checkPointList = new List<Checkpoint>();
         private static Checkpoint? _lastSavedPoint = null;
         private static PointF? _storePlayerLocation = null;
         private static Bitmap _defaultSprite, _usedSprite;
@@ -20,7 +22,7 @@ namespace drawedOut
             : base(origin: origin, width: width, height: height)
         { 
             FindFloor(); 
-            CheckPointList.Add(this);
+            _checkPointList.Add(this);
         }
 
         private RectangleF SpriteRect
@@ -91,6 +93,12 @@ namespace drawedOut
         {
             if (this.DistToMid > Global.EntityLoadThreshold) IsActive = false; 
             else IsActive = true;
+        }
+
+        public new static void ClearAllLists()
+        {
+            _lastSavedPoint=null;
+            _checkPointList.Clear();
         }
     }
 }

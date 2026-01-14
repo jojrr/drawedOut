@@ -167,8 +167,7 @@ namespace drawedOut
             if (_activationDoor.IsActive && Hp > 0)
             {
                 IsActive = true;
-                ActiveEnemyList.Add(this);
-                InactiveEnemyList.Remove(this);
+                SetActive();
                 return;
             }
         }

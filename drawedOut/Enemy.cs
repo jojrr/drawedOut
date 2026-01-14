@@ -2,11 +2,13 @@ namespace drawedOut
 {
     internal abstract class Enemy : Character
     {
-        public static HashSet<Enemy> ActiveEnemyList = new HashSet<Enemy>();
-        public static HashSet<Enemy> InactiveEnemyList = new HashSet<Enemy>();
+        public static IReadOnlyCollection<Enemy> ActiveEnemyList => _activeEnemyList;
+        public static IReadOnlyCollection<Enemy> InactiveEnemyList => _inactiveEnemyList;
 
         protected bool isDowned = false;
 
+        private static HashSet<Enemy> _activeEnemyList = new HashSet<Enemy>();
+        private static HashSet<Enemy> _inactiveEnemyList = new HashSet<Enemy>();
         private const float _DEFAULT_DOWN_TIME_S = 5;
         private readonly float _maxDownTime;
         private double _downTimer = 0;
@@ -16,7 +18,7 @@ namespace drawedOut
             : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
         { 
             _maxDownTime = maxDownTime;
-            InactiveEnemyList.Add(this); 
+            _inactiveEnemyList.Add(this); 
         }
 
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
@@ -32,6 +34,68 @@ namespace drawedOut
         {
             DoDamage(sourceProjectile);
             CheckDowned(isLethal);
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            _downTimer = 0;
+            curAttack = null;
+            isDowned=false;
+        }
+
+        public static void TickCounters(double dt)
+        {
+            foreach (Enemy e in Enemy._activeEnemyList) 
+            { 
+                e.TickAllCounters(dt); 
+                e.IncDownTimer(dt);
+            }
+        }
+
+        protected void SetActive()
+        {
+            _activeEnemyList.Add(this);
+            _inactiveEnemyList.Remove(this);
+        }
+
+        protected void SetInactive()
+        {
+            _inactiveEnemyList.Add(this);
+            _activeEnemyList.Remove(this);
+        }
+
+        public new static void ClearAllLists()
+        {
+            _activeEnemyList.Clear();
+            _inactiveEnemyList.Clear();
+        }
+
+
+
+        public override void CheckActive()
+        {
+            if (Hp <= 0 && !isDowned) 
+            { 
+                doDeath(); 
+                return;
+            }
+
+            if (DistToMid > Global.EntityLoadThreshold)
+            {
+                if (!IsActive) return;
+
+                IsActive = false;
+                _inactiveEnemyList.Add(this);
+                _activeEnemyList.Remove(this);
+                return;
+            }
+
+            if (IsActive) return;
+                
+            IsActive = true;
+            _activeEnemyList.Add(this);
+            _inactiveEnemyList.Remove(this);
         }
 
         private void CheckDowned(bool isLethal)
@@ -66,51 +130,9 @@ namespace drawedOut
         private void doDeath()
         {
             IsActive = false;
-            ActiveEnemyList.Remove(this);
-            InactiveEnemyList.Add(this);
+            _activeEnemyList.Remove(this);
+            _inactiveEnemyList.Add(this);
             if (this.curAttack is not null) this.curAttack.Dispose();
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-            _downTimer = 0;
-            curAttack = null;
-            isDowned=false;
-        }
-
-        public static void TickCounters(double dt)
-        {
-            foreach (Enemy e in Enemy.ActiveEnemyList) 
-            { 
-                e.TickAllCounters(dt); 
-                e.IncDownTimer(dt);
-            }
-        }
-
-        public override void CheckActive()
-        {
-            if (Hp <= 0 && !isDowned) 
-            { 
-                doDeath(); 
-                return;
-            }
-
-            if (DistToMid > Global.EntityLoadThreshold)
-            {
-                if (!IsActive) return;
-
-                IsActive = false;
-                InactiveEnemyList.Add(this);
-                ActiveEnemyList.Remove(this);
-                return;
-            }
-
-            if (IsActive) return;
-                
-            IsActive = true;
-            ActiveEnemyList.Add(this);
-            InactiveEnemyList.Remove(this);
         }
     }
 

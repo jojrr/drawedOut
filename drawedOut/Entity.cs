@@ -5,9 +5,7 @@
     /// </summary>
     internal class Entity
     {
-        public static HashSet<Entity> EntityList = new HashSet<Entity>();
-        private static HashSet<Entity> _toRemoveList = new HashSet<Entity>();
-
+        public static IReadOnlyCollection<Entity> EntityList => _entityList;
         public SizeF Size { get => _scaledSize; }
         public float Width { get => _scaledSize.Width; }
         public float Height { get => _scaledSize.Height; }
@@ -20,6 +18,9 @@
         ///Distance is scalar
         ///</summary>
         protected float DistToMid { get => Math.Abs(Center.X - Global.CenterOfScreen.X); }
+
+        private static HashSet<Entity> _entityList = new HashSet<Entity>();
+        private static HashSet<Entity> _toRemoveList = new HashSet<Entity>();
 
         private bool isActive = false;
         private SizeF _scaledSize;
@@ -90,14 +91,21 @@
             _center = new PointF (_hitbox.X + _scaledSize.Width/2, _hitbox.Y + _scaledSize.Height/2);
             _originalLocation = _location;
 
-            EntityList.Add(this);
+            _entityList.Add(this);
         }
 
         public static void DisposeRemoved()
         {
-            foreach (Entity e in _toRemoveList) EntityList.Remove(e);
+            foreach (Entity e in _toRemoveList) _entityList.Remove(e);
             _toRemoveList.Clear();
         }
+
+        public static void ClearAllLists()
+        {
+            _toRemoveList.Clear();
+            _entityList.Clear();
+        }
+
 
         /// <summary>
         /// Increments the horizontal position of the entity by the given amount
@@ -112,7 +120,7 @@
         }
 
         ///<summary>
-        ///removes this entity from the EntityList
+        ///removes this entity from the _entityList
         ///</summary>
         public void Delete() => _toRemoveList.Add(this);
 

@@ -2,18 +2,19 @@
 {
     internal class Projectile : Entity
     {
-        public static HashSet<Projectile> ProjectileList = new HashSet<Projectile>();
+        public static IReadOnlyCollection<Projectile> ProjectileList => _projectileList;
         public int Dmg { get => _dmg; }
         public bool IsLethal { get; private set; }
 
+        private static HashSet<Projectile> _projectileList = new HashSet<Projectile>();
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
-        private static HashSet<Projectile> disposedProjectiles = new HashSet<Projectile>();
+        private static HashSet<Projectile> _disposedProjectiles = new HashSet<Projectile>();
+        private readonly float _velocity;
+        private readonly int _dmg, _knockbackSpeed;
         private Entity _parent;
         private float 
             _xVelocity, 
             _yVelocity;
-        private readonly float _velocity;
-        private readonly int _dmg, _knockbackSpeed;
 
         /// <summary>
         /// creates a projectile with the following parameters
@@ -32,7 +33,7 @@
             _velocity = velocity;
             _knockbackSpeed = knockback;
             calculateVelocities(target);
-            ProjectileList.Add(this);
+            _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;
         }
@@ -47,7 +48,7 @@
             _knockbackSpeed = knockback;
             _xVelocity = (float)Math.Cos(angle) * _velocity * Math.Sign(xDiff);
             _yVelocity = (float)Math.Sin(angle) * _velocity * Math.Sign(yDiff);
-            ProjectileList.Add(this);
+            _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;
         }
@@ -102,31 +103,39 @@
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
         }
 
-        public void Dipose() => disposedProjectiles.Add(this); 
+        public void Dipose() => _disposedProjectiles.Add(this); 
 
         public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dipose(); }
 
+
+        public new static void ClearAllLists()
+        {
+            _projectileList.Clear();
+            _disposedProjectiles.Clear();
+        }
+
+
         public static void CheckProjectileCollisions(double dt, Form form, Player playerBox, ParallelOptions threadSettings)
         {
-            if (ProjectileList.Count == 0) return;
-            Parallel.ForEach(Projectile.ProjectileList, threadSettings, bullet =>
+            if (_projectileList.Count == 0) return;
+            Parallel.ForEach(Projectile._projectileList, threadSettings, bullet =>
             {
                 bullet.MoveProjectile(dt);
                 PointF bLoc = bullet.Center;
 
-                if (disposedProjectiles.Contains(bullet)) return;
+                if (_disposedProjectiles.Contains(bullet)) return;
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
                     if (!(p.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
 
-                    disposedProjectiles.Add(bullet);
+                    _disposedProjectiles.Add(bullet);
                     return;
                 }
 
                 if (!bullet.Hitbox.IntersectsWith(form.ClientRectangle))
                 {
-                    disposedProjectiles.Add(bullet);
+                    _disposedProjectiles.Add(bullet);
                     return;
                 }
 
@@ -136,7 +145,7 @@
                     {
                         if (!(e.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
 
-                        disposedProjectiles.Add(bullet);
+                        _disposedProjectiles.Add(bullet);
                         e.DoDamage(bullet, bullet.IsLethal);
                         return;
                     }
@@ -145,18 +154,18 @@
                 {
                     // Return if bullet not touching player
                     if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox)) return;
-                    if (playerBox.CheckParrying(bullet, dt)) disposedProjectiles.Add(bullet);
+                    if (playerBox.CheckParrying(bullet, dt)) _disposedProjectiles.Add(bullet);
                 }
             });
 
-            if (disposedProjectiles.Count == 0) return;
-            foreach (Projectile p in disposedProjectiles)
+            if (_disposedProjectiles.Count == 0) return;
+            foreach (Projectile p in _disposedProjectiles)
             {
-                ProjectileList.Remove(p);
-                EntityList.Remove(p);
+                _projectileList.Remove(p);
+                p.Delete();
             }
 
-            disposedProjectiles.Clear();
+            _disposedProjectiles.Clear();
         }
     }
 }

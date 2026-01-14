@@ -628,7 +628,6 @@ namespace drawedOut
         }
 
 
-
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
             switch (e.Button)
@@ -644,6 +643,17 @@ namespace drawedOut
         {
             gameTickEnabled = false;    
             cancelTokenSrc.Cancel();
+        }
+
+
+        private void LevelEnd()
+        {
+            Enemy.ClearAllLists();
+            Entity.ClearAllLists();
+            Attacks.ClearAllLists();
+            Projectile.ClearAllLists();
+            Checkpoint.ClearAllLists();
+            characterAnimations.Clear();
         }
     }
 }

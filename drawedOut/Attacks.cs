@@ -2,12 +2,13 @@ namespace drawedOut
 {
     internal class Attacks
     {
-        public static HashSet<Attacks> AttacksList = new HashSet<Attacks>();
+        public static IReadOnlyCollection<Attacks> AttacksList => attacksList;
         public AnimationPlayer Animation { get; private init; }
         public bool IsActive { get => (_atkHitbox is not null); }
         public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
 
+        protected static HashSet<Attacks> attacksList = new HashSet<Attacks>();
         protected readonly float endlagS;
         protected int despawnFrame { get; init; }
         protected int spawnFrame { get; init; }
@@ -174,6 +175,10 @@ namespace drawedOut
             _disposedAttacks.Add(this);
         }
 
+
+        public static void ClearAllLists() => attacksList.Clear();
+
+
         /// <summary>
         /// Creates a AtkHitbox
         /// </summary>
@@ -184,7 +189,7 @@ namespace drawedOut
                     origin: Parent.Location,
                     width: _width,
                     height: _height);
-            AttacksList.Add(this);
+            attacksList.Add(this);
         }
 
 
@@ -196,7 +201,6 @@ namespace drawedOut
             if (AtkHitbox is null) throw new Exception($"{this} is in AttackList but null");
             AtkHitbox.Center = new PointF(x, y);
         }
-
 
         public virtual Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
@@ -214,8 +218,8 @@ namespace drawedOut
         /// <param name="dt"> delta time </param>
         public static void UpdateHitboxes()
         {
-            if (AttacksList.Count == 0) return;
-            foreach (Attacks atk in AttacksList)
+            if (attacksList.Count == 0) return;
+            foreach (Attacks atk in attacksList)
             {
                 PointF ParentCenter = atk.Parent.Center;
 
@@ -232,7 +236,7 @@ namespace drawedOut
 
             foreach (Attacks atk in _disposedAttacks) 
             {
-                AttacksList.Remove(atk);
+                attacksList.Remove(atk);
                 atk.AtkHitbox.Delete();
                 atk.AtkHitbox = null;
             }
@@ -240,7 +244,6 @@ namespace drawedOut
             _disposedAttacks.Clear();
         }
     }
-
 
 
     internal class ProjectileAttack : Attacks
@@ -251,7 +254,7 @@ namespace drawedOut
                 Action projectileEvent, int dmg=1, bool isLethal=true)
             : base (parent:parent, width:0, height:0, animation:animation, endlag:endlag, spawn:spawn, dmg:dmg, isLethal:isLethal)
         {
-            AttacksList.Remove(this);
+            attacksList.Remove(this);
             if (projectileEvent is not null) _launchProjectile = projectileEvent;
         }
 
