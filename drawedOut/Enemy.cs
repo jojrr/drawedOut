@@ -62,12 +62,14 @@ namespace drawedOut
 
         protected void SetActive()
         {
+            IsActive = true;
             _activeEnemyList.Add(this);
             _inactiveEnemyList.Remove(this);
         }
 
         protected void SetInactive()
         {
+            IsActive = false;
             _inactiveEnemyList.Add(this);
             _activeEnemyList.Remove(this);
         }
@@ -91,18 +93,12 @@ namespace drawedOut
             if (DistToMid > Global.EntityLoadThreshold)
             {
                 if (!IsActive) return;
-
-                IsActive = false;
-                _inactiveEnemyList.Add(this);
-                _activeEnemyList.Remove(this);
+                SetInactive();
                 return;
             }
 
             if (IsActive) return;
-                
-            IsActive = true;
-            _activeEnemyList.Add(this);
-            _inactiveEnemyList.Remove(this);
+            SetActive();
         }
 
         private void CheckDowned(bool isLethal)
@@ -136,9 +132,7 @@ namespace drawedOut
 
         private void doDeath()
         {
-            IsActive = false;
-            _activeEnemyList.Remove(this);
-            _inactiveEnemyList.Add(this);
+            SetInactive();
             if (this.curAttack is not null) this.curAttack.Dispose();
         }
     }
