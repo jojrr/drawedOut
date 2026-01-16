@@ -11,7 +11,7 @@
         public float Height { get => _scaledSize.Height; }
         public RectangleF Hitbox { get => _calcHitbox(); }
         public PointF OriginLocation { get => _originalLocation; } 
-        public bool IsActive { get => isActive; protected set => isActive = value; }
+        public bool IsActive { get => _isActive; protected set => _isActive = value; }
 
         ///<summary>
         ///The distance between the object's center and the center of the screen.
@@ -22,7 +22,7 @@
         private static HashSet<Entity> _entityList = new HashSet<Entity>();
         private static HashSet<Entity> _toRemoveList = new HashSet<Entity>();
 
-        private bool isActive = false;
+        private bool _isActive = false;
         private SizeF _scaledSize;
         private RectangleF _hitbox;
         private readonly SizeF _baseSize;
