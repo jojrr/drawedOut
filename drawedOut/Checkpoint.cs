@@ -4,7 +4,7 @@ namespace drawedOut
     {
         public static IReadOnlyCollection<Checkpoint> CheckPointList => _checkPointList;
 
-        private static List<Checkpoint> _checkPointList = new List<Checkpoint>();
+        private static HashSet<Checkpoint> _checkPointList = new HashSet<Checkpoint>();
         private static Checkpoint? _lastSavedPoint = null;
         private static PointF? _storePlayerLocation = null;
         private static Bitmap _defaultSprite, _usedSprite;
