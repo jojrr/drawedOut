@@ -4,6 +4,14 @@
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; protected set; }
+        public bool MovingIntoPlatform 
+        {
+            get 
+            {
+                return (MovingIntoWall || (yVelocity < 0 && _curYColliderDirection == Global.YDirections.top));
+            }
+        }
+
         public bool MovingIntoWall 
         {
             get 

@@ -85,7 +85,7 @@ namespace drawedOut
 
             if (yDiff > -_preferredHeight) yAccel = -accel;
 
-            if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd)
+            if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd )
             {
                 MoveCharacter(dt, 0, yAccel, scrollVelocity);
                 _angleToFire = angleToPlayer;
