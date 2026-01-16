@@ -6,7 +6,7 @@ namespace drawedOut
 {
     public partial class Level0 : Form
     {
-        private static Player playerBox;
+        private static Player playerCharacter;
         private static MeleeEnemy meleeOne;
         private static FlyingEnemy flyingOne;
         private static FirstBoss firstBoss;
@@ -73,13 +73,13 @@ namespace drawedOut
                     bgBrush: Brushes.Gray,
                     maxVal: 1,
                     borderScale: 0.4f);
-            energyBar.SetMax((float)(playerBox.MaxEnergy), true);
+            energyBar.SetMax((float)(playerCharacter.MaxEnergy), true);
         }
 
         private static void InitEntities()
         {
             if (levelLoaded) return;
-            playerBox = new Player(
+            playerCharacter = new Player(
                     origin: new Point(850, 550),
                     width: 30,
                     height: 160,
@@ -240,18 +240,18 @@ namespace drawedOut
         {
             foreach (Attacks a in Attacks.AttacksList) a.Dispose();
             InitEntities();
-            playerBox.Reset();
+            playerCharacter.Reset();
             InitUI();
-            hpBar.UpdateMaxHp(playerBox.MaxHp);
-            hpBar.ComputeHP(playerBox.Hp);
+            hpBar.UpdateMaxHp(playerCharacter.MaxHp);
+            hpBar.ComputeHP(playerCharacter.Hp);
             Player.LinkHpBar(ref hpBar);
-            energyBar.Update((float)(playerBox.Energy));
+            energyBar.Update((float)(playerCharacter.Energy));
         }
 
         private void LinkAnimations()
         {
             characterAnimations.Clear();
-            characterAnimations.Add(playerBox, playerBox.NextAnimFrame());
+            characterAnimations.Add(playerCharacter, playerCharacter.NextAnimFrame());
             foreach (Enemy e in Enemy.InactiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
             foreach (Enemy e in Enemy.ActiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
         }
@@ -315,31 +315,31 @@ namespace drawedOut
                 if (a.Parent is Player) 
                 {
                     foreach (Checkpoint c in Checkpoint.CheckPointList)
-                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerBox, mainPlat); }
+                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerCharacter, mainPlat); }
                 }
-                else if (atkBox.IntersectsWith(playerBox.Hitbox)) 
+                else if (atkBox.IntersectsWith(playerCharacter.Hitbox)) 
                 {
-                    if (playerBox.CheckParrying(a)) 
+                    if (playerCharacter.CheckParrying(a)) 
                     {
                         a.Dispose();
                         continue;
                     }
 
-                    playerBox.DoDamage(a);
+                    playerCharacter.DoDamage(a);
                     a.Dispose();
                 }
             }
 
-            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerBox, threadSettings); }
+            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, threadSettings); }
             catch (OperationCanceledException) { return; }
 
-            playerBox.TickCounters(deltaTime);
+            playerCharacter.TickCounters(deltaTime);
             Enemy.TickCounters(deltaTime);
             Attacks.UpdateHitboxes();
             Entity.DisposeRemoved();
-            energyBar.Update((float)(playerBox.Energy));
+            energyBar.Update((float)(playerCharacter.Energy));
 
-            if (playerBox.Hp <= 0) PlayerDeath();
+            if (playerCharacter.Hp <= 0) PlayerDeath();
         }
 
         private void PlayerDeath()
@@ -359,28 +359,28 @@ namespace drawedOut
         {
             double scrollVelocity = 0;
             Global.XDirections? playerMovDir = null;
-            bool isScrolling = playerBox.CheckScrolling(mainPlat);
+            bool isScrolling = playerCharacter.CheckScrolling(mainPlat);
 
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
 
-            if (playerBox.IsOnFloor && jumping) { playerBox.DoJump(); }
-            if (isScrolling) scrollVelocity -= playerBox.XVelocity;
+            if (playerCharacter.IsOnFloor && jumping) { playerCharacter.DoJump(); }
+            if (isScrolling) scrollVelocity -= playerCharacter.XVelocity;
 
             if (movingLeft) playerMovDir = Global.XDirections.left;
             else if (movingRight) playerMovDir = Global.XDirections.right;
 
-            playerBox.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
+            playerCharacter.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
-            if (playerBox.Hitbox.Left > roomDoor.Hitbox.Right) 
+            if (playerCharacter.Hitbox.Left > roomDoor.Hitbox.Right) 
             {
                 roomDoor.Activate(); 
                 scrollTillEnd(deltaTime);
             }
-            else if (playerBox.Hitbox.Right < roomDoor.Hitbox.Left) roomDoor.Deactivate();
+            else if (playerCharacter.Hitbox.Right < roomDoor.Hitbox.Left) roomDoor.Deactivate();
 
             try { Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => 
-                    { enemy.DoMovement( deltaTime, scrollVelocity, playerBox.Center ); }
+                    { enemy.DoMovement( deltaTime, scrollVelocity, playerCharacter.Center ); }
                 );}
             catch (OperationCanceledException) { return; }
 
@@ -426,8 +426,8 @@ namespace drawedOut
                 prevFrameTime = (float)dt; 
             }
 
-            if (playerBox.IsParrying) playerPen = Pens.Gray;
-            else if (playerBox.IsHit) playerPen = Pens.Red; // visual hit indicator
+            if (playerCharacter.IsParrying) playerPen = Pens.Gray;
+            else if (playerCharacter.IsHit) playerPen = Pens.Red; // visual hit indicator
             else playerPen = Pens.Blue;
         }
 
@@ -444,8 +444,8 @@ namespace drawedOut
         {
             curZoom = Global.ZOOM_FACTOR;
 
-            float playerX = playerBox.Center.X;
-            float playerY = playerBox.Center.Y;
+            float playerX = playerCharacter.Center.X;
+            float playerY = playerCharacter.Center.Y;
 
             float midX = Global.CenterOfScreen.X;
             float midY = Global.CenterOfScreen.Y;
@@ -465,12 +465,12 @@ namespace drawedOut
             foreach (Entity e in Entity.EntityList)
             {
                 zoomOrigins.Add(e,e.Center);
-                if (e == playerBox)
+                if (e == playerCharacter)
                 {
-                    playerBox.Center = new PointF(
+                    playerCharacter.Center = new PointF(
                             Global.CenterOfScreen.X,
                             Global.CenterOfScreen.Y);
-                    playerBox.ScaleHitbox(curZoom);
+                    playerCharacter.ScaleHitbox(curZoom);
                     continue;
                 }
                 zoomObj(e, midX, midY); 
@@ -489,7 +489,7 @@ namespace drawedOut
                 obj.Center = point;
             }
 
-            playerBox.ResetScale();
+            playerCharacter.ResetScale();
             zoomOrigins.Clear();
             curZoom = 1; // screen is no longer scaled
         }
@@ -553,7 +553,7 @@ namespace drawedOut
             foreach (Attacks a in Attacks.AttacksList) 
                 g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
 
-            g.DrawRectangle(playerPen, playerBox.Hitbox);
+            g.DrawRectangle(playerPen, playerCharacter.Hitbox);
         }
 
 
@@ -564,7 +564,7 @@ namespace drawedOut
             switch (e.KeyCode)
             {
                 case Keys.W:
-                    if (playerBox.IsOnFloor) jumping = true; 
+                    if (playerCharacter.IsOnFloor) jumping = true; 
                     break;
 
                 case Keys.A:
@@ -586,7 +586,7 @@ namespace drawedOut
                     break;
 
                 case Keys.E:
-                    playerBox.DoSpecial1();
+                    playerCharacter.DoSpecial1();
                     break;
 
                 case Keys.Escape:
@@ -605,7 +605,7 @@ namespace drawedOut
             {
                 case Keys.W:
                     jumping = false;
-                    playerBox.StopJump();
+                    playerCharacter.StopJump();
                     break;
 
                 case Keys.A:
@@ -629,10 +629,10 @@ namespace drawedOut
             {
                 // if Not parrying then resets parrywindow and sets to parrying
                 case MouseButtons.Right:
-                    playerBox.DoParry();
+                    playerCharacter.DoParry();
                     break;
                 case MouseButtons.Left:
-                    playerBox.DoBasicAttack();
+                    playerCharacter.DoBasicAttack();
                     break;
             }
         }
@@ -644,7 +644,7 @@ namespace drawedOut
             {
                 // stops parrying when mouseup but doesnt reset timer > only on mouse down 
                 case MouseButtons.Right:
-                    playerBox.StopParry();
+                    playerCharacter.StopParry();
                     break;
             }
         }
