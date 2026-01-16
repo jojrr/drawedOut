@@ -29,8 +29,8 @@ namespace drawedOut
         {
             get 
             {
-                SizeF recSize = new SizeF(_BASE_WIDTH,_BASE_WIDTH);
-                PointF point = new PointF(Center.X - _BASE_WIDTH/2, LocationY-_BASE_WIDTH+Height);
+                SizeF recSize = new SizeF(Width,Width);
+                PointF point = new PointF(Center.X - recSize.Width/2, Hitbox.Bottom - recSize.Width);
                 return new RectangleF(point, recSize);
             }
         }

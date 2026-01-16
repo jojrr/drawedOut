@@ -128,7 +128,7 @@ namespace drawedOut
                height: 250);
 
             endWall = new(
-                    origin: new Point((int)(mainPlat.Hitbox.Right-20), 0),
+                    origin: new Point((int)(8400-20), 0),
                     width: 100,
                     height: 750);
 

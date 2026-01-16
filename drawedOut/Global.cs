@@ -66,7 +66,7 @@ namespace drawedOut
                 switch (value)
                 {
                     case Resolutions.p720:
-                        _baseScale = 1/3F;
+                        _baseScale = 2/3F;
                         break;
                     case Resolutions.p1080:
                         _baseScale = 1F;

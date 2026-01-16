@@ -2,9 +2,6 @@
 {
     internal class Platform : Entity
     {
-        /// <summary>
-        /// 2D array: [level] [chunk]
-        /// </summary>
         public static HashSet<Platform> ActivePlatformList = new HashSet<Platform>();
         public static HashSet<Platform> InactivePlatformList = new HashSet<Platform>();
 
