@@ -84,7 +84,7 @@ namespace drawedOut
 
         public override void CheckActive()
         {
-            if (Hp <= 0 && !isDowned) 
+            if (Hp <= 0 && !isDowned)
             { 
                 doDeath(); 
                 return;
@@ -132,6 +132,7 @@ namespace drawedOut
 
         private void doDeath()
         {
+            if (!IsActive) return;
             SetInactive();
             if (this.curAttack is not null) this.curAttack.Dispose();
         }
