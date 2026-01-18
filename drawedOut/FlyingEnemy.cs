@@ -15,7 +15,7 @@ namespace drawedOut
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
-        private float _maxXSpeed, _maxYSpeed;
+        private int _maxXSpeed, _maxYSpeed;
         private double _movementTimer = 0;
         private double? 
             _xDiff, 
@@ -37,9 +37,9 @@ namespace drawedOut
             float _maxRange = Math.Abs(maxRange);
             if (_minRange > _maxRange) _minRange = _maxRange;
 
-            _maxRangeSqrd = (_maxRange * Global.BaseScale);
+            _maxRangeSqrd = (_maxRange*Global.BaseScale);
             _maxRangeSqrd *= _maxRangeSqrd;
-            _minRangeSqrd = (_minRange * Global.BaseScale);
+            _minRangeSqrd = (_minRange*Global.BaseScale);
             _minRangeSqrd *= _minRangeSqrd;
             _preferredHeight = preferredHeight*Global.BaseScale;
             _projectileSpeed = (int)(projectileSpeed*Global.BaseScale);
@@ -98,8 +98,8 @@ namespace drawedOut
             float SinAngle = (float)Math.Sin(angleToPlayer) * Math.Sign(yDiff);
             float CosAngle = (float)Math.Cos(angleToPlayer) * Math.Sign(xDiff); 
 
-            _maxXSpeed = Math.Abs(CosAngle*maxVelocity);
-            _maxYSpeed = Math.Abs(SinAngle*maxVelocity);
+            _maxXSpeed = (int)Math.Abs(CosAngle*maxVelocity);
+            _maxYSpeed = (int)Math.Abs(SinAngle*maxVelocity);
 
             if (distToPlayerSqrd < _minRangeSqrd) //TODO: add "move to point" and "move away from point";
             {
@@ -129,15 +129,15 @@ namespace drawedOut
             {
                 xVelocity += xAccel;
                 yVelocity += yAccel;
-                xVelocity = clampSpeedF(xVelocity, _maxXSpeed);
-                yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
+                clampSpeed(_maxXSpeed, _maxYSpeed);
             }
 
             CheckAllPlatformCollision(dt);
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF(
-                    Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)
+                    Location.X + (float)(xVelocity * dt * Global.BaseScale), 
+                    Location.Y + (float)(yVelocity * dt * Global.BaseScale)
                     ); 
 
             if ((xAccel == 0 && yAccel == 0) || knockedBack) decelerate(dt);
@@ -157,8 +157,6 @@ namespace drawedOut
             if (Math.Abs(yVelocity) > deceleration)  yVelocity = Math.CopySign(ySpeed-deceleration, yVelocity);
             else yVelocity = 0; 
         }
-
-        private double clampSpeedF(double velocity, float maxSpeed) => (Math.Abs(velocity) > maxSpeed) ? Math.CopySign(maxSpeed, velocity) : velocity;
 
 
         private void createProjectile()

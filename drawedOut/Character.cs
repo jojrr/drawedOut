@@ -35,19 +35,20 @@
         /// <summary> the vertical direction of the platfrom from the character that is colliding </summary>
         private Global.YDirections? _curYColliderDirection = null;
 
-        private const int FRICTION=2000;
+        private static readonly int _GRAVITY = Global.Gravity;
+        private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity, _yKnockbackVelocity;
         private AnimationPlayer? _idleAnim, _runAnim;
         private Entity? _xStickEntity, _yStickEntity;
-        private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
         private RectangleF? _xStickTarget, _yStickTarget;
         private Global.XDirections? _lastXDirection;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
-        private static readonly int
-            _TERMINAL_VELOCITY = (int)(Global.BaseScale * 2300),
-            _JUMP_VELOCITY = (int)(Global.BaseScale * 1500),
-            _GRAVITY = Global.Gravity;
+        private const int 
+            _TERMINAL_VELOCITY=2300,
+            _JUMP_VELOCITY=1500,
+            FRICTION=2000;
         private readonly int
+            _maxYVelocity,
             _maxXVelocity,
             _xAccel;
 
@@ -59,7 +60,8 @@
         /// <param name="height"></param>
         /// <param name="hp"> 
         ///
-        protected Character(Point origin, int width, int height, int hp, int xAccel, int maxXVelocity)
+        protected Character(Point origin, int width, int height, int hp, int xAccel, int maxXVelocity, 
+            int maxYVelocity=_TERMINAL_VELOCITY)
             : base(origin: origin, width: width, height: height)
         {
             IsOnFloor = false;
@@ -67,8 +69,9 @@
             yVelocity = 0;
             _hp = hp;
             _maxHp = hp;
-            _xAccel = (int)(xAccel * Global.BaseScale);
-            _maxXVelocity = (int)(Global.BaseScale * maxXVelocity);
+            _xAccel = xAccel;
+            _maxXVelocity = maxXVelocity;
+            _maxYVelocity = maxYVelocity;
         }
 
         protected void setIdleAnim(string filePath)
@@ -336,13 +339,15 @@
             CheckAllPlatformCollision(dt); // check collider after xVelocity as been decided as checkXCollider uses xVelocity
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
-            else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
+            else Location = new PointF( 
+                    Location.X + (float)(xVelocity * dt * Global.BaseScale), 
+                    Location.Y + (float)(yVelocity * dt * Global.BaseScale)); 
 
             if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
             if (xVelocity == 0) return;
 
-            if (!_knockedBack) clampSpeed(_maxXVelocity);
-            else clampSpeed(_xKnockbackVelocity);
+            if (!_knockedBack) clampSpeed(_maxXVelocity, _maxYVelocity);
+            else clampSpeed(_xKnockbackVelocity, _yKnockbackVelocity);
 
             if (_curXAccel == 0 || _knockedBack) decelerate(dt);
         }
@@ -358,7 +363,11 @@
              else if (Location.Y > Global.LevelSize.Height) this.Hp = 0;
         }
 
-        private void clampSpeed(int maxSpeed) => xVelocity = Math.Min( Math.Abs(xVelocity), maxSpeed) * Math.Sign(xVelocity);
+        protected void clampSpeed(int maxXSpeed, int maxYSpeed) 
+        {
+            xVelocity = Math.Min( Math.Abs(xVelocity), maxXSpeed) * Math.Sign(xVelocity);
+            yVelocity = Math.Min( Math.Abs(yVelocity), maxYSpeed) * Math.Sign(yVelocity);
+        }
 
         private void decelerate(double dt)
         {
@@ -435,6 +444,7 @@
             xVelocity = Math.CopySign(Math.Max(0, Math.Abs(xVel)-xDampen), xVel);
             yVelocity = Math.CopySign(Math.Max(0, Math.Abs(yVel)-yDampen), yVel);
             _xKnockbackVelocity = Math.Max(Math.Abs(xVel), _maxXVelocity);
+            _yKnockbackVelocity = Math.Max(Math.Abs(yVel), _maxYVelocity);
             _knockedBack = true;
         }
 

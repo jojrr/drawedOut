@@ -46,8 +46,9 @@
             _parent = parent;
             _velocity = velocity;
             _knockbackSpeed = knockback;
-            _xVelocity = (float)Math.Cos(angle) * _velocity * Math.Sign(xDiff);
-            _yVelocity = (float)Math.Sin(angle) * _velocity * Math.Sign(yDiff);
+            double sqrtBaseScale = Math.Sqrt(Global.BaseScale);
+            _xVelocity = (float)(Math.Cos(angle) * _velocity * sqrtBaseScale * Math.Sign(xDiff));
+            _yVelocity = (float)(Math.Sin(angle) * _velocity * sqrtBaseScale * Math.Sign(yDiff));
             _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;

@@ -36,7 +36,7 @@ namespace drawedOut
         public void CheckPlatformCollision(Entity target, double dt)
         {
             if (_yVelocity == 0) return;
-            float finalY = Hitbox.Bottom + (float)(_yVelocity*dt);
+            float finalY = Hitbox.Bottom + (float)(_yVelocity*dt*Global.BaseScale);
             RectangleF targetHitbox = target.Hitbox;
             if (finalY > target.LocationY && Center.X > targetHitbox.Left && Center.X < targetHitbox.Right)
             {
@@ -69,7 +69,7 @@ namespace drawedOut
             if (!_hasGravity || _isOnFloor || !IsActive) return;
             _yVelocity = Math.Min(_yVelocity+(int)(_GRAVITY*dt), _TERMINAL_VELOCITY); 
             foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p, dt);
-            LocationY += (int)(_yVelocity*dt);
+            LocationY += (int)(_yVelocity*dt*Global.BaseScale);
         }
 
         public static void DoAllGravTick(double dt)
