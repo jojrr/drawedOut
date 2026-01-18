@@ -194,6 +194,12 @@ namespace drawedOut
             if (IsActive) return;
             if (_activationDoor.IsActive && Hp > 0) SetActive();
         }
+
+        public override Bitmap NextAnimFrame()
+        {
+            if (isDowned) return _downedSprite;
+            return base.NextAnimFrame();
+        }
     }
 }
 
