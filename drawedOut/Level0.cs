@@ -1,4 +1,4 @@
-
+using System.Diagnostics;
 // TODO: move all const values into global
 namespace drawedOut
 {
@@ -501,12 +501,6 @@ namespace drawedOut
         {
             Graphics g = e.Graphics;
             
-            if (Global.LevelResolution == Global.Resolutions.p4k) 
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.ScaleTransform(3/2F, 3/2F);
-            }
-
             Checkpoint.Draw(g);
             Item.Draw(g);
             DrawCharacters(g);

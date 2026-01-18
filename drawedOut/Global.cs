@@ -37,29 +37,24 @@ namespace drawedOut
         private static int _gameTickFreq = 60;
         public static int GameTickFreq 
         {
-            get  
-            {
-                if (_curResolution == Resolutions.p4k && _gameTickFreq > 60) return 60;
-                return _gameTickFreq; 
-            }
+            get => _gameTickFreq;
             set 
             {
-                if ( 0 > value) _gameTickFreq = 0;
-                if ( 120 < value) _gameTickFreq = 120;
                 _gameTickFreq = value; 
+                if ( 1 > value) _gameTickFreq = 1;
+                if ( 120 < value) _gameTickFreq = 120;
             }
         }
 
         public enum XDirections { left, right }
         public enum YDirections { top, bottom }
-        public enum Resolutions { p720, p1080, p1440, p4k }
+        public enum Resolutions { p720, p1080, p1440 }
 
         private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
         {
             { Resolutions.p720, new Size(1280, 720) },
             { Resolutions.p1080, new Size(1920, 1080) },
             { Resolutions.p1440, new Size(2560, 1440) },
-            { Resolutions.p4k, new Size(3840, 2160) }
         };
 
 
@@ -94,10 +89,6 @@ namespace drawedOut
                         break;
                     case Resolutions.p1440:
                         _baseScale = 4/3F;
-                        break;
-                    case Resolutions.p4k:
-                        _baseScale = 4/3F;
-                        scaleWidth *= 2/3F;
                         break;
                 }
 
