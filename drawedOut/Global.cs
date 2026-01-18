@@ -31,6 +31,9 @@ namespace drawedOut
         // </summary>
         public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.75); }
 
+        /// <summary>
+        /// logic for game framerate
+        /// </summary>
         private static int _gameTickFreq = 60;
         public static int GameTickFreq 
         {
