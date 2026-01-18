@@ -149,8 +149,8 @@
             if (xVelocity == 0) return;
             float centerX = Center.X;
             float finalX = centerX + (float)(xVelocity*dt);
-            float left = (float)(Math.Min(finalX, centerX)*0.9);
-            float right = (float)(Math.Max(finalX, centerX)*1.1);
+            float left = (float)(Math.Min(finalX, centerX)*0.98);
+            float right = (float)(Math.Max(finalX, centerX)*1.02);
             if (left <= targetHitbox.Right && right >= targetHitbox.Left)
             {
                 Global.XDirections collidingDirection;

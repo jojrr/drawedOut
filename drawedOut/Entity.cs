@@ -125,7 +125,7 @@
         public void Delete() => _toRemoveList.Add(this);
 
         ///<summary>
-        ///Reset the entity to the state that the player was initialised in
+        ///Reset the entity to the state that the entity was initialised in
         ///</summary>
         public virtual void Reset() => Location = _originalLocation;
 

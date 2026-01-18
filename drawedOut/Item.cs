@@ -11,9 +11,9 @@ namespace drawedOut
         private Bitmap _sprite;
 
         private static readonly int 
-            _TERMINAL_VELOCITY = (int)(Global.BaseScale * 2300),
+            _TERMINAL_VELOCITY = (int)(Global.BaseScale * 10000),
             _COLLISION_RANGE = (int)(Global.BaseScale * 400),
-            _GRAVITY = Global.Gravity;
+            _GRAVITY = Global.Gravity*2;
         private readonly bool _hasGravity;
 
         /// <summary> Constructor </summary>
@@ -75,7 +75,7 @@ namespace drawedOut
         public static void DoAllGravTick(double dt)
         { foreach (Item item in Item._itemList) item.DoGravTick(dt); }
 
-        public void Pickup() 
+        public void Pickup()
         {
             _doAction();
             Reset();
