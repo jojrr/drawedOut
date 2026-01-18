@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using InterpolationMode = System.Drawing.Drawing2D.InterpolationMode;
 
 // TODO: move all const values into global
 namespace drawedOut
@@ -101,7 +99,7 @@ namespace drawedOut
                     height: 250,
                     width: 250,
                     itemDrop: () => {},
-                    hp: 1);
+                    hp: 6);
         }
 
         private static void InitPlatforms()
