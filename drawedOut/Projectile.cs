@@ -9,6 +9,7 @@
         private static HashSet<Projectile> _projectileList = new HashSet<Projectile>();
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
         private static HashSet<Projectile> _disposedProjectiles = new HashSet<Projectile>();
+        private static readonly double _sqrtBaseScale = Math.Sqrt(Global.BaseScale);
         private readonly float _velocity;
         private readonly int _dmg, _knockbackSpeed;
         private Entity _parent;
@@ -46,9 +47,8 @@
             _parent = parent;
             _velocity = velocity;
             _knockbackSpeed = knockback;
-            double sqrtBaseScale = Math.Sqrt(Global.BaseScale);
-            _xVelocity = (float)(Math.Cos(angle) * _velocity * sqrtBaseScale * Math.Sign(xDiff));
-            _yVelocity = (float)(Math.Sin(angle) * _velocity * sqrtBaseScale * Math.Sign(yDiff));
+            _xVelocity = (float)(Math.Cos(angle) * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
+            _yVelocity = (float)(Math.Sin(angle) * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
             _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;
@@ -76,8 +76,8 @@
 
             float velocityAngle = (float)Math.Abs(Math.Atan(yDiff/xDiff)); 
 
-            _xVelocity = (float)Math.Cos(velocityAngle) * _velocity * Math.Sign(xDiff);
-            _yVelocity = (float)Math.Sin(velocityAngle) * _velocity * Math.Sign(yDiff);
+            _xVelocity = (float)(Math.Cos(velocityAngle) * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
+            _yVelocity = (float)(Math.Sin(velocityAngle) * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
         }
 
         /// <summary>
