@@ -155,7 +155,7 @@
             {
                 Global.XDirections collidingDirection;
 
-                if (xVelocity >= 0) collidingDirection = Global.XDirections.right; // platform is on right of character
+                if (centerX - collisionTarget.Center.X < 0) collidingDirection = Global.XDirections.right; // platform is on right of character
                 else collidingDirection = Global.XDirections.left; // platform is on left of character
 
                 if (_xStickEntity is null && LocationY > targetHitbox.Y) xVelocity = 0; 

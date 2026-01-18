@@ -166,7 +166,8 @@ namespace drawedOut
                     angle: _angleToPlayer,
                     xDiff: _xDiffToPlayer,
                     yDiff: _yDiffToPlayer,
-                    parent: this);
+                    parent: this,
+                    isLethal: _rangedAttackOne.IsLethal);
         }
 
         protected override void CheckDowned(bool isLethal)

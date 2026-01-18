@@ -255,7 +255,7 @@ namespace drawedOut
             : base (parent:parent, width:0, height:0, animation:animation, endlag:endlag, spawn:spawn, dmg:dmg, isLethal:isLethal)
         {
             attacksList.Remove(this);
-            if (projectileEvent is not null) _launchProjectile = projectileEvent;
+            _launchProjectile = projectileEvent;
         }
 
         public override Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)

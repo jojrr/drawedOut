@@ -25,7 +25,7 @@
         /// <param name="velocity"></param>
         /// <param name="target"></param>
         public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, 
-                int dmg=1, int knockback=800, bool isLethal=false)
+                int dmg=1, int knockback=800, bool isLethal=true)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
