@@ -75,12 +75,6 @@ namespace drawedOut
         public static void DoAllGravTick(double dt)
         { foreach (Item item in Item._itemList) item.DoGravTick(dt); }
 
-        public void Dispose()
-        {
-            _itemList.Remove(this);
-            Delete();
-        }
-
         public void Pickup() 
         {
             _doAction();
