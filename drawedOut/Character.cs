@@ -3,14 +3,9 @@
     internal abstract class Character : Entity
     {
         public Global.XDirections FacingDirection { get; protected set; }
-        public bool IsOnFloor { get; protected set; }
+        public bool IsOnFloor { get; private set; }
         public bool MovingIntoPlatform 
-        {
-            get 
-            {
-                return (MovingIntoWall || (yVelocity < 0 && _curYColliderDirection == Global.YDirections.top));
-            }
-        }
+        { get => (MovingIntoWall || (yVelocity < 0 && _curYColliderDirection == Global.YDirections.top)); }
 
         public bool MovingIntoWall 
         {
@@ -35,12 +30,12 @@
             iFrames,
             endlagS = 0;
 
-        /// <summary> the horizontal direction of the platfrom from the player that is colliding </summary>
+        /// <summary> the horizontal direction of the platfrom from the character that is colliding </summary>
         private Global.XDirections? _curXColliderDirection = null;
-        /// <summary> the vertical direction of the platfrom from the player that is colliding </summary>
+        /// <summary> the vertical direction of the platfrom from the character that is colliding </summary>
         private Global.YDirections? _curYColliderDirection = null;
 
-        private const int GRAVITY = 4000, FRICTION=2000;
+        private const int FRICTION=2000;
         private AnimationPlayer? _idleAnim, _runAnim;
         private Entity? _xStickEntity, _yStickEntity;
         private int _maxHp, _hp, _curXAccel, _xKnockbackVelocity;
@@ -48,11 +43,12 @@
         private Global.XDirections? _lastXDirection;
         private bool _knockedBack = false;
         private double _coyoteTimeS;
+        private static readonly int
+            _TERMINAL_VELOCITY = (int)(Global.BaseScale * 2300),
+            _JUMP_VELOCITY = (int)(Global.BaseScale * 1500),
+            _GRAVITY = Global.Gravity;
         private readonly int
-            _terminalVelocity = 2300,
-            _jumpVelocity = 1500,
             _maxXVelocity,
-            _gravity,
             _xAccel;
 
         /// <summary>
@@ -72,10 +68,7 @@
             _hp = hp;
             _maxHp = hp;
             _xAccel = (int)(xAccel * Global.BaseScale);
-            _gravity = (int)(Global.BaseScale * GRAVITY);
             _maxXVelocity = (int)(Global.BaseScale * maxXVelocity);
-            _jumpVelocity = (int)(Global.BaseScale * _jumpVelocity);
-            _terminalVelocity = (int)(Global.BaseScale * _terminalVelocity);
         }
 
         protected void setIdleAnim(string filePath)
@@ -140,12 +133,9 @@
         {
             // Checks if there is a platform below
             if (Hitbox.Bottom <= targetHitbox.Bottom && Hitbox.Top < targetHitbox.Top)
-            {
-                // zeros the velocity if the player was previously not on the floor when landing (prevents fling)
-                if (!IsOnFloor) yVelocity = Math.Min(yVelocity, 0); 
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
-            }
-            // Checks if there is a platform above the player
+            
+            // Checks if there is a platform above the character
             else if (targetHitbox.Top < Hitbox.Top && Hitbox.Bottom > targetHitbox.Bottom)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
@@ -154,13 +144,13 @@
         /// checks the X direction for collision with entities (mostly platforms)
         /// </summary>
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
-        private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget)
+        private void checkXCollider(RectangleF targetHitbox, Entity collisionTarget, double dt)
         {
             if (xVelocity == 0) return;
             float centerX = Center.X;
-            float finalX = centerX + (float)xVelocity;
-            float left = Math.Min(finalX, centerX);
-            float right = Math.Max(finalX, centerX);
+            float finalX = centerX + (float)(xVelocity*dt);
+            float left = (float)(Math.Min(finalX, centerX)*0.9);
+            float right = (float)(Math.Max(finalX, centerX)*1.1);
             if (left <= targetHitbox.Right && right >= targetHitbox.Left)
             {
                 Global.XDirections collidingDirection;
@@ -179,8 +169,8 @@
         /// Returned position is relative to this Entity.<br/>
         /// </summary>
         /// <param name="collisionTarget">The target to check for collision with</param>
-        /// <returns><see cref="Rectangle"/>: the collisionTarget's hitbox</returns>
-        private RectangleF? IsCollidingWith(Entity collisionTarget)
+        /// <returns> True if a collider is found </returns>
+        private bool IsCollidingWith(Entity collisionTarget, double dt)
         {
             RectangleF targetHitbox = collisionTarget.Hitbox;
 
@@ -189,21 +179,21 @@
             {
                 if (collisionTarget == _xStickEntity)  SetXCollider(null, null, null); 
                 if (collisionTarget == _yStickEntity)  SetYCollider(null, null, null); 
-                return null;
+                return false;
             }
 
             // if this' center is between the left and the right of the hitbox 
             if (targetHitbox.Right > Center.X && Center.X > targetHitbox.Left) 
                 checkYCollider(targetHitbox, collisionTarget);
 
-            if (_yStickEntity == collisionTarget) return targetHitbox;
+            if (_yStickEntity == collisionTarget) return true;
 
-            if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the player from bugging on corners
+            if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the character from bugging on corners
                 SetXCollider(null, null, collisionTarget);
             else
-                checkXCollider(targetHitbox, collisionTarget);
+                checkXCollider(targetHitbox, collisionTarget, dt);
 
-            return targetHitbox;
+            return true;
         }
 
 
@@ -226,7 +216,7 @@
         /// </summary>
         /// <param name="x">right, left or null</param>
         /// <param name="targetHitbox">The hitbox of the X collider</param>
-        /// <param name="collisionTarget">The reference to the entity that the player is colliding with horizontally</param>
+        /// <param name="collisionTarget">The reference to the entity that the character is colliding with horizontally</param>
         private void SetXCollider(Global.XDirections? x, RectangleF? targetHitbox, Entity? collisionTarget)
         {
             _curXColliderDirection = x;
@@ -236,7 +226,7 @@
 
 
         /// <summary>
-        /// Returns a boolean which is used to tell the code whether or not to have the player check for collision
+        /// Returns a boolean which is used to tell the code whether or not to have the character check for collision
         /// </summary>
         /// <returns>boolean: default true</returns>
         public bool ShouldDoMove()
@@ -253,13 +243,12 @@
         public void StopJump() => yVelocity = (yVelocity < 0) ? 1 : yVelocity; 
 
 
-        public void CheckPlatformCollision(Entity target)
+        public void CheckPlatformCollision(Entity target, double dt)
         {
             if (!ShouldDoMove()) return;
 
-            RectangleF? targetHitbox = IsCollidingWith(target);
-
-            if (targetHitbox is null) return;
+            bool colliderFound = IsCollidingWith(target, dt);
+            if (!colliderFound)return;
 
             if (_yStickTarget is not null)
             {
@@ -270,7 +259,7 @@
                     yVelocity = Math.Max(yVelocity,0);
                 }
 
-                // adds coyote time if there is a platform below the player, and sets the Y value of the player to the platform
+                // adds coyote time if there is a platform below the character, and sets the Y value of the character to the platform
                 else if (_curYColliderDirection == Global.YDirections.bottom)
                 {
                     _coyoteTimeS = 0.05;
@@ -284,12 +273,12 @@
             {
                 if (_curXColliderDirection == Global.XDirections.right)
                 {
-                    LocationX = _xStickTarget.Value.Left - this.Width - 1;
+                    LocationX = _xStickTarget.Value.Left - this.Width;
                     xVelocity = Math.Min(0, xVelocity);
                 }
                 else if (_curXColliderDirection == Global.XDirections.left)
                 {
-                    LocationX = _xStickTarget.Value.Right + 1;
+                    LocationX = _xStickTarget.Value.Right;
                     xVelocity = Math.Max(0, xVelocity);
                 }
             }
@@ -302,10 +291,10 @@
             if (_curYColliderDirection != Global.YDirections.bottom)
             {
                 IsOnFloor = false;
-                yVelocity += _gravity*dt;
+                yVelocity += _GRAVITY*dt;
 
                 // Terminal velocity -> only applies downwards
-                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, _terminalVelocity); 
+                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, _TERMINAL_VELOCITY); 
             }
 
             // Coyote time ticks down 
@@ -317,11 +306,11 @@
         }
 
 
-        public void DoJump() => yVelocity = -_jumpVelocity; 
+        public void DoJump() => yVelocity = -_JUMP_VELOCITY; 
 
 
         /// <summary>
-        /// Moves the player according to their velocity and checks collision.
+        /// Moves the character according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
         public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
@@ -344,7 +333,7 @@
 
             xVelocity += _curXAccel;
 
-            CheckAllPlatformCollision(); // check collider after xVelocity as been decided as checkXCollider uses xVelocity
+            CheckAllPlatformCollision(dt); // check collider after xVelocity as been decided as checkXCollider uses xVelocity
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF( Location.X + (float)(xVelocity * dt), Location.Y + (float)(yVelocity * dt)); 
@@ -382,7 +371,7 @@
 
         public void ScrollChar(double dt, double scrollVelocity)
         {
-            if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity); 
+            if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity, dt); 
 
             if (this is Player) 
             {
@@ -393,7 +382,7 @@
                 return;
             }
 
-            if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity);
+            if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity, dt);
 
             Location = new PointF(
                     Location.X + (float)(xVelocity * dt), 
@@ -448,16 +437,9 @@
             _xKnockbackVelocity = Math.Max(Math.Abs(xVel), _maxXVelocity);
             _knockedBack = true;
         }
-        // public void ApplyKnockBack(int xSpeed, int ySpeed, int xDampen, int yDampen)
-        // {
-        //     xVelocity = Math.Max(0, xSpeed-xDampen);
-        //     yVelocity = Math.Max(0, ySpeed-yDampen);
-        //     _xKnockbackVelocity = Math.Max(xSpeed, _maxXVelocity);
-        //     _knockedBack = true;
-        // }
 
-        public void CheckAllPlatformCollision()
-        { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p); }
+        public void CheckAllPlatformCollision(double dt)
+        { foreach (Platform p in Platform.ActivePlatformList) CheckPlatformCollision(p, dt); }
 
         public override void Reset()
         {
@@ -465,6 +447,7 @@
             xVelocity = 0;
             yVelocity = 0;
             endlagS = 0;
+            iFrames = 0;
             Hp = MaxHp;
         }
 

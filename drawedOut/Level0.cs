@@ -100,7 +100,8 @@ namespace drawedOut
                     origin:new Point(8200, 100), 
                     height: 250,
                     width: 250,
-                    hp: 6);
+                    itemDrop: () => {},
+                    hp: 1);
         }
 
         private static void InitPlatforms()
@@ -154,7 +155,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
+            Global.LevelResolution = Global.Resolutions.p1440;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -384,6 +385,9 @@ namespace drawedOut
                 );}
             catch (OperationCanceledException) { return; }
 
+            Item.DoAllGravTick(deltaTime);
+            Item.CheckPlayerCollisions(playerCharacter.Hitbox);
+
             ScrollEntities(scrollVelocity, deltaTime);
         }
 
@@ -505,24 +509,24 @@ namespace drawedOut
                 g.ScaleTransform(3/2F, 3/2F);
             }
 
+            Checkpoint.Draw(g);
+            Item.Draw(g);
+            DrawCharacters(g);
+            Platform.Draw(g);
+            
+            if (showHitbox) drawHitboxes(g);
+            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
+            ShowFPSInfo(g);
+        }
+
+        private void DrawCharacters(Graphics g)
+        {
             // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
             {
                 if (img.Value is null) continue;
                 g.DrawImage(img.Value, img.Key.AnimRect);
             }
-            
-            foreach (Platform plat in Platform.ActivePlatformList)
-            {
-                RectangleF hitbox = plat.Hitbox;
-                using (Pen blackPen = new Pen(Color.Black, 6))
-                { g.DrawRectangle(blackPen, hitbox); }
-            }
-            Checkpoint.Draw(g);
-            
-            if (showHitbox) drawHitboxes(g);
-            foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
-            ShowFPSInfo(g);
         }
 
 

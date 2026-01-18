@@ -58,10 +58,14 @@
             InactivePlatformList.Add(this);
         }
 
-        public static void ResetLocation()
+        public static void Draw(Graphics g)
         {
-            foreach (Platform p in ActivePlatformList) p.Location = p._originalLocation;
-            foreach (Platform p in InactivePlatformList) p.Location = p._originalLocation;
+            foreach (Platform plat in Platform.ActivePlatformList)
+            {
+                RectangleF hitbox = plat.Hitbox;
+                using (Pen blackPen = new Pen(Color.Black, 6))
+                { g.DrawRectangle(blackPen, hitbox); }
+            }
         }
 
         public override void CheckActive()

@@ -62,6 +62,7 @@ namespace drawedOut
 
         protected void SetActive()
         {
+            if (IsActive) return;
             IsActive = true;
             _activeEnemyList.Add(this);
             _inactiveEnemyList.Remove(this);
@@ -69,6 +70,7 @@ namespace drawedOut
 
         protected void SetInactive()
         {
+            if (!IsActive) return;
             IsActive = false;
             _inactiveEnemyList.Add(this);
             _activeEnemyList.Remove(this);
@@ -86,7 +88,7 @@ namespace drawedOut
         {
             if (Hp <= 0 && !isDowned)
             { 
-                doDeath(); 
+                DoDeath(); 
                 return;
             }
 
@@ -101,19 +103,6 @@ namespace drawedOut
             SetActive();
         }
 
-        private void CheckDowned(bool isLethal)
-        {
-            if (Hp <= 0)
-            {
-                isDowned = true;
-                if (curAttack is not null)
-                {
-                    curAttack.Dispose();
-                    curAttack = null;
-                }
-            }
-            if (isDowned && isLethal) isDowned = false;
-        }
 
         private void IncDownTimer(double dt) 
         {
@@ -130,11 +119,25 @@ namespace drawedOut
             iFrames = 67;
         }
 
-        private void doDeath()
+        protected void DoDeath()
         {
             if (!IsActive) return;
             SetInactive();
             if (this.curAttack is not null) this.curAttack.Dispose();
+        }
+
+        protected virtual void CheckDowned(bool isLethal)
+        {
+            if (Hp <= 0)
+            {
+                isDowned = true;
+                if (curAttack is not null)
+                {
+                    curAttack.Dispose();
+                    curAttack = null;
+                }
+            }
+            if (isDowned && isLethal) isDowned = false;
         }
     }
 

@@ -1,3 +1,4 @@
+global using System.Diagnostics;
 namespace drawedOut
 {
     ///<summary>
@@ -5,26 +6,30 @@ namespace drawedOut
     ///</summary>
     internal static class Global
     {
-        public enum XDirections { left, right }
-        public enum YDirections { top, bottom }
-        public enum Resolutions { p720, p1080, p1440, p4k }
-
-        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
-        {
-            { Resolutions.p720, new Size(1280, 720) },
-            { Resolutions.p1080, new Size(1920, 1080) },
-            { Resolutions.p1440, new Size(2560, 1440) },
-            { Resolutions.p4k, new Size(3840, 2160) }
-        };
-
-
-        public const int MAX_THREADS_TO_USE = 4;
+        public const int 
+            _GRAVITY = 4000,
+            MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
             SLOW_FACTOR = 3.5F,
             SLOW_DURATION_S = 0.35F,
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
+
+        private static float _leftScrollBound = 0;
+        private static float _rightScrollBound = 0;
+        public static float LeftScrollBound { get => _leftScrollBound; }
+        public static float RightScrollBound { get => _rightScrollBound; }
+
+        // <summary>
+        // Base gravity multiplied by the base scale.
+        // </summary>
+        public static int Gravity { get => (int)(_GRAVITY*_baseScale); }
+
+        // <summary>
+        // Threshold for entities to be "active" (either side of screen center)
+        // </summary>
+        public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.75); }
 
         private static int _gameTickFreq = 60;
         public static int GameTickFreq 
@@ -41,6 +46,19 @@ namespace drawedOut
                 _gameTickFreq = value; 
             }
         }
+
+        public enum XDirections { left, right }
+        public enum YDirections { top, bottom }
+        public enum Resolutions { p720, p1080, p1440, p4k }
+
+        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
+        {
+            { Resolutions.p720, new Size(1280, 720) },
+            { Resolutions.p1080, new Size(1920, 1080) },
+            { Resolutions.p1440, new Size(2560, 1440) },
+            { Resolutions.p4k, new Size(3840, 2160) }
+        };
+
 
         private static float _baseScale = 1F;
         public static float BaseScale 
@@ -85,18 +103,6 @@ namespace drawedOut
                 CalcNewCenter();
             }
         }
-
-        private static float _leftScrollBound = 0;
-        private static float _rightScrollBound = 0;
-        public static float LeftScrollBound { get => _leftScrollBound; }
-        public static float RightScrollBound { get => _rightScrollBound; }
-
-
-        // <summary>
-        // Threshold for entities to be "active" (either side of screen center)
-        // </summary>
-        public static int EntityLoadThreshold { get => (int)(_levelSize.Width/1.5); }
-
 
         private static Size _levelSize = new Size(1920, 1080);
         public static Size LevelSize { get => _levelSize; }

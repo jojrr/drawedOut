@@ -8,9 +8,10 @@ namespace drawedOut
             _X_KNOCK_DAMPEN = 800,
             _Y_KNOCK_DAMPEN = 300,
             MOV_ENDLAG_S = 3;
-        private readonly Platform _activationDoor; 
         private readonly Attacks _attackOne, _rangedAttackOne;
         private readonly double _maxRange, _jumpRange;
+        private readonly Platform _activationDoor; 
+        private readonly Action _itemDrop;
         private static Bitmap _downedSprite;
         private int _curState = 0;
         private double 
@@ -18,11 +19,13 @@ namespace drawedOut
             _xDiffToPlayer,
             _yDiffToPlayer;
 
-        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor, int hp=3)
+        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor, Action itemDrop,
+                int hp=6)
             :base(origin:origin, width:width, height:height, hp:hp, xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN)
         {
             Size atkSize = new Size(380,220);
 
+            _itemDrop = itemDrop;
             _maxRange = Width*2.5;
             _jumpRange = 1.5*Height;
             _activationDoor = activationDoor;
@@ -140,6 +143,16 @@ namespace drawedOut
             _angleToPlayer = (float)Math.Abs(Math.Atan(_yDiffToPlayer/_xDiffToPlayer)); 
         }
 
+        private void DoDrop()
+        {
+            Item bossDrop = new Item(
+                    origin:new PointF (Center.X, Center.Y - 1000),
+                    width: 80,
+                    height: 80,
+                    action: _itemDrop,
+                    sprite: Global.GetSingleImage(@"seven\")
+                    );
+        }
 
         public void DoAttack()
         {
@@ -156,16 +169,30 @@ namespace drawedOut
                     parent: this);
         }
 
+        protected override void CheckDowned(bool isLethal)
+        {
+            if (isDowned && isLethal) 
+            {
+                isDowned = false;
+                DoDrop();
+                return;
+            }
+            else if (Hp <= 0)
+            {
+                isDowned = true;
+                if (curAttack is not null)
+                {
+                    curAttack.Dispose();
+                    curAttack = null;
+                }
+            }
+        }
+
         public override void CheckActive()
         {
             base.CheckActive();
             if (IsActive) return;
-            if (_activationDoor.IsActive && Hp > 0)
-            {
-                IsActive = true;
-                SetActive();
-                return;
-            }
+            if (_activationDoor.IsActive && Hp > 0) SetActive();
         }
     }
 }

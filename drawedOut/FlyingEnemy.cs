@@ -133,7 +133,7 @@ namespace drawedOut
                 yVelocity = clampSpeedF(yVelocity, _maxYSpeed);
             }
 
-            CheckAllPlatformCollision();
+            CheckAllPlatformCollision(dt);
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF(
