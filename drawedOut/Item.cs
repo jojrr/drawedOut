@@ -101,6 +101,11 @@ namespace drawedOut
 
         public override void CheckActive()
         {
+            if (Location.Y > Global.LevelSize.Height) 
+            {
+                Reset(); 
+                return;
+            }
             if (this.DistToMid > Global.EntityLoadThreshold) 
             {
                 if (!IsActive) return;

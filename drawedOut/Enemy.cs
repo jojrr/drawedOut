@@ -83,10 +83,9 @@ namespace drawedOut
         }
 
 
-
         public override void CheckActive()
         {
-            if (Hp <= 0 && !isDowned)
+            if ((Hp <= 0 && !isDowned) || !checkInBoundary())
             { 
                 DoDeath(); 
                 return;

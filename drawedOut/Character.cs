@@ -350,14 +350,15 @@
         }
 
         // stops the character going above the screen and kills when going below screen.
-        protected void checkInBoundary() 
+        protected bool checkInBoundary() 
         {
              if (Location.Y <= 0)
              {
                  LocationY = 1;
                  yVelocity = Math.Max(yVelocity, 0);
              }
-             else if (Location.Y > Global.LevelSize.Height) this.Hp = 0;
+             else if (Location.Y > Global.LevelSize.Height) return false;
+             return true;
         }
 
         protected void clampSpeed(int maxXSpeed, int maxYSpeed) 
