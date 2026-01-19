@@ -29,8 +29,10 @@ namespace drawedOut
         private static Keys? prevLeftRight;
         private static int gameTickInterval;
 
+        private static readonly float _baseScale = Global.BaseScale;
+
         private static bool
-            gameTickEnabled = true,
+            _levelActive = true,
             showHitbox = true,
 
             movingLeft = false,
@@ -41,7 +43,6 @@ namespace drawedOut
             slowedMov = false,
 
             levelLoaded = false;
-
 
         private static float
             curZoom = 1,
@@ -74,7 +75,7 @@ namespace drawedOut
             energyBar.SetMax((float)(playerCharacter.MaxEnergy), true);
         }
 
-        private static void InitEntities()
+        private void InitEntities()
         {
             if (levelLoaded) return;
             playerCharacter = new Player(
@@ -89,7 +90,7 @@ namespace drawedOut
             InitEnemies();
         }
 
-        private static void InitEnemies()
+        private void InitEnemies()
         {
             meleeOne = new(origin:new Point(2850, -550));
             flyingOne = new(origin:new Point(850, 100));
@@ -98,7 +99,7 @@ namespace drawedOut
                     origin:new Point(8200, 100), 
                     height: 250,
                     width: 250,
-                    itemDrop: () => {},
+                    itemDrop: () => { this.LevelEnd(); },
                     hp: 6);
         }
 
@@ -153,7 +154,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1440;
+            Global.LevelResolution = Global.Resolutions.p720;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -177,10 +178,9 @@ namespace drawedOut
 
             gameTickThread = new Thread(() =>
             {
-                while (true)
+                while (_levelActive)
                 {
                     if (threadCT.IsCancellationRequested) return;
-                    if (!gameTickEnabled) continue;
                     if (threadDelaySW.Elapsed.TotalMilliseconds <= gameTickInterval) continue;
 
                     double deltaTime = slowTime(getDeltaTime());
@@ -200,6 +200,7 @@ namespace drawedOut
                     renderGraphics(deltaTime);
                     TryInvoke(this.Refresh);
                 }
+                this.TryInvoke(Close);
             });
         }
 
@@ -395,7 +396,7 @@ namespace drawedOut
             foreach(Entity e in Entity.EntityList)
             {
                 if (e is Player && !includePlayer) { continue; }
-                e.UpdateX(velocity * deltaTime);
+                e.UpdateX(velocity * deltaTime * _baseScale);
             }
         }
 
@@ -647,10 +648,8 @@ namespace drawedOut
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            gameTickEnabled = false;    
             cancelTokenSrc.Cancel();
         }
-
 
         private void LevelEnd()
         {
@@ -660,6 +659,7 @@ namespace drawedOut
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
             characterAnimations.Clear();
+            _levelActive = false;
         }
     }
 }

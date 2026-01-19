@@ -44,8 +44,8 @@
         private bool _knockedBack = false;
         private double _coyoteTimeS;
         private const int 
-            _TERMINAL_VELOCITY=2300,
-            _JUMP_VELOCITY=1500,
+            _TERMINAL_VELOCITY=3000,
+            _JUMP_VELOCITY=1100,
             FRICTION=2000;
         private readonly int
             _maxYVelocity,
@@ -295,9 +295,6 @@
             {
                 IsOnFloor = false;
                 yVelocity += _GRAVITY*dt;
-
-                // Terminal velocity -> only applies downwards
-                if (yVelocity > 0) yVelocity = Math.Min(yVelocity, _TERMINAL_VELOCITY); 
             }
 
             // Coyote time ticks down 
@@ -346,7 +343,7 @@
             if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
             if (xVelocity == 0) return;
 
-            if (!_knockedBack) clampSpeed(_maxXVelocity, _maxYVelocity);
+            if (!_knockedBack) clampSpeed(_maxXVelocity, _TERMINAL_VELOCITY);
             else clampSpeed(_xKnockbackVelocity, _yKnockbackVelocity);
 
             if (_curXAccel == 0 || _knockedBack) decelerate(dt);
@@ -380,13 +377,14 @@
 
         public void ScrollChar(double dt, double scrollVelocity)
         {
-            if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity, dt); 
+            if (_yStickEntity is not null)  CheckPlatformCollision(_yStickEntity, dt);
+            float _baseScale = Global.BaseScale;
 
             if (this is Player) 
             {
                 Location = new PointF(
-                        Location.X, 
-                        Location.Y + (float)(yVelocity * dt)
+                        Location.X,
+                        Location.Y + (float)(yVelocity * dt * _baseScale)
                         );
                 return;
             }
@@ -394,8 +392,8 @@
             if (_xStickEntity is not null) CheckPlatformCollision(_xStickEntity, dt);
 
             Location = new PointF(
-                    Location.X + (float)(xVelocity * dt), 
-                    Location.Y + (float)(yVelocity * dt)
+                    Location.X + (float)(xVelocity * dt) * _baseScale, 
+                    Location.Y + (float)(yVelocity * dt) * _baseScale
                     ); 
         }
 
