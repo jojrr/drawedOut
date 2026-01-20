@@ -50,6 +50,7 @@ namespace drawedOut
             slowTimeS = 0,
             freezeTimeS = 0;
 
+        public static Stopwatch _levelTimerSW = new Stopwatch();
         // threading 
         private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
         private static ParallelOptions threadSettings = new ParallelOptions();
@@ -96,10 +97,11 @@ namespace drawedOut
             flyingOne = new(origin:new Point(850, 100));
             firstBoss = new(
                     activationDoor: ref roomDoor,
-                    origin:new Point(8200, 100), 
+                    origin: new Point(8200, 100),
                     height: 250,
                     width: 250,
-                    itemDrop: () => { this.LevelEnd(); },
+                    itemDrop: LevelEnd,
+                    levelTimerSW: ref _levelTimerSW,
                     hp: 6);
         }
 
@@ -154,7 +156,7 @@ namespace drawedOut
         public Level0()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p720;
+            Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;
@@ -227,6 +229,7 @@ namespace drawedOut
         private void Form1_Load(object sender, EventArgs e)
         {
             deltaTimeSW.Start();
+            _levelTimerSW.Start();
 
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
@@ -527,6 +530,11 @@ namespace drawedOut
         {
             float baseScale = Global.BaseScale;
 
+            g.DrawString(
+                    _levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
+                    new Font("Arial", 10*baseScale),
+                    Brushes.Black,
+                    new PointF(60*baseScale,200*baseScale));
             g.DrawString(
                     prevFrameFPS.ToString()+"fps",
                     new Font("Arial", 10*baseScale),

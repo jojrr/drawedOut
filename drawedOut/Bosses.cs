@@ -13,13 +13,14 @@ namespace drawedOut
         private readonly Platform _activationDoor; 
         private readonly Action _itemDrop;
         private static Bitmap _downedSprite;
+        private static Stopwatch _levelTimerSW;
         private int _curState = 0;
         private double 
             _angleToPlayer,
             _xDiffToPlayer,
             _yDiffToPlayer;
 
-        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor, Action itemDrop,
+        public FirstBoss(Point origin, int width, int height, ref Platform activationDoor, Action itemDrop, ref Stopwatch levelTimerSW,
                 int hp=6)
             :base(origin:origin, width:width, height:height, hp:hp, xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN)
         {
@@ -28,6 +29,7 @@ namespace drawedOut
             _itemDrop = itemDrop;
             _maxRange = Width*2.5;
             _jumpRange = 1.5*Height;
+            _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
 
             _attackOne = new Attacks(
@@ -175,6 +177,7 @@ namespace drawedOut
             if (isDowned && isLethal) 
             {
                 isDowned = false;
+                _levelTimerSW.Stop();
                 DoDrop();
                 return;
             }
