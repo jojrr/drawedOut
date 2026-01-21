@@ -21,8 +21,11 @@ namespace drawedOut
 
         public MinHeap()
         {
-            _array = new T[0];
-            _lastVal = 0;
+            if (_array is null)
+            {
+                _array = new T[0];
+                _lastVal = 0;
+            }
         }
         public MinHeap(int size)
         { 

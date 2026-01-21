@@ -646,6 +646,7 @@ namespace drawedOut
                 // if Not parrying then resets parrywindow and sets to parrying
                 case MouseButtons.Right:
                     playerCharacter.DoParry();
+                    SaveData.AddScore(0, 11);
                     break;
                 case MouseButtons.Left:
                     playerCharacter.DoBasicAttack();
