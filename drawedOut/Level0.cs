@@ -527,6 +527,7 @@ namespace drawedOut
             }
         }
 
+
         private void ShowSpeedrunTime(Graphics g)
         {
             float baseScale = Global.BaseScale;
@@ -536,7 +537,7 @@ namespace drawedOut
                     _levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
                     defaultFont,
                     Brushes.Black,
-                    new PointF(1820*baseScale,30*baseScale));
+                    new PointF(1800*baseScale,30*baseScale));
         }
 
 
@@ -608,7 +609,7 @@ namespace drawedOut
                     break;
             }
 
-            if (!_levelTimerSW.IsRunning) _levelTimerSW.Start();
+            if (!_levelTimerSW.IsRunning && mainPlat.LocationX > -1800) _levelTimerSW.Start();
         }
 
 
@@ -646,7 +647,6 @@ namespace drawedOut
                 // if Not parrying then resets parrywindow and sets to parrying
                 case MouseButtons.Right:
                     playerCharacter.DoParry();
-                    SaveData.AddScore(0, 11);
                     break;
                 case MouseButtons.Left:
                     playerCharacter.DoBasicAttack();
@@ -679,6 +679,7 @@ namespace drawedOut
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
             characterAnimations.Clear();
+            SaveData.AddScore(0, (float)_levelTimerSW.Elapsed.TotalSeconds);
             _levelActive = false;
         }
     }
