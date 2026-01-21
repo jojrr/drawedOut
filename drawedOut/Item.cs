@@ -6,7 +6,6 @@ namespace drawedOut
         private readonly Action _doAction;
         private bool _isOnFloor = false;
         private Entity? _yStickEntity;
-        private float? _yStickLevel;
         private int _yVelocity = 1;
         private Bitmap _sprite;
 

@@ -229,7 +229,6 @@ namespace drawedOut
         private void Form1_Load(object sender, EventArgs e)
         {
             deltaTimeSW.Start();
-            _levelTimerSW.Start();
 
             if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
             gameTickThread.Start();
@@ -598,6 +597,8 @@ namespace drawedOut
                     this.Close();
                     break;
             }
+
+            if (!_levelTimerSW.IsRunning) _levelTimerSW.Start();
         }
 
 
