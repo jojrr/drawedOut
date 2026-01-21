@@ -79,7 +79,7 @@ namespace drawedOut
             }
         }
 
-        public static void Draw(Graphics g)
+        public static void DrawAll(Graphics g)
         {
             foreach (Checkpoint c in CheckPointList)
             {

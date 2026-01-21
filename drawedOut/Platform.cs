@@ -58,7 +58,7 @@
             InactivePlatformList.Add(this);
         }
 
-        public static void Draw(Graphics g)
+        public static void DrawAll(Graphics g)
         {
             foreach (Platform plat in Platform.ActivePlatformList)
             {

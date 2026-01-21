@@ -10,7 +10,9 @@ namespace drawedOut
             _MAX_MOVEMENT_TIME_S = 2,
             _DEFAULT_PREFERRED_HEIGHT = 160,
             _DEFAULT_PROJECTILE_VELOCITY = 1000;
-        private static readonly Bitmap _downedSprite;
+        private static readonly Bitmap 
+            _projectileSprite,
+            _downedSprite;
         private readonly ProjectileAttack _projectileAttack;
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
@@ -26,6 +28,7 @@ namespace drawedOut
         {
             string downedSpriteFolder = @"six\";
             _downedSprite = Global.GetSingleImage(downedSpriteFolder);
+            _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
         }
 
         public FlyingEnemy(Point origin,
@@ -167,6 +170,7 @@ namespace drawedOut
                     origin: this.Center,
                     width: _projectileSize.Width,
                     height: _projectileSize.Height,
+                    sprite: _projectileSprite,
                     velocity: _projectileSpeed,
                     angle: _angleToFire.Value,
                     xDiff: -_xDiff.Value,

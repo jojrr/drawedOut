@@ -12,7 +12,9 @@ namespace drawedOut
         private readonly double _maxRange, _jumpRange;
         private readonly Platform _activationDoor; 
         private readonly Action _itemDrop;
-        private static Bitmap _downedSprite;
+        private static readonly Bitmap 
+            _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
+            _downedSprite = Global.GetSingleImage(@"fillerPic\");
         private static Stopwatch _levelTimerSW;
         private int _curState = 0;
         private double 
@@ -50,8 +52,6 @@ namespace drawedOut
                     dmg: 3,
                     isLethal: false);
 
-            string downedSpriteFolder = @"seven\";
-            _downedSprite = Global.GetSingleImage(downedSpriteFolder);
             setRunAnim(@"fillerAnim\");
             setIdleAnim(@"fillerPic\");
         }
@@ -169,7 +169,8 @@ namespace drawedOut
                     xDiff: _xDiffToPlayer,
                     yDiff: _yDiffToPlayer,
                     parent: this,
-                    isLethal: _rangedAttackOne.IsLethal);
+                    isLethal: _rangedAttackOne.IsLethal,
+                    sprite: _projectileSprite);
         }
 
         protected override void CheckDowned(bool isLethal)

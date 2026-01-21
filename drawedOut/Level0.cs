@@ -33,7 +33,8 @@ namespace drawedOut
 
         private static bool
             _levelActive = true,
-            showHitbox = true,
+            _showLevelTime = true,
+            showHitbox = false,
 
             movingLeft = false,
             movingRight = false,
@@ -504,11 +505,13 @@ namespace drawedOut
         {
             Graphics g = e.Graphics;
             
-            Checkpoint.Draw(g);
-            Item.Draw(g);
+            Checkpoint.DrawAll(g);
+            Item.DrawAll(g);
             DrawCharacters(g);
-            Platform.Draw(g);
-            
+            Projectile.DrawAll(g);
+            Platform.DrawAll(g);
+
+            if (_showLevelTime) ShowSpeedrunTime(g);
             if (showHitbox) drawHitboxes(g);
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
@@ -524,24 +527,31 @@ namespace drawedOut
             }
         }
 
+        private void ShowSpeedrunTime(Graphics g)
+        {
+            float baseScale = Global.BaseScale;
+            Font defaultFont = new Font("Sour Gummy Black", 18*baseScale);
+
+            g.DrawString(
+                    _levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
+                    defaultFont,
+                    Brushes.Black,
+                    new PointF(1820*baseScale,30*baseScale));
+        }
+
 
         private void ShowFPSInfo(Graphics g)
         {
             float baseScale = Global.BaseScale;
-
-            g.DrawString(
-                    _levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
-                    new Font("Arial", 10*baseScale),
-                    Brushes.Black,
-                    new PointF(60*baseScale,200*baseScale));
+            Font debugFont = new Font("Arial", 10*baseScale);
             g.DrawString(
                     prevFrameFPS.ToString()+"fps",
-                    new Font("Arial", 10*baseScale),
+                    debugFont,
                     Brushes.Black,
                     new PointF(60*baseScale,220*baseScale));
             g.DrawString(
                     prevFrameTime.ToString("F3")+"ms",
-                    new Font("Arial", 10*baseScale),
+                    debugFont,
                     Brushes.Black,
                     new PointF(60*baseScale,240*baseScale));
         }

@@ -95,7 +95,7 @@ namespace drawedOut
             }
         }
 
-        public static void Draw(Graphics g)
+        public static void DrawAll(Graphics g)
         { foreach (Item item in Item._itemList) g.DrawImage(item._sprite, item.Hitbox); }
 
         public override void CheckActive()

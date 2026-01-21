@@ -12,6 +12,7 @@
         private static readonly double _sqrtBaseScale = Math.Sqrt(Global.BaseScale);
         private readonly float _velocity;
         private readonly int _dmg, _knockbackSpeed;
+        private readonly Bitmap _sprite;
         private Entity _parent;
         private float 
             _xVelocity, 
@@ -25,11 +26,12 @@
         /// <param name="height"></param>
         /// <param name="velocity"></param>
         /// <param name="target"></param>
-        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, 
+        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, Bitmap sprite,
                 int dmg=1, int knockback=800, bool isLethal=true)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
+            _sprite = sprite;
             _parent = parent;
             _velocity = velocity;
             _knockbackSpeed = knockback;
@@ -39,11 +41,12 @@
             Center = origin;
         }
 
-        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent,
+        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, Bitmap sprite,
                 int dmg=1, int knockback=800, bool isLethal=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
+            _sprite = sprite;
             _parent = parent;
             _velocity = velocity;
             _knockbackSpeed = knockback;
@@ -114,6 +117,16 @@
             _projectileList.Clear();
             _disposedProjectiles.Clear();
         }
+
+        private void drawSprite(Graphics g) => g.DrawImage(_sprite, Hitbox);
+        
+        public static void DrawAll(Graphics g)
+        {
+            foreach (Projectile p in _projectileList)
+            { p.drawSprite(g); }
+
+        }
+
 
 
         public static void CheckProjectileCollisions(double dt, Form form, Player playerBox, ParallelOptions threadSettings)
