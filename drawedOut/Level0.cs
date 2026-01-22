@@ -538,6 +538,11 @@ namespace drawedOut
                     defaultFont,
                     Brushes.Black,
                     new PointF(1800*baseScale,30*baseScale));
+            g.DrawString(
+                    SaveData.GetFastestScore(0).ToString(),
+                    defaultFont,
+                    Brushes.Black,
+                    new PointF(1800*baseScale,130*baseScale));
         }
 
 

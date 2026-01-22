@@ -36,7 +36,7 @@ namespace drawedOut
             if (tempLevelTimes is not null) _levelTimes = tempLevelTimes;
         }
 
-        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].Min;
+        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].Root;
         public static void AddScore(UInt16 levelNo, float timeS) 
         {
             _levelTimes[$"level{levelNo}"].Add(timeS);

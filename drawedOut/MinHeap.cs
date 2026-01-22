@@ -3,12 +3,13 @@ namespace drawedOut
 {
     internal class MinHeap<T> where T : INumber<T>
     {
-        private T _min;
         private T[] _array;
+        private T[] _sortedArray;
         private int _lastVal;
 
         public int Length => _lastVal;
-        public T Min => _min;
+        public T Root => _sortedArray[0];
+        public T[] SortedTree => _sortedArray;
         public T[] FullArray 
         { 
             get => _array;
@@ -16,9 +17,12 @@ namespace drawedOut
             {
                 _array = (T[])(value.Clone());
                 _lastVal = _array.Length;
-                _min = sort();
+                sort();
             }
         }
+
+        public int Left(int index=0) => index*2+1;
+        public int Right(int index=0) => index*2+2;
 
         public MinHeap()
         {
@@ -37,41 +41,43 @@ namespace drawedOut
         {
             if (_lastVal == _array.Length) Array.Resize(ref _array, _lastVal+1);
             _array[_lastVal++] = value;
-            _min = sort();
+            sort();
         }
 
         private T sort()
         {
-            T[] _sortArray = (T[])_array.Clone();
-            if (_lastVal < 2) return _sortArray[0];
+            _sortedArray = (T[])_array.Clone();
+            if (_lastVal < 2) return _sortedArray[0];
             for (int i = _lastVal / 2 - 1; i >= 0; i--)
-            { upHeap(i, _lastVal, ref _sortArray); }
-            return _sortArray[0];
+            { upHeap(i, _lastVal); }
+            return _sortedArray[0];
         }
 
-        private void upHeap(int index, int lastVal, ref T[] sortArray)
+        private void upHeap(int index, int lastVal)
         {
             int min = index;
             int left = index*2 + 1;
             int right = index*2 + 2;
-            if (left < lastVal && sortArray[left] < sortArray[min])
+            if (left < lastVal && _sortedArray[left] < _sortedArray[min])
                 min = left;
-            if (right < lastVal && sortArray[right] < sortArray[min])
+            if (right < lastVal && _sortedArray[right] < _sortedArray[min])
                 min = right;
 
             if (min != index) 
             {
-                swap(min, index, ref sortArray);
-                upHeap(index, lastVal, ref sortArray);
+                swap(min, index, ref _sortedArray);
+                upHeap(index, lastVal);
             }
+            if (_sortedArray[left] > _sortedArray[right]) 
+                swap(left, right, ref _sortedArray);
         }
 
 
-        private void swap(int i, int j, ref T[] sortArray)
+        private void swap(int i, int j, ref T[] swapArr)
         {
-            T temp = sortArray[i];
-            sortArray[i] = sortArray[j];
-            sortArray[j] = temp;
+            T temp = swapArr[i];
+            swapArr[i] = swapArr[j];
+            swapArr[j] = temp;
         }
 
     }
