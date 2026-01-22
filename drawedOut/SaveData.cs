@@ -22,6 +22,11 @@ namespace drawedOut
         static SaveData()
         {
             Directory.CreateDirectory(_saveFolder);
+            if (File.Exists(_timeFile)) RetriveTimeData();
+        }
+        
+        private static void RetriveTimeData()
+        {
             string jsonTxt = "";
             using ( StreamReader sr = new StreamReader(_timeFile) )
             { jsonTxt= sr.ReadToEnd(); }
@@ -31,7 +36,7 @@ namespace drawedOut
             if (tempLevelTimes is not null) _levelTimes = tempLevelTimes;
         }
 
-        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].Root;
+        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].Min;
         public static void AddScore(UInt16 levelNo, float timeS) 
         {
             _levelTimes[$"level{levelNo}"].Add(timeS);
