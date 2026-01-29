@@ -3,52 +3,56 @@ namespace drawedOut
 {
     public abstract partial class Level0 : Form
     {
-        private HpBarUI hpBar;
-        private BarUI energyBar;
-        private Platform endWall, roomWall;
-
-        private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
-        private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
-        private static Keys? prevLeftRight;
-        private static float gameTickInterval, _baseScale;
-
-        private static float curZoom = 1, slowTimeS = 0;
-        private readonly int _levelWidth;
-        private readonly UInt16 _levelNo;
-        private readonly Point _playerStartPos;
-        private bool
-            _levelActive = true,
-            _showLevelTime = true,
-            showHitbox = false,
-
-            movingLeft = false,
-            movingRight = false,
-            jumping = false,
-
-            isPaused = false,
-            slowedMov = false,
-            levelLoaded = false;
 
         protected static Player playerCharacter;
         protected Platform roomDoor;
         protected Platform basePlate;
-
         protected static Stopwatch levelTimerSW = new Stopwatch();
+
+        private readonly int _levelWidth;
+        private readonly UInt16 _levelNo;
+        private readonly Point _playerStartPos;
+
+        private static Dictionary<Entity, PointF> _zoomOrigins = new Dictionary<Entity, PointF>();
+        private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
+
         // threading 
-        private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
-        private static ParallelOptions threadSettings = new ParallelOptions();
-        private static Stopwatch deltaTimeSW = new Stopwatch();
-        private static Thread gameTickThread;
+        private static CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
+        private static ParallelOptions _threadSettings = new ParallelOptions();
+        private static Stopwatch _deltaTimeSW = new Stopwatch();
+        private static Thread _gameTickThread;
+        private static Keys? _prevLeftRight;
+        private static float 
+            _gameTickInterval, 
+            _baseScale,
+            _curZoom = 1, 
+            _slowTimeS = 0;
+
+        private HpBarUI _hpBar;
+        private BarUI _energyBar;
+        private Platform _endWall, _roomWall;
+        private bool
+            _levelActive = true,
+            _showLevelTime = true,
+            _showHitbox = false,
+
+            _movingLeft = false,
+            _movingRight = false,
+            _jumping = false,
+
+            _isPaused = false,
+            _slowedMov = false,
+            _levelLoaded = false;
 
         private void InitUI()
         {
-            hpBar = new HpBarUI(
+            _hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
                     barWidth: 20,
                     barHeight: 40,
                     maxHp: 6);
 
-            energyBar = new BarUI(
+            _energyBar = new BarUI(
                     origin: new PointF(70, 120),
                     elementWidth: 250,
                     elementHeight: 20,
@@ -56,12 +60,12 @@ namespace drawedOut
                     bgBrush: Brushes.Gray,
                     maxVal: 1,
                     borderScale: 0.4f);
-            energyBar.SetMax((float)(playerCharacter.MaxEnergy), true);
+            _energyBar.SetMax((float)(playerCharacter.MaxEnergy), true);
         }
 
         private void InitEntities()
         {
-            if (levelLoaded) return;
+            if (_levelLoaded) return;
             playerCharacter = new Player(
                     origin: _playerStartPos,
                     width: 30,
@@ -85,13 +89,13 @@ namespace drawedOut
                defaultState: true);
 
             float levelRight = basePlate.Width;
-            endWall = new(
+            _endWall = new(
                     origin: new Point((int)levelRight-20, 0),
                     width: 100,
                     height: 750);
 
             int roomWallX = (int)levelRight-1920;
-            roomWall = new(
+            _roomWall = new(
                     origin: new Point(roomWallX, 0),
                     width: 40,
                     height: 550);
@@ -124,30 +128,30 @@ namespace drawedOut
             _playerStartPos = playerStartPos;
 
             // sets the refresh interval
-            gameTickInterval = (1000.0F / Global.GameTickFreq);
+            _gameTickInterval = (1000.0F / Global.GameTickFreq);
             _baseScale = Global.BaseScale;
 
             // starts the clocks for screen refresh and animation update
             Stopwatch threadDelaySW = Stopwatch.StartNew();
             Stopwatch animTickSW = Stopwatch.StartNew();
-            CancellationToken threadCT = cancelTokenSrc.Token;
-            threadSettings.CancellationToken = threadCT;
-            threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
+            CancellationToken threadCT = _cancelTokenSrc.Token;
+            _threadSettings.CancellationToken = threadCT;
+            _threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
 
             ResetLevel();
             LinkAnimations();
 
-            gameTickThread = new Thread(() =>
+            _gameTickThread = new Thread(() =>
             {
                 while (_levelActive)
                 {
                     if (threadCT.IsCancellationRequested) return;
-                    if (threadDelaySW.Elapsed.TotalMilliseconds <= gameTickInterval) continue;
+                    if (threadDelaySW.Elapsed.TotalMilliseconds <= _gameTickInterval) continue;
 
                     double deltaTime = slowTime(getDeltaTime());
                     double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
 
-                    if (slowTimeS > 0) animationInterval /= Global.SLOW_FACTOR;
+                    if (_slowTimeS > 0) animationInterval /= Global.SLOW_FACTOR;
                     if (animationInterval >= Global.ANIMATION_FPS)
                     {
                         TickAnimations();
@@ -155,7 +159,7 @@ namespace drawedOut
                     }
 
                     threadDelaySW.Restart();
-                    if (isPaused) continue; 
+                    if (_isPaused) continue; 
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
                     renderGraphics(deltaTime);
@@ -177,23 +181,23 @@ namespace drawedOut
 
         private void TickAnimations()
         {
-            foreach (KeyValuePair<Character, Bitmap?> c in characterAnimations)
+            foreach (KeyValuePair<Character, Bitmap?> c in _characterAnimations)
             {
-                if (c.Key.IsActive) characterAnimations[c.Key] = c.Key.NextAnimFrame(); 
-                else characterAnimations[c.Key] = null;
+                if (c.Key.IsActive) _characterAnimations[c.Key] = c.Key.NextAnimFrame(); 
+                else _characterAnimations[c.Key] = null;
             }
         }
 
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            deltaTimeSW.Start();
+            _deltaTimeSW.Start();
 
-            if (gameTickThread is null) throw new Exception("gameTickThread not initialsed");
-            gameTickThread.Start();
+            if (_gameTickThread is null) throw new Exception("_gameTickThread not initialsed");
+            _gameTickThread.Start();
 
             togglePause(false);
-            levelLoaded = true;
+            _levelLoaded = true;
             GC.Collect();
         }
 
@@ -203,53 +207,53 @@ namespace drawedOut
             InitEntities();
             playerCharacter.Reset();
             InitUI();
-            hpBar.UpdateMaxHp(playerCharacter.MaxHp);
-            hpBar.ComputeHP(playerCharacter.Hp);
-            Player.LinkHpBar(ref hpBar);
-            energyBar.Update((float)(playerCharacter.Energy));
+            _hpBar.UpdateMaxHp(playerCharacter.MaxHp);
+            _hpBar.ComputeHP(playerCharacter.Hp);
+            Player.LinkHpBar(ref _hpBar);
+            _energyBar.Update((float)(playerCharacter.Energy));
         }
 
         // <summary>
-        // assign enemies their respective animations in the characterAnimations Dictionary.
+        // assign enemies their respective animations in the _characterAnimations Dictionary.
         // </summary>
         private void LinkAnimations()
         {
-            characterAnimations.Clear();
-            characterAnimations.Add(playerCharacter, playerCharacter.NextAnimFrame());
-            foreach (Enemy e in Enemy.InactiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
-            foreach (Enemy e in Enemy.ActiveEnemyList) characterAnimations.Add(e, e.NextAnimFrame());
+            _characterAnimations.Clear();
+            _characterAnimations.Add(playerCharacter, playerCharacter.NextAnimFrame());
+            foreach (Enemy e in Enemy.InactiveEnemyList) _characterAnimations.Add(e, e.NextAnimFrame());
+            foreach (Enemy e in Enemy.ActiveEnemyList) _characterAnimations.Add(e, e.NextAnimFrame());
         }
 
 
         private double getDeltaTime()
         {
-            double deltaTime = deltaTimeSW.Elapsed.TotalSeconds;
-            deltaTimeSW.Restart();
+            double deltaTime = _deltaTimeSW.Elapsed.TotalSeconds;
+            _deltaTimeSW.Restart();
 
-            isPaused = false;
+            _isPaused = false;
             return double.Clamp(deltaTime, 0, 0.1);
         }
 
 
         private double slowTime(double deltaTime)
         {
-            if (slowTimeS > 0)
+            if (_slowTimeS > 0)
             {
                 if (Global.ZOOM_FACTOR <= 1)
                     throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
 
-                slowedMov = true;
-                slowTimeS -= (float)deltaTime;
+                _slowedMov = true;
+                _slowTimeS -= (float)deltaTime;
                 return (deltaTime /= Global.SLOW_FACTOR);
             }
             else 
             {
-                slowTimeS = 0;
-                if (slowedMov) // the player in motion when in slow 
+                _slowTimeS = 0;
+                if (_slowedMov) // the player in motion when in slow 
                 {
-                    movingLeft = false;
-                    movingRight = false;
-                    slowedMov = false;
+                    _movingLeft = false;
+                    _movingRight = false;
+                    _slowedMov = false;
                 }
                 return deltaTime;
             }
@@ -286,14 +290,14 @@ namespace drawedOut
                 }
             }
 
-            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, threadSettings); }
+            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, _threadSettings); }
             catch (OperationCanceledException) { return; }
 
             playerCharacter.TickCounters(deltaTime);
             Enemy.TickCounters(deltaTime);
             Attacks.UpdateHitboxes();
             Entity.DisposeRemoved();
-            energyBar.Update((float)(playerCharacter.Energy));
+            _energyBar.Update((float)(playerCharacter.Energy));
 
             if (playerCharacter.Hp <= 0) PlayerDeath();
         }
@@ -308,7 +312,7 @@ namespace drawedOut
         }
 
 
-        public static void SlowTime() => slowTimeS = Global.SLOW_DURATION_S;
+        public static void SlowTime() => _slowTimeS = Global.SLOW_DURATION_S;
 
 
         private void movementTick(double deltaTime)
@@ -320,11 +324,11 @@ namespace drawedOut
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
 
-            if (playerCharacter.IsOnFloor && jumping) { playerCharacter.DoJump(); }
+            if (playerCharacter.IsOnFloor && _jumping) { playerCharacter.DoJump(); }
             if (isScrolling) scrollVelocity -= playerCharacter.XVelocity;
 
-            if (movingLeft) playerMovDir = Global.XDirections.left;
-            else if (movingRight) playerMovDir = Global.XDirections.right;
+            if (_movingLeft) playerMovDir = Global.XDirections.left;
+            else if (_movingRight) playerMovDir = Global.XDirections.right;
 
             playerCharacter.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
@@ -335,7 +339,7 @@ namespace drawedOut
             }
             else if (playerCharacter.Hitbox.Right < roomDoor.Hitbox.Left) roomDoor.Deactivate();
 
-            try { Parallel.ForEach(Enemy.ActiveEnemyList, threadSettings, enemy => 
+            try { Parallel.ForEach(Enemy.ActiveEnemyList, _threadSettings, enemy => 
                     { enemy.DoMovement( deltaTime, scrollVelocity, playerCharacter.Center ); }
                 );}
             catch (OperationCanceledException) { return; }
@@ -359,7 +363,7 @@ namespace drawedOut
 
         public void scrollTillEnd(double dt)
         {
-            if (basePlate.Hitbox.Right > Global.LevelSize.Width && curZoom == 1) 
+            if (basePlate.Hitbox.Right > Global.LevelSize.Width && _curZoom == 1) 
                 ScrollEntities(-1200, dt, true);
         }
 
@@ -384,17 +388,17 @@ namespace drawedOut
         }
 
         // pause game
-        private void togglePause() => isPaused = !isPaused; 
+        private void togglePause() => _isPaused = !_isPaused; 
 
         // pause game
-        private void togglePause(bool pause) => isPaused = pause; 
+        private void togglePause(bool pause) => _isPaused = pause; 
 
 
         // TODO: remove this logic and use graphics scaling instead.
         // (Center Player on screen method)
         public static void ZoomScreen() 
         {
-            curZoom = Global.ZOOM_FACTOR;
+            _curZoom = Global.ZOOM_FACTOR;
 
             float playerX = playerCharacter.Center.X;
             float playerY = playerCharacter.Center.Y;
@@ -406,23 +410,23 @@ namespace drawedOut
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = x + _xDiff * curZoom;
-                float newY = y + _yDiff * curZoom;
+                float newX = x + _xDiff * _curZoom;
+                float newY = y + _yDiff * _curZoom;
 
-                obj.ScaleHitbox(curZoom);
+                obj.ScaleHitbox(_curZoom);
                 obj.Center = new PointF (newX, newY);
             }
 
 
             foreach (Entity e in Entity.EntityList)
             {
-                zoomOrigins.Add(e,e.Center);
+                _zoomOrigins.Add(e,e.Center);
                 if (e == playerCharacter)
                 {
                     playerCharacter.Center = new PointF(
                             Global.CenterOfScreen.X,
                             Global.CenterOfScreen.Y);
-                    playerCharacter.ScaleHitbox(curZoom);
+                    playerCharacter.ScaleHitbox(_curZoom);
                     continue;
                 }
                 zoomObj(e, midX, midY); 
@@ -433,7 +437,7 @@ namespace drawedOut
 
         private void unZoomScreen()
         {
-            foreach (KeyValuePair<Entity, PointF> EntityPoints in zoomOrigins)
+            foreach (KeyValuePair<Entity, PointF> EntityPoints in _zoomOrigins)
             { 
                 Entity obj = EntityPoints.Key;
                 PointF point = EntityPoints.Value;
@@ -442,8 +446,8 @@ namespace drawedOut
             }
 
             playerCharacter.ResetScale();
-            zoomOrigins.Clear();
-            curZoom = 1; // screen is no longer scaled
+            _zoomOrigins.Clear();
+            _curZoom = 1; // screen is no longer scaled
         }
 
 
@@ -458,7 +462,7 @@ namespace drawedOut
             Platform.DrawAll(g);
 
             if (_showLevelTime) ShowSpeedrunTime(g);
-            if (showHitbox) drawHitboxes(g);
+            if (_showHitbox) drawHitboxes(g);
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
         }
@@ -466,7 +470,7 @@ namespace drawedOut
         private void DrawCharacters(Graphics g)
         {
             // TODO: try put animation in classes
-            foreach (KeyValuePair<Character, Bitmap?> img in characterAnimations)
+            foreach (KeyValuePair<Character, Bitmap?> img in _characterAnimations)
             {
                 if (img.Value is null) continue;
                 g.DrawImage(img.Value, img.Key.AnimRect);
@@ -525,25 +529,25 @@ namespace drawedOut
             switch (e.KeyCode)
             {
                 case Keys.W:
-                    if (playerCharacter.IsOnFloor) jumping = true; 
+                    if (playerCharacter.IsOnFloor) _jumping = true; 
                     break;
 
                 case Keys.A:
-                    if (movingRight && !movingLeft && prevLeftRight is null)
+                    if (_movingRight && !_movingLeft && _prevLeftRight is null)
                     {
-                        prevLeftRight = Keys.D;
-                        movingRight = false;
+                        _prevLeftRight = Keys.D;
+                        _movingRight = false;
                     }
-                    movingLeft = true;
+                    _movingLeft = true;
                     break;
 
                 case Keys.D:
-                    if (movingLeft && !movingRight && prevLeftRight is null)
+                    if (_movingLeft && !_movingRight && _prevLeftRight is null)
                     {
-                        prevLeftRight = Keys.A;
-                        movingLeft = false;
+                        _prevLeftRight = Keys.A;
+                        _movingLeft = false;
                     }
-                    movingRight = true;
+                    _movingRight = true;
                     break;
 
                 case Keys.E:
@@ -561,26 +565,26 @@ namespace drawedOut
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (slowTimeS > 0)
+            if (_slowTimeS > 0)
                 return;
 
             switch (e.KeyCode)
             {
                 case Keys.W:
-                    jumping = false;
+                    _jumping = false;
                     playerCharacter.StopJump();
                     break;
 
                 case Keys.A:
-                    if (prevLeftRight == Keys.D) movingRight = true;
-                    prevLeftRight = null;
-                    movingLeft = false;
+                    if (_prevLeftRight == Keys.D) _movingRight = true;
+                    _prevLeftRight = null;
+                    _movingLeft = false;
                     break;
 
                 case Keys.D:
-                    if (prevLeftRight == Keys.A) movingLeft = true;
-                    prevLeftRight = null;
-                    movingRight = false;
+                    if (_prevLeftRight == Keys.A) _movingLeft = true;
+                    _prevLeftRight = null;
+                    _movingRight = false;
                     break;
             }
         }
@@ -614,7 +618,7 @@ namespace drawedOut
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            cancelTokenSrc.Cancel();
+            _cancelTokenSrc.Cancel();
         }
 
         protected void LevelEnd()
@@ -624,7 +628,7 @@ namespace drawedOut
             Attacks.ClearAllLists();
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
-            characterAnimations.Clear();
+            _characterAnimations.Clear();
             SaveData.AddScore(_levelNo, (float)levelTimerSW.Elapsed.TotalSeconds);
             _levelActive = false;
         }

@@ -5,8 +5,8 @@ namespace drawedOut
         private const int LEVELWIDTH = 8400;
 
         private MeleeEnemy meleeOne;
-        private FlyingEnemy flyingOne;
         private FirstBoss firstBoss;
+        private FlyingEnemy flyingOne;
         private Checkpoint checkpointOne;
 
         private Platform 
