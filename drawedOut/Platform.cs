@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    internal class Platform : Entity
+    public class Platform : Entity
     {
         public static HashSet<Platform> ActivePlatformList = new HashSet<Platform>();
         public static HashSet<Platform> InactivePlatformList = new HashSet<Platform>();

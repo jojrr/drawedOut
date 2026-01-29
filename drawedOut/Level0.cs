@@ -1,37 +1,22 @@
-using System.Diagnostics;
 // TODO: move all const values into global
 namespace drawedOut
 {
-    public partial class Level0 : Form
+    public abstract partial class Level0 : Form
     {
-        private static Player playerCharacter;
-        private static MeleeEnemy meleeOne;
-        private static FlyingEnemy flyingOne;
-        private static FirstBoss firstBoss;
-
-        private static Checkpoint checkpointOne;
-
-        private static Platform 
-            mainPlat,
-            box3,
-            box4,
-            box5,
-            endWall,
-            roomWall,
-            roomDoor;
-
-        private static HpBarUI hpBar;
-        private static BarUI energyBar;
+        private HpBarUI hpBar;
+        private BarUI energyBar;
+        private Platform endWall, roomWall;
 
         private static Dictionary<Entity, PointF> zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> characterAnimations = new Dictionary<Character, Bitmap?>();
-
         private static Keys? prevLeftRight;
-        private static int gameTickInterval;
+        private static float gameTickInterval, _baseScale;
 
-        private static readonly float _baseScale = Global.BaseScale;
-
-        private static bool
+        private static float curZoom = 1, slowTimeS = 0;
+        private readonly int _levelWidth;
+        private readonly UInt16 _levelNo;
+        private readonly Point _playerStartPos;
+        private bool
             _levelActive = true,
             _showLevelTime = true,
             showHitbox = false,
@@ -42,23 +27,20 @@ namespace drawedOut
 
             isPaused = false,
             slowedMov = false,
-
             levelLoaded = false;
 
-        private static float
-            curZoom = 1,
-            // TODO: redo freeze and slow logic
-            slowTimeS = 0,
-            freezeTimeS = 0;
+        protected static Player playerCharacter;
+        protected Platform roomDoor;
+        protected Platform basePlate;
 
-        public static Stopwatch _levelTimerSW = new Stopwatch();
+        protected static Stopwatch levelTimerSW = new Stopwatch();
         // threading 
         private static CancellationTokenSource cancelTokenSrc = new CancellationTokenSource(); 
         private static ParallelOptions threadSettings = new ParallelOptions();
         private static Stopwatch deltaTimeSW = new Stopwatch();
         private static Thread gameTickThread;
 
-        private static void InitUI()
+        private void InitUI()
         {
             hpBar = new HpBarUI(
                     origin: new PointF(70, 50),
@@ -81,7 +63,7 @@ namespace drawedOut
         {
             if (levelLoaded) return;
             playerCharacter = new Player(
-                    origin: new Point(850, 550),
+                    origin: _playerStartPos,
                     width: 30,
                     height: 160,
                     attackPower: 1,
@@ -91,71 +73,41 @@ namespace drawedOut
             InitCheckpoints();
             InitEnemies();
         }
-
-        private void InitEnemies()
+        protected virtual void InitEnemies() => throw new Exception("InitEnemies not defined");
+        protected virtual void InitCheckpoints() => throw new Exception("InitCheckpoints not defined");
+        protected virtual void InitPlatforms() 
         {
-            meleeOne = new(origin:new Point(2850, -550));
-            flyingOne = new(origin:new Point(850, 100));
-            firstBoss = new(
-                    activationDoor: ref roomDoor,
-                    origin: new Point(8200, 100),
-                    height: 250,
-                    width: 250,
-                    itemDrop: LevelEnd,
-                    levelTimerSW: ref _levelTimerSW,
-                    hp: 6);
-        }
-
-        private static void InitPlatforms()
-        {
-            mainPlat = new(
-               origin: new Point(1, 750),
-               width: 8400,
-               height: 550,
+            basePlate = new(
+               origin: new Point(0, 3000),
+               width: _levelWidth,
+               height: 1,
                toggleable: true,
                defaultState: true);
 
-            box3 = new(
-               origin: new Point(300, 250),
-               width: 400,
-               height: 175);
-
-            box4 = new(
-               origin: new Point(1000, 550),
-               width: 200,
-               height: 250);
-
-            box5 = new(
-               origin: new Point(1500, 550),
-               width: 200,
-               height: 250);
-
+            float levelRight = basePlate.Width;
             endWall = new(
-                    origin: new Point((int)(8400-20), 0),
+                    origin: new Point((int)levelRight-20, 0),
                     width: 100,
                     height: 750);
 
+            int roomWallX = (int)levelRight-1920;
             roomWall = new(
-                    origin: new Point(8400-1920, 0),
+                    origin: new Point(roomWallX, 0),
                     width: 40,
                     height: 550);
-
             roomDoor = new(
-                    origin: new Point(8400-1920, 550),
+                    origin: new Point(roomWallX, 550),
                     width: 30,
                     height: 200,
                     toggleable: true,
                     defaultState: false);
         }
 
-        private static void InitCheckpoints()
-        {
-            checkpointOne = new(origin: new Point(6200, 600));
-        }
 
-
-        public Level0()
+        public Level0(UInt16 levelNo, int levelWidth, Point playerStartPos)
         {
+            if (levelWidth < 2000) throw new Exception("level too small");
+
             InitializeComponent();
             Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
@@ -167,9 +119,15 @@ namespace drawedOut
             this.Height = Global.LevelSize.Height;
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // sets the refresh interval
-            gameTickInterval = (int)(1000.0F / Global.GameTickFreq);
+            _levelNo = levelNo;
+            _levelWidth = levelWidth;
+            _playerStartPos = playerStartPos;
 
+            // sets the refresh interval
+            gameTickInterval = (1000.0F / Global.GameTickFreq);
+            _baseScale = Global.BaseScale;
+
+            // starts the clocks for screen refresh and animation update
             Stopwatch threadDelaySW = Stopwatch.StartNew();
             Stopwatch animTickSW = Stopwatch.StartNew();
             CancellationToken threadCT = cancelTokenSrc.Token;
@@ -251,6 +209,9 @@ namespace drawedOut
             energyBar.Update((float)(playerCharacter.Energy));
         }
 
+        // <summary>
+        // assign enemies their respective animations in the characterAnimations Dictionary.
+        // </summary>
         private void LinkAnimations()
         {
             characterAnimations.Clear();
@@ -266,12 +227,6 @@ namespace drawedOut
             deltaTimeSW.Restart();
 
             isPaused = false;
-            if (freezeTimeS > 0)
-            {
-                freezeTimeS -= (float)deltaTime;
-                isPaused = true;
-                deltaTime = 0;
-            }
             return double.Clamp(deltaTime, 0, 0.1);
         }
 
@@ -303,8 +258,6 @@ namespace drawedOut
 
         private void attackHandler(double deltaTime)
         {
-            freezeTimeS = 0;
-
             foreach (Attacks a in Attacks.AttacksList)
             {
                 RectangleF atkBox = a.AtkHitbox.Hitbox;
@@ -318,7 +271,7 @@ namespace drawedOut
                 if (a.Parent is Player) 
                 {
                     foreach (Checkpoint c in Checkpoint.CheckPointList)
-                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerCharacter, mainPlat); }
+                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerCharacter, basePlate); }
                 }
                 else if (atkBox.IntersectsWith(playerCharacter.Hitbox)) 
                 {
@@ -362,7 +315,7 @@ namespace drawedOut
         {
             double scrollVelocity = 0;
             Global.XDirections? playerMovDir = null;
-            bool isScrolling = playerCharacter.CheckScrolling(mainPlat);
+            bool isScrolling = playerCharacter.CheckScrolling(basePlate);
 
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
@@ -406,7 +359,7 @@ namespace drawedOut
 
         public void scrollTillEnd(double dt)
         {
-            if (mainPlat.Hitbox.Right > Global.LevelSize.Width && curZoom == 1) 
+            if (basePlate.Hitbox.Right > Global.LevelSize.Width && curZoom == 1) 
                 ScrollEntities(-1200, dt, true);
         }
 
@@ -419,13 +372,6 @@ namespace drawedOut
         /// <param name="dt"> deltaTime for fps calculations </param>
         private void renderGraphics(double dt)
         {
-            if (slowTimeS <= 0 && freezeTimeS <= 0 && curZoom != 1)
-            {
-                unZoomScreen();
-                curZoom = 1;
-            }
-
-
             if (Math.Abs(prevFrameFPS - (ushort)(1/dt)) > 4) 
             {
                 prevFrameFPS = (ushort)(1/dt);
@@ -438,10 +384,10 @@ namespace drawedOut
         }
 
         // pause game
-        private static void togglePause() => isPaused = !isPaused; 
+        private void togglePause() => isPaused = !isPaused; 
 
         // pause game
-        private static void togglePause(bool pause) => isPaused = pause; 
+        private void togglePause(bool pause) => isPaused = pause; 
 
 
         // TODO: remove this logic and use graphics scaling instead.
@@ -534,7 +480,7 @@ namespace drawedOut
             Font defaultFont = new Font("Sour Gummy Black", 18*baseScale);
 
             g.DrawString(
-                    _levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
+                    levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
                     defaultFont,
                     Brushes.Black,
                     new PointF(1800*baseScale,30*baseScale));
@@ -609,7 +555,7 @@ namespace drawedOut
                     break;
             }
 
-            if (!_levelTimerSW.IsRunning && mainPlat.LocationX > -1800) _levelTimerSW.Start();
+            if (!levelTimerSW.IsRunning && basePlate.LocationX > -1800) levelTimerSW.Start();
         }
 
 
@@ -671,7 +617,7 @@ namespace drawedOut
             cancelTokenSrc.Cancel();
         }
 
-        private void LevelEnd()
+        protected void LevelEnd()
         {
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
@@ -679,7 +625,7 @@ namespace drawedOut
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
             characterAnimations.Clear();
-            SaveData.AddScore(0, (float)_levelTimerSW.Elapsed.TotalSeconds);
+            SaveData.AddScore(_levelNo, (float)levelTimerSW.Elapsed.TotalSeconds);
             _levelActive = false;
         }
     }

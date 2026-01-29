@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    internal class HpBarUI: GameUI 
+    public class HpBarUI: GameUI 
     {
         public RectangleF[] HpRectangles;
         public Brush[] HpRecColours;

@@ -57,6 +57,12 @@ namespace drawedOut
                     LocationY = y1-Height;
                     return;
                 }
+                foreach (Platform p in Platform.InactivePlatformList)
+                { 
+                    if (!p.Hitbox.Contains(new Point(x,y1))) continue;
+                    LocationY = y1-Height;
+                    return;
+                }
             }
             throw new Exception("No Floor found for checkpoint");
         }

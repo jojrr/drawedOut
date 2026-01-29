@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    internal class Attacks
+    public class Attacks
     {
         public static IReadOnlyCollection<Attacks> AttacksList => attacksList;
         public AnimationPlayer Animation { get; private init; }
@@ -52,7 +52,7 @@ namespace drawedOut
         }
 
 
-        internal class AtkHitboxEntity : Entity
+        public class AtkHitboxEntity : Entity
         {
             internal AtkHitboxEntity(PointF origin, int width, int height) 
             : base(origin: origin, width: width, height: height)

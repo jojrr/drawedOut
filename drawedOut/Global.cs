@@ -4,7 +4,7 @@ namespace drawedOut
     ///<summary>
     ///globally used static functions or values
     ///</summary>
-    internal static class Global
+    public static class Global
     {
         public const int 
             _GRAVITY = 4000,

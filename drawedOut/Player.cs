@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    internal class Player : Character
+    public class Player : Character
     {
         public double Energy { get => _energy; }
         public double MaxEnergy { get => _maxEnergy; }

@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    internal abstract class Character : Entity
+    public abstract class Character : Entity
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; private set; }

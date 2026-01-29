@@ -3,7 +3,7 @@
     /// <summary>
     /// produces the hitbox and responsible for collision detection
     /// </summary>
-    internal class Entity
+    public class Entity
     {
         public static IReadOnlyCollection<Entity> EntityList => _entityList;
         public SizeF Size { get => _scaledSize; }
