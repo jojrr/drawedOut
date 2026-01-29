@@ -4,10 +4,10 @@ namespace drawedOut
     public abstract partial class Level0 : Form
     {
 
+        protected static Stopwatch levelTimerSW = new Stopwatch();
         protected static Player playerCharacter;
         protected Platform roomDoor;
         protected Platform basePlate;
-        protected static Stopwatch levelTimerSW = new Stopwatch();
 
         private readonly int _levelWidth;
         private readonly UInt16 _levelNo;
