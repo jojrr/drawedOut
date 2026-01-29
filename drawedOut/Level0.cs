@@ -47,15 +47,15 @@ namespace drawedOut
         private void InitUI()
         {
             _hpBar = new HpBarUI(
-                    origin: new PointF(70, 50),
-                    barWidth: 20,
-                    barHeight: 40,
+                    origin: new PointF(90, 50),
+                    barWidth: 30,
+                    barHeight: 60,
                     maxHp: 6);
 
             _energyBar = new BarUI(
-                    origin: new PointF(70, 120),
-                    elementWidth: 250,
-                    elementHeight: 20,
+                    origin: new PointF(90, 140),
+                    elementWidth: 300,
+                    elementHeight: 30,
                     brush: Brushes.Blue,
                     bgBrush: Brushes.Gray,
                     maxVal: 1,
