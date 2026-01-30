@@ -1,3 +1,4 @@
+global using System.Collections.Immutable;
 global using System.Diagnostics;
 namespace drawedOut
 {
@@ -50,13 +51,12 @@ namespace drawedOut
         public enum YDirections { top, bottom }
         public enum Resolutions { p720, p1080, p1440 }
 
-        private static Dictionary<Resolutions,Size> ResDict = new Dictionary<Resolutions,Size> ()
+        private static ImmutableDictionary<Resolutions,Size> ResDict = ImmutableDictionary.CreateRange( new KeyValuePair<Resolutions,Size>[]
         {
-            { Resolutions.p720, new Size(1280, 720) },
-            { Resolutions.p1080, new Size(1920, 1080) },
-            { Resolutions.p1440, new Size(2560, 1440) },
-        };
-
+            KeyValuePair.Create( Resolutions.p720, new Size(1280, 720) ),
+            KeyValuePair.Create( Resolutions.p1080, new Size(1920, 1080) ),
+            KeyValuePair.Create( Resolutions.p1440, new Size(2560, 1440) ),
+        });
 
         private static float _baseScale = 1F;
         public static float BaseScale 
