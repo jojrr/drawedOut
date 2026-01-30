@@ -162,7 +162,7 @@ namespace drawedOut
                     if (_isPaused) continue; 
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
-                    renderGraphics(deltaTime);
+                    calcFrameInfo(deltaTime);
                     TryInvoke(this.Refresh);
                 }
                 this.TryInvoke(Close);
@@ -374,7 +374,7 @@ namespace drawedOut
 
         /// <summary> rendering graphics method </summary>
         /// <param name="dt"> deltaTime for fps calculations </param>
-        private void renderGraphics(double dt)
+        private void calcFrameInfo(double dt)
         {
             if (Math.Abs(prevFrameFPS - (ushort)(1/dt)) > 4) 
             {
@@ -394,8 +394,6 @@ namespace drawedOut
         private void togglePause(bool pause) => _isPaused = pause; 
 
 
-        // TODO: remove this logic and use graphics scaling instead.
-        // (Center Player on screen method)
         public static void ZoomScreen() 
         {
             _curZoom = Global.ZOOM_FACTOR;
@@ -462,7 +460,7 @@ namespace drawedOut
             Platform.DrawAll(g);
 
             if (_showLevelTime) ShowSpeedrunTime(g);
-            if (_showHitbox) drawHitboxes(g);
+            if (_showHitbox) DrawHitboxes(g);
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
         }
@@ -507,7 +505,7 @@ namespace drawedOut
                     new PointF(60*baseScale,240*baseScale));
         }
 
-        private void drawHitboxes(Graphics g)
+        private void DrawHitboxes(Graphics g)
         {
             foreach (Entity e in Entity.EntityList) 
                 g.DrawRectangle(Pens.Aqua, e.Hitbox);
