@@ -17,19 +17,24 @@ namespace drawedOut
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
 
+        /// <summary>
+        /// The default main font used in the game
+        /// </summary>
+        public static Font DefaultFont = new Font("Sour Gummy Black", 18*BaseScale);
+
         private static float _leftScrollBound = 0;
         private static float _rightScrollBound = 0;
         public static float LeftScrollBound { get => _leftScrollBound; }
         public static float RightScrollBound { get => _rightScrollBound; }
 
-        // <summary>
-        // Base gravity multiplied by the base scale.
-        // </summary>
+        /// <summary>
+        /// Base gravity multiplied by the base scale.
+        /// </summary>
         public static int Gravity { get => (int)(_GRAVITY*_baseScale); }
 
-        // <summary>
-        // Threshold for entities to be "active" (either side of screen center)
-        // </summary>
+        /// <summary>
+        /// Threshold for entities to be "active" (either side of screen center)
+        /// </summary>
         public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.75); }
 
         /// <summary>
@@ -51,6 +56,9 @@ namespace drawedOut
         public enum YDirections { top, bottom }
         public enum Resolutions { p720, p1080, p1440 }
 
+        /// <summary>
+        /// Immutable dict to store resolution sizes
+        /// </summary>
         private static ImmutableDictionary<Resolutions,Size> ResDict = ImmutableDictionary.CreateRange 
             (new KeyValuePair<Resolutions,Size>[]{
             KeyValuePair.Create( Resolutions.p720, new Size(1280, 720)   ),

@@ -1,4 +1,3 @@
-// TODO: move all const values into global
 namespace drawedOut
 {
     public abstract partial class Level0 : Form
@@ -479,11 +478,9 @@ namespace drawedOut
         private void ShowSpeedrunTime(Graphics g)
         {
             float baseScale = Global.BaseScale;
-            Font defaultFont = new Font("Sour Gummy Black", 18*baseScale);
-
             g.DrawString(
                     levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
-                    defaultFont,
+                    Global.DefaultFont,
                     Brushes.Black,
                     new PointF(1800*baseScale,30*baseScale));
         }
@@ -632,3 +629,4 @@ namespace drawedOut
         }
     }
 }
+
