@@ -2,6 +2,7 @@ namespace drawedOut
 {
     public partial class MainMenu : Form
     {
+
         public MainMenu()
         {
         }
