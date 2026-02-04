@@ -250,6 +250,7 @@ namespace drawedOut
                 _slowTimeS = 0;
                 if (_slowedMov) // the player in motion when in slow 
                 {
+                    _prevLeftRight = null;
                     _movingLeft = false;
                     _movingRight = false;
                     _slowedMov = false;
