@@ -35,8 +35,6 @@ namespace drawedOut
             ClientSize = new Size(800, 450);
             Name = "MainMenu";
             Text = "MainMenu";
-            FormClosing += MainMenu_FormClosing;
-            Load += MainMenu_Load;
             Paint += MainMenu_Paint;
             MouseDown += MainMenu_MouseDown;
             ResumeLayout(false);
