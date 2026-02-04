@@ -316,6 +316,12 @@ namespace drawedOut
 
         private void movementTick(double deltaTime)
         {
+            if (_slowTimeS <= 0 && _curZoom != 1)
+            {
+                unZoomScreen();
+                _curZoom = 1;
+            }
+
             double scrollVelocity = 0;
             Global.XDirections? playerMovDir = null;
             bool isScrolling = playerCharacter.CheckScrolling(basePlate);

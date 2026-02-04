@@ -4,7 +4,7 @@ namespace drawedOut
     internal static class SaveData
     {
         private static readonly string _saveFolder = Path.Combine(Global.GetProjFolder(), @"playerData\");
-        private static readonly string _timeFile = _saveFolder + "times.txt";
+        private static readonly string _timeFile = _saveFolder + "times.json";
         private static Dictionary<string, MinHeap<float>> _levelTimes = new Dictionary<string, MinHeap<float>>
         {
             ["level0"] = new MinHeap<float>(0),

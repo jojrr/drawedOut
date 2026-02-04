@@ -17,11 +17,6 @@ namespace drawedOut
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
 
-        /// <summary>
-        /// The default main font used in the game
-        /// </summary>
-        public static Font DefaultFont = new Font("Sour Gummy Black", 18*BaseScale);
-
         private static float _leftScrollBound = 0;
         private static float _rightScrollBound = 0;
         public static float LeftScrollBound { get => _leftScrollBound; }
@@ -111,6 +106,9 @@ namespace drawedOut
 
         private static Point _centerOfScreen;
         public static Point CenterOfScreen { get => _centerOfScreen; }
+
+        /// <summary> The default main font used in the game </summary>
+        public static Font DefaultFont = new Font("Sour Gummy Black", 18*BaseScale);
 
         /// <summary> Calculates the new Center of the screen </summary>
         public static void CalcNewCenter()
