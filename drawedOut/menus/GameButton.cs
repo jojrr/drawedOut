@@ -6,6 +6,8 @@ namespace drawedOut
         public static GameButton? SelectedButton { get; private set; }
         public Action ClickEvent { get; private init; }
         public string? BtnTxt { get; set; }
+        public int X { get => _bounds.X; set => _bounds.X = value; }
+        public int Y { get => _bounds.Y; set => _bounds.Y = value; }
 
         private static List<GameButton> _btnList = new();
         private Rectangle _bounds;
@@ -19,6 +21,7 @@ namespace drawedOut
             _bounds = new Rectangle(origin, new Size(width, height));
             ClickEvent = clickEvent;
             BtnTxt = txt;
+            _btnList.Add(this);
         }
 
         public void Show() => _hidden = false;
@@ -72,14 +75,12 @@ namespace drawedOut
         public static bool CheckAllMouseHover(Point mouseP)
         {
             GameButton? prevHover = SelectedButton;
+            SelectedButton = null;
             foreach (GameButton btn in BtnList)
             { 
-                if (btn.CheckMouseHover(mouseP))
-                {
-                    if (prevHover != SelectedButton) return true;
-                    return false;
-                }
+                if (btn.CheckMouseHover(mouseP)) break;
             }
+            if (prevHover != SelectedButton) return true;
             return false;
         }
 
@@ -87,6 +88,12 @@ namespace drawedOut
         {
             foreach (GameButton b in BtnList) 
             { b.Draw(g); }
+        }
+
+        public static void ClickSelected()
+        {
+            if (SelectedButton is not null)
+            { SelectedButton.ClickEvent(); }
         }
     }
 }
