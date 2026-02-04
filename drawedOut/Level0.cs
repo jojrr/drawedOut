@@ -521,23 +521,24 @@ namespace drawedOut
 
         private void DrawPauseMenu(Graphics g)
         {
-            float recWidth = (float)Global.LevelSize.Width*0.15f;
-            float recHeight =(float)Global.LevelSize.Height*0.4f;
-            float startX = Width/2 - recWidth/2;
-            float startY = Height/2 - recHeight/2;
-            RectangleF baseRec = new RectangleF(startX, startY, recWidth, recHeight);
+            float recWidth = (float)ClientSize.Width*0.15f;
+            float recHeight =(float)ClientSize.Height*0.4f;
+            float recStartX = ClientSize.Width/2 - recWidth/2;
+            float recStartY = ClientSize.Height/2 - recHeight/2;
+            RectangleF baseRec = new RectangleF(recStartX, recStartY, recWidth, recHeight);
 
             using (Brush bgBrush = new SolidBrush(Color.FromArgb(150, 100, 100, 100)))
             { g.FillRectangle(bgBrush, ClientRectangle); }
-            using (Brush menuBgBrush = new SolidBrush(Color.FromArgb(150, 255, 255, 255)))
+            using (Brush menuBgBrush = new SolidBrush(Color.FromArgb(180, 255, 255, 255)))
             { g.FillRectangle(menuBgBrush, baseRec); }
-            using (Pen recPen = new Pen(Color.Black, 6))
+            using (Pen recPen = new Pen(Color.FromArgb(200, 50, 50, 50), 6))
             { g.DrawRectangle(recPen, baseRec); }
-            string pauseString = "PAUSED";
-            using (Font pauseFont = new Font("Sour Gummy", 40))
+
+            using (Font pauseFont = new Font("Sour Gummy", 30*Global.BaseScale))
             {
+                string pauseString = "PAUSED";
                 SizeF pauseSize = g.MeasureString(pauseString, pauseFont);
-                float pausePosX = ClientSize.Width/2 - (pauseSize.Width/2);
+                float pausePosX = ClientSize.Width/2 - (pauseSize.Width/2) + 5*Global.BaseScale;
                 g.DrawString(pauseString, pauseFont, Brushes.Black, pausePosX, baseRec.Y + 5); 
             }
         }

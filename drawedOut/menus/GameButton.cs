@@ -46,7 +46,7 @@ namespace drawedOut
             Color txtColor = Color.Black;
             if (SelectedButton==this)
             {
-                using (Brush bgBrush = Brushes.Black)
+                using (Brush bgBrush = new SolidBrush(Color.FromArgb(255, 20, 20, 20)))
                 { g.FillRectangle(bgBrush, _bounds); }
                 txtColor = Color.White;
             }
@@ -69,12 +69,19 @@ namespace drawedOut
             }
         }
 
-        public static void CheckAllMouseHover(Point mouseP)
+        public static bool CheckAllMouseHover(Point mouseP)
         {
+            GameButton? prevHover = SelectedButton;
             foreach (GameButton btn in BtnList)
-            { if (btn.CheckMouseHover(mouseP)) return; }
+            { 
+                if (btn.CheckMouseHover(mouseP))
+                {
+                    if (prevHover != SelectedButton) return true;
+                    return false;
+                }
+            }
+            return false;
         }
-
 
         public static void DrawAll(Graphics g)
         {
