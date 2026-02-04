@@ -1,3 +1,4 @@
+using System.Windows;
 namespace drawedOut
 {
     public abstract partial class Level0 : Form
@@ -463,6 +464,7 @@ namespace drawedOut
             if (_showHitbox) DrawHitboxes(g);
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
+            DrawPauseMenu(g);
         }
 
         private void DrawCharacters(Graphics g)
@@ -517,6 +519,28 @@ namespace drawedOut
             g.DrawRectangle(playerPen, playerCharacter.Hitbox);
         }
 
+        private void DrawPauseMenu(Graphics g)
+        {
+            float recWidth = (float)Global.LevelSize.Width*0.15f;
+            float recHeight =(float)Global.LevelSize.Height*0.4f;
+            float startX = Width/2 - recWidth/2;
+            float startY = Height/2 - recHeight/2;
+            RectangleF baseRec = new RectangleF(startX, startY, recWidth, recHeight);
+
+            using (Brush bgBrush = new SolidBrush(Color.FromArgb(150, 100, 100, 100)))
+            { g.FillRectangle(bgBrush, ClientRectangle); }
+            using (Brush menuBgBrush = new SolidBrush(Color.FromArgb(150, 255, 255, 255)))
+            { g.FillRectangle(menuBgBrush, baseRec); }
+            using (Pen recPen = new Pen(Color.Black, 6))
+            { g.DrawRectangle(recPen, baseRec); }
+            string pauseString = "PAUSED";
+            using (Font pauseFont = new Font("Sour Gummy", 40))
+            {
+                SizeF pauseSize = g.MeasureString(pauseString, pauseFont);
+                float pausePosX = ClientSize.Width/2 - (pauseSize.Width/2);
+                g.DrawString(pauseString, pauseFont, Brushes.Black, pausePosX, baseRec.Y + 5); 
+            }
+        }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
