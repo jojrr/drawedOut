@@ -205,6 +205,8 @@ namespace drawedOut
         {
             _isPaused = false;
             _deltaTimeSW.Start();
+            
+            levelTimerSW.Restart();
 
             if (_gameTickThread is null) throw new Exception("_gameTickThread not initialsed");
             _gameTickThread.Start();
@@ -677,8 +679,16 @@ namespace drawedOut
             }
         }
 
+        public void BossDeath()
+        { 
+            // save the time taken to complete this level
+            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
+            this.Close();
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // clear lists 
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
             Attacks.ClearAllLists();
@@ -687,20 +697,18 @@ namespace drawedOut
             Checkpoint.ClearAllLists();
             GameButton.ClearAll();
             _characterAnimations.Clear();
-            _deltaTimeSW.Reset();
 
+            // reset stopwatches
+            _deltaTimeSW.Reset();
+            levelTimerSW.Reset();
+
+            // stop threads
             _levelActive = false;
             _cancelTokenSrc.Cancel();
 
-            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
+            // shown menu
             MainMenu menu = new MainMenu();
             menu.Show();
-        }
-
-        public void BossDeath()
-        { 
-            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
-            this.Close();
         }
     }
 }
