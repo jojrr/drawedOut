@@ -30,6 +30,7 @@ namespace drawedOut
         private Thread _gameTickThread;
 
         private HpBarUI _hpBar;
+        private Point _mouseLoc;
         private BarUI _energyBar;
         private Platform _endWall, _roomWall;
         private bool
@@ -149,6 +150,15 @@ namespace drawedOut
                     if (threadCT.IsCancellationRequested) return;
                     if (threadDelaySW.Elapsed.TotalMilliseconds <= _gameTickInterval) continue;
 
+                    threadDelaySW.Restart();
+                    if (_isPaused) 
+                    {
+                        TryInvoke(FindMouse);
+                        bool needUpdate = GameButton.CheckAllMouseHover(_mouseLoc);
+                        if (needUpdate) TryInvoke(this.Refresh);
+                        continue; 
+                    }
+
                     double deltaTime = slowTime(getDeltaTime());
                     double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
 
@@ -159,14 +169,6 @@ namespace drawedOut
                         animTickSW.Restart();
                     }
 
-                    threadDelaySW.Restart();
-                    if (_isPaused) 
-                    {
-                        Point mouseLoc = PointToClient(Cursor.Position);
-                        bool needUpdate = GameButton.CheckAllMouseHover(mouseLoc);
-                        if (needUpdate) TryInvoke(this.Refresh);
-                        continue; 
-                    }
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
                     calcFrameInfo(deltaTime);
@@ -175,6 +177,8 @@ namespace drawedOut
                 this.TryInvoke(Close);
             });
         }
+
+        private void FindMouse() => _mouseLoc = PointToClient(Cursor.Position);
 
         // fixes InvalidAsynchronousStateException upon form close
         private void TryInvoke(Action action)
@@ -595,7 +599,7 @@ namespace drawedOut
                     break;
 
                 case Keys.Escape:
-                    _isPaused=!_isPaused;
+                    TogglePause();
                     break;
                 case Keys.F4:
                     this.Close();
@@ -605,12 +609,15 @@ namespace drawedOut
             if (!levelTimerSW.IsRunning && basePlate.LocationX > -1800) levelTimerSW.Start();
         }
 
+        private void TogglePause()
+        {
+            _isPaused = !_isPaused;
+            Invalidate();
+        }
+
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (_slowTimeS > 0)
-                return;
-
             switch (e.KeyCode)
             {
                 case Keys.W:
@@ -669,19 +676,24 @@ namespace drawedOut
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
             Attacks.ClearAllLists();
+            Platform.ClearAllLists();
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
+            GameButton.ClearAll();
             _characterAnimations.Clear();
             _deltaTimeSW.Reset();
 
-            if (roomDoor.IsActive) 
-            { SaveData.AddScore(_levelNo, (float)levelTimerSW.Elapsed.TotalSeconds); }
             _levelActive = false;
             _cancelTokenSrc.Cancel();
-            GameButton.ClearAll();
 
             MainMenu menu = new MainMenu();
             menu.Show();
+        }
+
+        public void BossDeath()
+        { 
+            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
+            this.Close();
         }
     }
 }

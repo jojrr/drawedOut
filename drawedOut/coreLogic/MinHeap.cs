@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Numerics;
 namespace drawedOut
 {
@@ -7,15 +8,21 @@ namespace drawedOut
         private T[] _sortedArray;
         private int _lastVal;
 
+        [JsonIgnore]
         public int Length => _lastVal;
+
+        [JsonIgnore]
         public T Root => _sortedArray[0];
+
+        [JsonIgnore]
         public T[] SortedTree => _sortedArray;
+
         public T[] FullArray 
         { 
             get => _array;
             set
             {
-                _array = (T[])(value.Clone());
+                _array = (T[])value.Clone();
                 _lastVal = _array.Length;
                 sort();
             }
@@ -27,11 +34,6 @@ namespace drawedOut
         public MinHeap()
         {
             _array = new T[0];
-            _lastVal = 0;
-        }
-        public MinHeap(int size)
-        { 
-            _array = new T[size];
             _lastVal = 0;
         }
         public MinHeap(T[] array)
@@ -68,8 +70,6 @@ namespace drawedOut
                 swap(min, index, ref _sortedArray);
                 upHeap(index, lastVal);
             }
-            if (_sortedArray[left] > _sortedArray[right]) 
-                swap(left, right, ref _sortedArray);
         }
 
 

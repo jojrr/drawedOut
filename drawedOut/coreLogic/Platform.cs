@@ -2,14 +2,17 @@
 {
     public class Platform : Entity
     {
-        public static HashSet<Platform> ActivePlatformList = new HashSet<Platform>();
-        public static HashSet<Platform> InactivePlatformList = new HashSet<Platform>();
+        public static IReadOnlyCollection<Platform> ActivePlatformList => _activePlatformList;
+        public static IReadOnlyCollection<Platform> InactivePlatformList => _inactivePlatformList;
+        public static Bitmap PlatformSprite { get; private set; }
+
+        private static HashSet<Platform> _activePlatformList = new HashSet<Platform>();
+        private static HashSet<Platform> _inactivePlatformList = new HashSet<Platform>();
+        private static string _spritePath = @"sprites/platforms/platformSprite/platformSprite.png";
 
         private PointF _originalLocation;
         private bool _toggleable;
 
-        public static Bitmap PlatformSprite { get; private set; }
-        private static string _spritePath = @"sprites/platforms/platformSprite/platformSprite.png";
         private static void _setPlatformSprite()
         {
             string directory = Path.Combine(Global.GetProjFolder(), _spritePath);
@@ -25,7 +28,7 @@
         public Platform(Point origin, int width, int height)
             : base(origin, width, height)
         {
-            InactivePlatformList.Add(this);
+            _inactivePlatformList.Add(this);
             _originalLocation = origin;
             _toggleable=false;
         } 
@@ -36,8 +39,8 @@
             _toggleable=toggleable;
             _originalLocation = origin;
             IsActive = defaultState;
-            if (defaultState) ActivePlatformList.Add(this);
-            else InactivePlatformList.Add(this);
+            if (defaultState) _activePlatformList.Add(this);
+            else _inactivePlatformList.Add(this);
         }
 
         public void Activate() 
@@ -45,8 +48,8 @@
             if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
             if (IsActive) return;
             IsActive = true;
-            InactivePlatformList.Remove(this);
-            ActivePlatformList.Add(this);
+            _inactivePlatformList.Remove(this);
+            _activePlatformList.Add(this);
         }
 
         public void Deactivate()
@@ -54,8 +57,8 @@
             if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
             if (!IsActive) return;
             IsActive = false;
-            ActivePlatformList.Remove(this);
-            InactivePlatformList.Add(this);
+            _activePlatformList.Remove(this);
+            _inactivePlatformList.Add(this);
         }
 
         public static void DrawAll(Graphics g)
@@ -68,6 +71,12 @@
             }
         }
 
+        public new static void ClearAllLists()
+        {
+            _activePlatformList.Clear();
+            _inactivePlatformList.Clear();
+        }
+
         public override void CheckActive()
         {
             if (_toggleable) return;
@@ -76,16 +85,16 @@
                 if (!IsActive) return;
 
                 IsActive = false;
-                InactivePlatformList.Add(this);
-                ActivePlatformList.Remove(this);
+                _inactivePlatformList.Add(this);
+                _activePlatformList.Remove(this);
                 return;
             }
 
             if (IsActive) return;
                 
             IsActive = true;
-            ActivePlatformList.Add(this);
-            InactivePlatformList.Remove(this);
+            _activePlatformList.Add(this);
+            _inactivePlatformList.Remove(this);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace drawedOut
                     origin: new Point(8200, 100),
                     height: 250,
                     width: 250,
-                    itemDrop: LevelEnd,
+                    itemDrop: BossDeath,
                     levelTimerSW: ref levelTimerSW,
                     hp: 6);
         }

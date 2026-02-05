@@ -258,8 +258,8 @@ namespace drawedOut
             if (!ShouldDoMove())  return false;
             if (Global.LeftScrollBound<=Center.X && Center.X<=Global.RightScrollBound) return false;
 
-            if (0 < baseBox.Hitbox.Left) onWorldBoundary = Global.XDirections.left; 
-            else if (Global.LevelSize.Width > baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
+            if (0 <= baseBox.Hitbox.X) onWorldBoundary = Global.XDirections.left; 
+            else if (Global.LevelSize.Width >= baseBox.Hitbox.Right) onWorldBoundary = Global.XDirections.right;
 
             if (Center.X < Global.LeftScrollBound && xVelocity < 0)
                 scrollDirection = Global.XDirections.left; 
@@ -272,7 +272,8 @@ namespace drawedOut
             return true;
         }
 
-        public override void CheckActive() { }
+        public override void CheckActive() 
+        { if (!checkInBoundary()) Hp = 0; }
     }
 }
 

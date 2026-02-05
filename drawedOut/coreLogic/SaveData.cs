@@ -7,7 +7,7 @@ namespace drawedOut
         private static readonly string _timeFile = _saveFolder + "times.json";
         private static Dictionary<string, MinHeap<float>> _levelTimes = new Dictionary<string, MinHeap<float>>
         {
-            ["level0"] = new MinHeap<float>(0),
+            ["level0"] = new MinHeap<float>(),
         };
         private static JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
