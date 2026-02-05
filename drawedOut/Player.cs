@@ -24,7 +24,7 @@ namespace drawedOut
         private bool _isParrying = false;
         private double _energy, _maxEnergy;
 
-        private static readonly Attacks 
+        private readonly Attacks 
             _basic1 = new Attacks(
                     parent: null,
                     width: 180,
@@ -72,11 +72,12 @@ namespace drawedOut
             _energy = 0;
             _maxEnergy = 100;
             IsActive = true;
+            setIdleAnim(@"playerChar\idle\");
+            setRunAnim(@"playerChar\run\");
+
             _basic1.Parent = this;
             _basic2.Parent = this;
             _special1.Parent = this;
-            setIdleAnim(@"playerChar\idle\");
-            setRunAnim(@"playerChar\run\");
         }
 
         public static void LinkHpBar(ref HpBarUI hpBar) => _hpBar = hpBar;

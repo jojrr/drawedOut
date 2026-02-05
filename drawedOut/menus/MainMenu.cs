@@ -5,6 +5,7 @@ namespace drawedOut
         private const int _TICK_MS = 30;
         private static Thread _menuTimer;
         private static bool _active;
+        private static Point _mouseLoc;
 
         private static GameButton _quitBtn;
         private static GameButton _settingsBtn;
@@ -27,14 +28,15 @@ namespace drawedOut
                 {
                     if (timerSW.Elapsed.TotalMilliseconds < _TICK_MS) continue;
 
-                    // Point mouseLoc = this.Invoke(new Func<Point>(() => PointToClient(Cursor.Position)));
-                    Point mouseLoc = PointToClient(Cursor.Position);
-                    bool needUpdate = GameButton.CheckAllMouseHover(mouseLoc);
+                    TryInvoke(FindCursor);
+                    bool needUpdate = GameButton.CheckAllMouseHover(_mouseLoc);
                     if (needUpdate) TryInvoke(this.Refresh);
                     timerSW.Restart();
                 }
             });
         }
+
+        private void FindCursor() => _mouseLoc = PointToClient(Cursor.Position);
 
         private void CreateButtons()
         {
@@ -76,6 +78,7 @@ namespace drawedOut
         private void OpenLevelMenu()
         {
             TutorialLevel level = new TutorialLevel();
+            GameButton.ClearAll();
             _active=false;
             this.Hide();
             level.Show();

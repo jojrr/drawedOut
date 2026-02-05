@@ -154,5 +154,7 @@ namespace drawedOut
             if (SelectedButton is not null)
             { SelectedButton.ClickEvent(); }
         }
+
+        public static void ClearAll() => _btnList.Clear();
     }
 }

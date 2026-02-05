@@ -17,16 +17,17 @@ namespace drawedOut
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
 
         // threading 
-        private static CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
-        private static ParallelOptions _threadSettings = new ParallelOptions();
         private static Stopwatch _deltaTimeSW = new Stopwatch();
-        private static Thread _gameTickThread;
         private static Keys? _prevLeftRight;
         private static float 
             _gameTickInterval, 
             _baseScale,
             _curZoom = 1, 
             _slowTimeS = 0;
+
+        private CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
+        private ParallelOptions _threadSettings = new ParallelOptions();
+        private Thread _gameTickThread;
 
         private HpBarUI _hpBar;
         private BarUI _energyBar;
@@ -40,9 +41,9 @@ namespace drawedOut
             _movingRight = false,
             _jumping = false,
 
-            _isPaused = false,
             _slowedMov = false,
-            _levelLoaded = false;
+            _levelLoaded = false,
+            _isPaused = false;
 
         private void InitUI()
         {
@@ -159,7 +160,13 @@ namespace drawedOut
                     }
 
                     threadDelaySW.Restart();
-                    if (_isPaused) continue; 
+                    if (_isPaused) 
+                    {
+                        Point mouseLoc = PointToClient(Cursor.Position);
+                        bool needUpdate = GameButton.CheckAllMouseHover(mouseLoc);
+                        if (needUpdate) TryInvoke(this.Refresh);
+                        continue; 
+                    }
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
                     calcFrameInfo(deltaTime);
@@ -191,12 +198,12 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            _isPaused = false;
             _deltaTimeSW.Start();
 
             if (_gameTickThread is null) throw new Exception("_gameTickThread not initialsed");
             _gameTickThread.Start();
 
-            togglePause(false);
             _levelLoaded = true;
             GC.Collect();
         }
@@ -229,8 +236,6 @@ namespace drawedOut
         {
             double deltaTime = _deltaTimeSW.Elapsed.TotalSeconds;
             _deltaTimeSW.Restart();
-
-            _isPaused = false;
             return double.Clamp(deltaTime, 0, 0.1);
         }
 
@@ -299,11 +304,9 @@ namespace drawedOut
 
         private void PlayerDeath()
         {
-            togglePause(true);
             // TryInvoke(new Action( ()=> MessageBox.Show(this, "you are dead", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information)));
             ResetLevel();
             Checkpoint.LoadState();
-            togglePause(false);
         }
 
 
@@ -388,12 +391,6 @@ namespace drawedOut
             else playerPen = Pens.Blue;
         }
 
-        // pause game
-        private void togglePause() => _isPaused = !_isPaused; 
-
-        // pause game
-        private void togglePause(bool pause) => _isPaused = pause; 
-
 
         public static void ZoomScreen() 
         {
@@ -464,7 +461,7 @@ namespace drawedOut
             if (_showHitbox) DrawHitboxes(g);
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             ShowFPSInfo(g);
-            DrawPauseMenu(g);
+            if (_isPaused) DrawPauseMenu(g);
         }
 
         private void DrawCharacters(Graphics g)
@@ -525,6 +522,26 @@ namespace drawedOut
             float recHeight =(float)ClientSize.Height*0.4f;
             float recStartX = ClientSize.Width/2 - recWidth/2;
             float recStartY = ClientSize.Height/2 - recHeight/2;
+
+            GameButton resumeBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.45f,
+                    relWidth:0.1f,
+                    relHeight: 0.06f,
+                    clickEvent: (()=>{_isPaused=false;}),
+                    fontScale: 1f,
+                    txt: "Resume");
+
+
+            GameButton quitBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.55f,
+                    relWidth:0.1f,
+                    relHeight: 0.06f,
+                    clickEvent: this.Close,
+                    fontScale: 1f,
+                    txt: "Quit");
+
             RectangleF baseRec = new RectangleF(recStartX, recStartY, recWidth, recHeight);
 
             using (Brush bgBrush = new SolidBrush(Color.FromArgb(150, 100, 100, 100)))
@@ -541,6 +558,8 @@ namespace drawedOut
                 float pausePosX = ClientSize.Width/2 - (pauseSize.Width/2) + 5*Global.BaseScale;
                 g.DrawString(pauseString, pauseFont, Brushes.Black, pausePosX, baseRec.Y + 5); 
             }
+
+            GameButton.DrawAll(g);
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -576,6 +595,9 @@ namespace drawedOut
                     break;
 
                 case Keys.Escape:
+                    _isPaused=!_isPaused;
+                    break;
+                case Keys.F4:
                     this.Close();
                     break;
             }
@@ -613,6 +635,11 @@ namespace drawedOut
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
+            if (_isPaused) 
+            {
+                GameButton.ClickSelected();
+                return;
+            }
             switch (e.Button)
             {
                 // if Not parrying then resets parrywindow and sets to parrying
@@ -639,19 +666,22 @@ namespace drawedOut
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _cancelTokenSrc.Cancel();
-        }
-
-        protected void LevelEnd()
-        {
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
             Attacks.ClearAllLists();
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
             _characterAnimations.Clear();
-            SaveData.AddScore(_levelNo, (float)levelTimerSW.Elapsed.TotalSeconds);
+            _deltaTimeSW.Reset();
+
+            if (roomDoor.IsActive) 
+            { SaveData.AddScore(_levelNo, (float)levelTimerSW.Elapsed.TotalSeconds); }
             _levelActive = false;
+            _cancelTokenSrc.Cancel();
+            GameButton.ClearAll();
+
+            MainMenu menu = new MainMenu();
+            menu.Show();
         }
     }
 }
