@@ -7,13 +7,16 @@ namespace drawedOut
         private static bool _active;
 
         private static GameButton _quitBtn;
+        private static GameButton _settingsBtn;
+        private static GameButton _playBtn;
 
         public MainMenu()
         {
             InitializeComponent();
             this.Size = Global.LevelSize;
-            // this.FormBorderStyle = FormBorderStyle.None;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.DoubleBuffered = true;
 
             CreateButtons();
 
@@ -35,15 +38,30 @@ namespace drawedOut
 
         private void CreateButtons()
         {
-            Size quitSize = new Size(
-                    (int)(0.1*ClientSize.Width*Global.BaseScale), 
-                    (int)(0.05*ClientSize.Width*Global.BaseScale));
             _quitBtn = new GameButton(
-                    origin: new Point((ClientSize.Width-quitSize.Width)/2, (int)(ClientSize.Height*0.9-quitSize.Height)),
-                    width: quitSize.Width,
-                    height: quitSize.Height,
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.75f,
+                    relWidth:0.1f,
+                    relHeight: 0.06f,
                     clickEvent: this.Close,
+                    fontScale: 1.2f,
                     txt: "Quit");
+            _settingsBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.55f,
+                    relWidth: 0.2f,
+                    relHeight: 0.1f,
+                    clickEvent: (()=>{}),
+                    fontScale: 2f, 
+                    txt: "Settings");
+            _playBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.4f,
+                    relWidth: 0.2f,
+                    relHeight: 0.1f,
+                    clickEvent: PlayBtnClickEvent,
+                    fontScale: 2f,
+                    txt: "Play");
         }
 
         private void MainMenu_Load(object sender, EventArgs e)
@@ -51,6 +69,16 @@ namespace drawedOut
             _active = true;
             _menuTimer.Start();
             Invalidate();
+        }
+
+        private void PlayBtnClickEvent() => TryInvoke(OpenLevelMenu); 
+
+        private void OpenLevelMenu()
+        {
+            TutorialLevel level = new TutorialLevel();
+            _active=false;
+            this.Hide();
+            level.Show();
         }
 
         private void TryInvoke(Action action)
@@ -64,19 +92,17 @@ namespace drawedOut
 
         private void MainMenu_Paint(object sender, PaintEventArgs e)
         {
-            using (Graphics g = e.Graphics)
+            Graphics g = e.Graphics;
+
+            string titleString = "DRAWED OUT";
+            using (Font titleFont = new Font("Sour Gummy", 100*Global.BaseScale))
             {
-                string titleString = "DRAWED OUT";
-                using (Font titleFont = new Font("Sour Gummy", 100*Global.BaseScale))
-                {
-                    SizeF titleSize = g.MeasureString(titleString, titleFont);
-                    float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
-                    g.DrawString(titleString, titleFont, Brushes.Black, titlePosX, 20); 
-                }
-
-                GameButton.DrawAll(g);
-
+                SizeF titleSize = g.MeasureString(titleString, titleFont);
+                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
+                g.DrawString(titleString, titleFont, Brushes.Black, titlePosX, 20); 
             }
+
+            GameButton.DrawAll(g);
         }
 
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)
@@ -87,6 +113,7 @@ namespace drawedOut
         private void MainMenu_Quit(object sender, FormClosingEventArgs e)
         {
             _active = false;
+            FormHandler.CloseHandler();
         }
     }
 }

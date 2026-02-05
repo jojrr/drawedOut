@@ -9,6 +9,7 @@ namespace drawedOut
     {
         public const int 
             _GRAVITY = 4000,
+            _DEFAULT_FONT_SIZE = 20,
             MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
@@ -108,7 +109,7 @@ namespace drawedOut
         public static Point CenterOfScreen { get => _centerOfScreen; }
 
         /// <summary> The default main font used in the game </summary>
-        public static Font DefaultFont = new Font("Sour Gummy Black", 20*BaseScale);
+        public static Font DefaultFont = new Font("Sour Gummy Black", _DEFAULT_FONT_SIZE*BaseScale);
 
         /// <summary> Calculates the new Center of the screen </summary>
         public static void CalcNewCenter()
