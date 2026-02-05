@@ -336,7 +336,7 @@ __pycache__/
 OpenCover/
 
 # Azure Stream Analytics local run output
-ASALocalRun/
+ASALocalRun/<F2>
 
 # MSBuild Binary and Structured Log
 *.binlog
@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+# ignore saved player data
+drawedout/playerdata/

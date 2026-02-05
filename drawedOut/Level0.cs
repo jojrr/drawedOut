@@ -17,6 +17,7 @@ namespace drawedOut
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
 
         // threading 
+        private static Global.XDirections? _prevPlayerMovement = null;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
         private static Keys? _prevLeftRight;
         private static float 
@@ -319,14 +320,22 @@ namespace drawedOut
 
         private void movementTick(double deltaTime)
         {
-            if (_slowTimeS <= 0 && _curZoom != 1)
+            Global.XDirections? playerMovDir = null;
+
+            if (_slowTimeS <= 0)
             {
-                unZoomScreen();
-                _curZoom = 1;
+                if (_curZoom != 1)
+                {
+                    unZoomScreen();
+                    _curZoom = 1;
+                }
+                if (_movingLeft) playerMovDir = Global.XDirections.left;
+                else if (_movingRight) playerMovDir = Global.XDirections.right;
+                _prevPlayerMovement = playerMovDir;
             }
+            else { playerMovDir = _prevPlayerMovement; }
 
             double scrollVelocity = 0;
-            Global.XDirections? playerMovDir = null;
             bool isScrolling = playerCharacter.CheckScrolling(basePlate);
 
             foreach (Entity e in Entity.EntityList)
@@ -334,9 +343,6 @@ namespace drawedOut
 
             if (playerCharacter.IsOnFloor && _jumping) { playerCharacter.DoJump(); }
             if (isScrolling) scrollVelocity -= playerCharacter.XVelocity;
-
-            if (_movingLeft) playerMovDir = Global.XDirections.left;
-            else if (_movingRight) playerMovDir = Global.XDirections.right;
 
             playerCharacter.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);
 
@@ -686,6 +692,7 @@ namespace drawedOut
             _levelActive = false;
             _cancelTokenSrc.Cancel();
 
+            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
             MainMenu menu = new MainMenu();
             menu.Show();
         }

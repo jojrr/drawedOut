@@ -5,9 +5,9 @@ namespace drawedOut
     {
         private static readonly string _saveFolder = Path.Combine(Global.GetProjFolder(), @"playerData\");
         private static readonly string _timeFile = _saveFolder + "times.json";
-        private static Dictionary<string, MinHeap<float>> _levelTimes = new Dictionary<string, MinHeap<float>>
+        private static Dictionary<string, MaxHeap<float>> _levelTimes = new Dictionary<string, MaxHeap<float>>
         {
-            ["level0"] = new MinHeap<float>(),
+            ["level0"] = new MaxHeap<float>(),
         };
         private static JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -30,12 +30,12 @@ namespace drawedOut
             using ( StreamReader sr = new StreamReader(_timeFile) )
             { jsonTxt= sr.ReadToEnd(); }
             var tempLevelTimes = 
-                JsonSerializer.Deserialize<Dictionary<string, MinHeap<float>>>
+                JsonSerializer.Deserialize<Dictionary<string, MaxHeap<float>>>
                 (jsonTxt,_jsonOptions);
             if (tempLevelTimes is not null) _levelTimes = tempLevelTimes;
         }
 
-        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].Root;
+        public static float GetFastestScore(UInt16 levelNo) => _levelTimes[$"level{levelNo}"].FullArray[0];
         public static void AddScore(UInt16 levelNo, float timeS) 
         {
             _levelTimes[$"level{levelNo}"].Add(timeS);
