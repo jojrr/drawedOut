@@ -4,10 +4,11 @@ namespace drawedOut
     {
         public static IReadOnlyCollection<GameButton> BtnList => _btnList;
         public static GameButton? SelectedButton { get; private set; }
-        public Action ClickEvent { get; private init; }
-        public string? BtnTxt { get; set; }
         public int X { get => _bounds.X; set => _bounds.X = value; }
         public int Y { get => _bounds.Y; set => _bounds.Y = value; }
+        public Action ClickEvent { get; private init; }
+        public string? BtnTxt { get; set; }
+        public Size BoundSize => _bounds.Size;
 
         private static List<GameButton> _btnList = new();
         private Rectangle _bounds;

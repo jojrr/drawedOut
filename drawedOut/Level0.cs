@@ -19,6 +19,8 @@ namespace drawedOut
         private static Global.XDirections? _prevPlayerMovement = null;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
         private static Keys? _prevLeftRight;
+        private static GameButton _resumeBtn;
+        private static GameButton _quitBtn;
         private static float 
             _gameTickInterval, 
             _baseScale,
@@ -28,9 +30,6 @@ namespace drawedOut
         private CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
         private ParallelOptions _threadSettings = new ParallelOptions();
         private Thread _gameTickThread;
-
-        private GameButton _resumeBtn;
-        private GameButton _quitBtn;
 
         private HpBarUI _hpBar;
         private Point _mouseLoc;
