@@ -16,7 +16,6 @@ namespace drawedOut
         private static Dictionary<Entity, PointF> _zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
 
-        // threading 
         private static Global.XDirections? _prevPlayerMovement = null;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
         private static Keys? _prevLeftRight;
@@ -29,6 +28,9 @@ namespace drawedOut
         private CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
         private ParallelOptions _threadSettings = new ParallelOptions();
         private Thread _gameTickThread;
+
+        private GameButton _resumeBtn;
+        private GameButton _quitBtn;
 
         private HpBarUI _hpBar;
         private Point _mouseLoc;
@@ -80,6 +82,27 @@ namespace drawedOut
             InitCheckpoints();
             InitEnemies();
         }
+
+        private void InitPauseMenu()
+        { 
+            _resumeBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.45f,
+                    relWidth:0.1f,
+                    relHeight: 0.06f,
+                    clickEvent: (()=>{_isPaused=false;}),
+                    fontScale: 1f,
+                    txt: "Resume");
+            _quitBtn = new GameButton(
+                    xCenterPos: 0.5f,
+                    yCenterPos: 0.55f,
+                    relWidth:0.1f,
+                    relHeight: 0.06f,
+                    clickEvent: this.Close,
+                    fontScale: 1f,
+                    txt: "Quit");
+        }
+
         protected virtual void InitEnemies() => throw new Exception("InitEnemies not defined");
         protected virtual void InitCheckpoints() => throw new Exception("InitCheckpoints not defined");
         protected virtual void InitPlatforms() 
@@ -219,6 +242,7 @@ namespace drawedOut
         {
             foreach (Attacks a in Attacks.AttacksList) a.Dispose();
             InitEntities();
+            InitPauseMenu();
             playerCharacter.Reset();
             InitUI();
             _hpBar.UpdateMaxHp(playerCharacter.MaxHp);
@@ -535,25 +559,6 @@ namespace drawedOut
             float recStartX = ClientSize.Width/2 - recWidth/2;
             float recStartY = ClientSize.Height/2 - recHeight/2;
 
-            GameButton resumeBtn = new GameButton(
-                    xCenterPos: 0.5f,
-                    yCenterPos: 0.45f,
-                    relWidth:0.1f,
-                    relHeight: 0.06f,
-                    clickEvent: (()=>{_isPaused=false;}),
-                    fontScale: 1f,
-                    txt: "Resume");
-
-
-            GameButton quitBtn = new GameButton(
-                    xCenterPos: 0.5f,
-                    yCenterPos: 0.55f,
-                    relWidth:0.1f,
-                    relHeight: 0.06f,
-                    clickEvent: this.Close,
-                    fontScale: 1f,
-                    txt: "Quit");
-
             RectangleF baseRec = new RectangleF(recStartX, recStartY, recWidth, recHeight);
 
             using (Brush bgBrush = new SolidBrush(Color.FromArgb(150, 100, 100, 100)))
@@ -610,6 +615,7 @@ namespace drawedOut
                     TogglePause();
                     break;
                 case Keys.F4:
+                    FormHandler.CloseHandler();
                     this.Close();
                     break;
             }

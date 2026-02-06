@@ -45,7 +45,7 @@ namespace drawedOut
                     yCenterPos: 0.75f,
                     relWidth:0.1f,
                     relHeight: 0.06f,
-                    clickEvent: this.Close,
+                    clickEvent: QuitButtonClickEvent,
                     fontScale: 1.2f,
                     txt: "Quit");
             _settingsBtn = new GameButton(
@@ -74,14 +74,21 @@ namespace drawedOut
         }
 
         private void PlayBtnClickEvent() => TryInvoke(OpenLevelMenu); 
+        private void QuitButtonClickEvent() => TryInvoke(QuitGame);
 
         private void OpenLevelMenu()
         {
             TutorialLevel level = new TutorialLevel();
             GameButton.ClearAll();
             _active=false;
-            this.Hide();
             level.Show();
+            this.Close();
+        }
+
+        private void QuitGame()
+        {
+            FormHandler.CloseHandler();
+            this.Close();
         }
 
         private void TryInvoke(Action action)
@@ -116,7 +123,6 @@ namespace drawedOut
         private void MainMenu_Quit(object sender, FormClosingEventArgs e)
         {
             _active = false;
-            FormHandler.CloseHandler();
         }
     }
 }
