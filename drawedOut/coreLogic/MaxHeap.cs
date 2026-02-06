@@ -65,7 +65,7 @@ namespace drawedOut
             if (max != index) 
             {
                 swap(max, index, ref _array);
-                upHeap(index, lastVal);
+                upHeap(max, lastVal);
             }
         }
 

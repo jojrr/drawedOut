@@ -682,7 +682,7 @@ namespace drawedOut
         public void BossDeath()
         { 
             // save the time taken to complete this level
-            SaveData.AddScore(0, (float)levelTimerSW.Elapsed.TotalSeconds); 
+            SaveData.AddScore(0, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
             this.Close();
         }
 
