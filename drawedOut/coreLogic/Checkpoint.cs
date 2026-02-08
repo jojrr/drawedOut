@@ -15,8 +15,9 @@ namespace drawedOut
 
         static Checkpoint()
         {
-            _defaultSprite = Global.GetSingleImage(@"fillerAnim\", "placeHolder002.JPEG");
-            _usedSprite = Global.GetSingleImage(@"fillerAnim\", "placeHolder006.JPEG");
+            string spriteFolder = @"checkpointSprites\";
+            _defaultSprite = Global.GetSingleImage(spriteFolder, "checkpointIdle.png");
+            _usedSprite = Global.GetSingleImage(spriteFolder, "checkpointActive.png");
         }
         public Checkpoint(Point origin, int width=_BASE_WIDTH, int height=_BASE_HEIGHT)
             : base(origin: origin, width: width, height: height)
@@ -55,12 +56,14 @@ namespace drawedOut
                 { 
                     if (!p.Hitbox.Contains(new Point(x,y1))) continue;
                     LocationY = y1-Height;
+                    OriginLocation = new PointF(x,LocationY);
                     return;
                 }
                 foreach (Platform p in Platform.InactivePlatformList)
                 { 
                     if (!p.Hitbox.Contains(new Point(x,y1))) continue;
                     LocationY = y1-Height;
+                    OriginLocation = new PointF(x,LocationY);
                     return;
                 }
             }

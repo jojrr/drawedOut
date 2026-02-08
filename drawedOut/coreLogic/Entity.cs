@@ -10,7 +10,7 @@
         public float Width { get => _scaledSize.Width; }
         public float Height { get => _scaledSize.Height; }
         public RectangleF Hitbox { get => _calcHitbox(); }
-        public PointF OriginLocation { get => _originalLocation; } 
+        public PointF OriginLocation { get => _originalLocation; protected set => _originalLocation = value; } 
         public bool IsActive { get => _isActive; protected set => _isActive = value; }
 
         ///<summary>

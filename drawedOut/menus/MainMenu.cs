@@ -101,71 +101,71 @@ namespace drawedOut
                     txt: "Play");
             
             // settings menu
-            _backgroundBtn = new GameButton(
-                    xCenterPos: 0.6f,
-                    yCenterPos: 0.08f,
-                    relWidth: 0.06f,
-                    relHeight: 0.05f,
-                    clickEvent: BackBtnClickEvent,
-                    txt: "On");
-            _fpsBtn = new GameButton(
-                    xCenterPos: 0.6f,
-                    yCenterPos: 0.1f,
-                    relWidth: 0.06f,
-                    relHeight: 0.05f,
-                    clickEvent: FpsBtnClickEvent,
-                    txt: "On");
-            _timeBtn = new GameButton(
-                    xCenterPos: 0.6f,
-                    yCenterPos: 0.12f,
-                    relWidth: 0.06f,
-                    relHeight: 0.05f,
-                    clickEvent: TimeBtnClickEvent,
-                    txt: "On");
-
-            _leftRebindBtn = new GameButton(
-                    xCenterPos: 0.4f,
-                    yCenterPos: 0.54f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: LeftRebindClick,
-                    txt: "Click to rebind");
-            _rightRebindBtn = new GameButton(
-                    xCenterPos: 0.4f,
-                    yCenterPos: 0.56f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: RightRebindClick,
-                    txt: "Click to rebind");
-            _jumpRebindBtn = new GameButton(
-                    xCenterPos: 0.4f,
-                    yCenterPos: 0.58f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: JumpRebindClick,
-                    txt: "Click to rebind");
-            _abilityOneRebindBtn = new GameButton(
-                    xCenterPos: 0.8f,
-                    yCenterPos: 0.54f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: AbilityOneRebindClick,
-                    txt: "Click to rebind");
-            _jumpRebindBtn = new GameButton(
-                    xCenterPos: 0.8f,
-                    yCenterPos: 0.56f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: AbilityTwoRebindClick,
-                    txt: "Click to rebind");
-            _jumpRebindBtn = new GameButton(
-                    xCenterPos: 0.8f,
-                    yCenterPos: 0.58f,
-                    relWidth: 0.15f,
-                    relHeight: 0.05f,
-                    clickEvent: AbilityThreeRebindClick,
-                    txt: "Click to rebind");
-
+            // _backgroundBtn = new GameButton(
+            //         xCenterPos: 0.6f,
+            //         yCenterPos: 0.08f,
+            //         relWidth: 0.06f,
+            //         relHeight: 0.05f,
+            //         clickEvent: BackBtnClickEvent,
+            //         txt: "On");
+            // _fpsBtn = new GameButton(
+            //         xCenterPos: 0.6f,
+            //         yCenterPos: 0.1f,
+            //         relWidth: 0.06f,
+            //         relHeight: 0.05f,
+            //         clickEvent: FpsBtnClickEvent,
+            //         txt: "On");
+            // _timeBtn = new GameButton(
+            //         xCenterPos: 0.6f,
+            //         yCenterPos: 0.12f,
+            //         relWidth: 0.06f,
+            //         relHeight: 0.05f,
+            //         clickEvent: TimeBtnClickEvent,
+            //         txt: "On");
+            //
+            // _leftRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.54f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: LeftRebindClick,
+            //         txt: "Click to rebind");
+            // _rightRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.56f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: RightRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.58f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: JumpRebindClick,
+            //         txt: "Click to rebind");
+            // _abilityOneRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.54f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityOneRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.56f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityTwoRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.58f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityThreeRebindClick,
+            //         txt: "Click to rebind");
+            //
             _settingsBackBtn = new GameButton(
                     xCenterPos: 0.5f,
                     yCenterPos: 0.9f,
@@ -188,11 +188,11 @@ namespace drawedOut
 
         private void OpenLevelMenu()
         {
-            TutorialLevel level = new TutorialLevel();
             GameButton.ClearAll();
             _active=false;
-            level.Show();
             this.Close();
+            TutorialLevel level = new TutorialLevel();
+            level.Show();
         }
 
         private void QuitGame()

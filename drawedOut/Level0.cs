@@ -19,8 +19,6 @@ namespace drawedOut
         private static Global.XDirections? _prevPlayerMovement = null;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
         private static Keys? _prevLeftRight;
-        private static GameButton _resumeBtn;
-        private static GameButton _quitBtn;
         private static float 
             _gameTickInterval, 
             _baseScale,
@@ -31,10 +29,18 @@ namespace drawedOut
         private ParallelOptions _threadSettings = new ParallelOptions();
         private Thread _gameTickThread;
 
-        private HpBarUI _hpBar;
+        // pause menu components
+        private GameButton _resumeBtn;
+        private GameButton _quitBtn;
         private Point _mouseLoc;
+
+        // UI elements
+        private HpBarUI _hpBar;
         private BarUI _energyBar;
+
+        // boss room platforms
         private Platform _endWall, _roomWall;
+
         private bool
             _levelActive = true,
             _showLevelTime = true,
@@ -97,7 +103,7 @@ namespace drawedOut
                     yCenterPos: 0.55f,
                     relWidth:0.1f,
                     relHeight: 0.06f,
-                    clickEvent: this.Close,
+                    clickEvent: QuitToMenu,
                     fontScale: 1f,
                     txt: "Quit");
         }
@@ -578,6 +584,12 @@ namespace drawedOut
             GameButton.DrawAll(g);
         }
 
+        private void TogglePause()
+        {
+            _isPaused = !_isPaused;
+            Invalidate();
+        }
+
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Modifiers  == Keys.Alt && e.KeyCode == Keys.F5) Application.Exit();
@@ -613,6 +625,8 @@ namespace drawedOut
                 case Keys.Escape:
                     TogglePause();
                     break;
+
+                // emergency shutdown
                 case Keys.F4:
                     FormHandler.CloseHandler();
                     this.Close();
@@ -621,13 +635,6 @@ namespace drawedOut
 
             if (!levelTimerSW.IsRunning && basePlate.LocationX > -1800) levelTimerSW.Start();
         }
-
-        private void TogglePause()
-        {
-            _isPaused = !_isPaused;
-            Invalidate();
-        }
-
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
@@ -688,7 +695,15 @@ namespace drawedOut
         { 
             // save the time taken to complete this level
             SaveData.AddScore(0, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
+            QuitToMenu();
+        }
+
+        private void QuitToMenu()
+        {
+            // shown menu
             this.Close();
+            MainMenu menu = new MainMenu();
+            menu.Show();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -710,10 +725,6 @@ namespace drawedOut
             // stop threads
             _levelActive = false;
             _cancelTokenSrc.Cancel();
-
-            // shown menu
-            MainMenu menu = new MainMenu();
-            menu.Show();
         }
     }
 }
