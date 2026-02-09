@@ -6,16 +6,26 @@ namespace drawedOut
         public Brush[] HpRecColours;
         public int IconCount { get; private set; }
 
-        private const int BASE_ICON_OFFSET = 50;
+        private const int DEFAULT_ICON_OFFSET = 50;
+        private const int 
+            DEFAULT_WIDTH = 30,
+            DEFAULT_HEIGHT = 60;
+        private static readonly Point DEFAULT_ORIGIN = new Point(90, 50);
         private float _hpIconOffset;
 
         private int _maxHp;
 
-        public HpBarUI (PointF origin, float barWidth, float barHeight, int maxHp, float scaleF = 1, bool isVisible = true)
+        public HpBarUI ( int maxHp, PointF origin, float barWidth=DEFAULT_WIDTH, float barHeight=DEFAULT_HEIGHT, float scaleF = 1, bool isVisible = true)
             :base( origin: origin, elementWidth: barWidth, elementHeight: barHeight)
         {
-            _hpIconOffset = BASE_ICON_OFFSET*Global.BaseScale;
+            _hpIconOffset = DEFAULT_ICON_OFFSET*Global.BaseScale;
+            UpdateMaxHp(maxHp);
+        }
 
+        public HpBarUI ( int maxHp, float barWidth=DEFAULT_WIDTH, float barHeight=DEFAULT_HEIGHT, float scaleF = 1, bool isVisible = true)
+            :base( origin: DEFAULT_ORIGIN, elementWidth: barWidth, elementHeight: barHeight)
+        {
+            _hpIconOffset = DEFAULT_ICON_OFFSET*Global.BaseScale;
             UpdateMaxHp(maxHp);
         }
 

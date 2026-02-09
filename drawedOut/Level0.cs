@@ -57,11 +57,7 @@ namespace drawedOut
 
         private void InitUI()
         {
-            _hpBar = new HpBarUI(
-                    origin: new PointF(90, 50),
-                    barWidth: 30,
-                    barHeight: 60,
-                    maxHp: 6);
+            _hpBar = new HpBarUI(maxHp: 6);
 
             _energyBar = new BarUI(
                     origin: new PointF(90, 140),
