@@ -42,6 +42,7 @@ namespace drawedOut
         private Platform _endWall, _roomWall;
 
         private bool
+            _timerStarted = false,
             _levelActive = true,
             _showLevelTime = true,
             _showHitbox = false,
@@ -95,7 +96,7 @@ namespace drawedOut
                     yCenterPos: 0.45f,
                     relWidth:0.1f,
                     relHeight: 0.06f,
-                    clickEvent: (()=>{_isPaused=false;}),
+                    clickEvent: TogglePause,
                     fontScale: 1f,
                     txt: "Resume");
             _quitBtn = new GameButton(
@@ -233,8 +234,6 @@ namespace drawedOut
         {
             _isPaused = false;
             _deltaTimeSW.Start();
-            
-            levelTimerSW.Restart();
 
             if (_gameTickThread is null) throw new Exception("_gameTickThread not initialsed");
             _gameTickThread.Start();
@@ -587,6 +586,8 @@ namespace drawedOut
         private void TogglePause()
         {
             _isPaused = !_isPaused;
+            if (_isPaused) levelTimerSW.Stop();
+            else levelTimerSW.Start();
             Invalidate();
         }
 
@@ -633,7 +634,15 @@ namespace drawedOut
                     break;
             }
 
-            if (!levelTimerSW.IsRunning && basePlate.LocationX > -1800) levelTimerSW.Start();
+            tryStartTimer();
+
+        }
+
+        private void tryStartTimer()
+        {
+            if (_timerStarted) return;
+            levelTimerSW.Start();
+            _timerStarted=true;
         }
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
