@@ -16,7 +16,7 @@ namespace drawedOut
         static Checkpoint()
         {
             string spriteFolder = @"checkpointSprites\";
-            _defaultSprite = Global.GetSingleImage(spriteFolder, "checkpointIdle.png");
+            _defaultSprite = Global.GetSingleImage(spriteFolder, "checkpointInactive.png");
             _usedSprite = Global.GetSingleImage(spriteFolder, "checkpointActive.png");
         }
         public Checkpoint(Point origin, int width=_BASE_WIDTH, int height=_BASE_HEIGHT)
