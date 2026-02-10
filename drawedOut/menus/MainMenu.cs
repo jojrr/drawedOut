@@ -80,7 +80,7 @@ namespace drawedOut
                     yCenterPos: 0.75f,
                     relWidth:0.1f,
                     relHeight: 0.06f,
-                    clickEvent: QuitButtonClickEvent,
+                    clickEvent: ()=>TryInvoke(QuitGame),
                     fontScale: 1.2f,
                     txt: "Quit");
             _settingsBtn = new GameButton(
@@ -99,7 +99,7 @@ namespace drawedOut
                     yCenterPos: 0.4f,
                     relWidth: 0.2f,
                     relHeight: 0.1f,
-                    clickEvent: PlayBtnClickEvent,
+                    clickEvent: ()=>TryInvoke(OpenLevelMenu),
                     fontScale: 2f,
                     txt: "Play");
             
@@ -189,9 +189,6 @@ namespace drawedOut
             _menuTimer.Start();
             Invalidate();
         }
-
-        private void PlayBtnClickEvent() => TryInvoke(OpenLevelMenu); 
-        private void QuitButtonClickEvent() => TryInvoke(QuitGame);
 
         private void OpenLevelMenu()
         {
