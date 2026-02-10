@@ -3,17 +3,25 @@ namespace drawedOut
     public class HpBarUI: GameUI 
     {
         public RectangleF[] HpRectangles;
-        public Brush[] HpRecColours;
+        public Bitmap[] HpRecImages;
         public int IconCount { get; private set; }
 
+        private static Bitmap _spriteEmpty, _spriteHalf, _spriteFull;
         private const int DEFAULT_ICON_OFFSET = 50;
         private const int 
             DEFAULT_WIDTH = 30,
             DEFAULT_HEIGHT = 60;
         private static readonly Point DEFAULT_ORIGIN = new Point(90, 50);
         private float _hpIconOffset;
-
         private int _maxHp;
+
+        static HpBarUI()
+        {
+            string spriteFolder = @"hpBarIcon\";
+            _spriteEmpty = Global.GetSingleImage(spriteFolder, "hpIcon0.png");
+            _spriteHalf = Global.GetSingleImage(spriteFolder, "hpIcon1.png");
+            _spriteFull = Global.GetSingleImage(spriteFolder, "hpIcon2.png");
+        }
 
         public HpBarUI ( int maxHp, PointF origin, float barWidth=DEFAULT_WIDTH, float barHeight=DEFAULT_HEIGHT, float scaleF = 1, bool isVisible = true)
             :base( origin: origin, elementWidth: barWidth, elementHeight: barHeight)
@@ -43,7 +51,7 @@ namespace drawedOut
             float xOffset = 0;
 
             HpRectangles = new RectangleF[IconCount];
-            HpRecColours = new Brush[IconCount];
+            HpRecImages = new Bitmap[IconCount];
 
             for (int i = 0; i < IconCount; i++)
             {
@@ -53,13 +61,13 @@ namespace drawedOut
                 switch (currentHp)
                 {
                     case >= 2:
-                        this.HpRecColours[i] = Brushes.Green;
+                        this.HpRecImages[i] = _spriteFull;
                         break;
                     case 1:
-                        this.HpRecColours[i] = Brushes.Orange;
+                        this.HpRecImages[i] = _spriteHalf;
                         break;
                     default:
-                        this.HpRecColours[i] = Brushes.DimGray;
+                        this.HpRecImages[i] = _spriteEmpty;
                         break;
                 }
 
@@ -70,7 +78,7 @@ namespace drawedOut
 
         public override void Draw(Graphics g)
         {
-            for (int i = 0; i < IconCount; i++) g.FillRectangle(HpRecColours[i], HpRectangles[i]);
+            for (int i = 0; i < IconCount; i++) g.DrawImage(HpRecImages[i], HpRectangles[i]);
         }
 
     }
