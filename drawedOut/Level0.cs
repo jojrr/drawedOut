@@ -141,7 +141,6 @@ namespace drawedOut
             if (levelWidth < 2000) throw new Exception("level too small");
 
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.KeyPreview = true;

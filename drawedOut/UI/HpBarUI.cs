@@ -6,12 +6,13 @@ namespace drawedOut
         public Bitmap[] HpRecImages;
         public int IconCount { get; private set; }
 
-        private static Bitmap _spriteEmpty, _spriteHalf, _spriteFull;
+        private static readonly Bitmap _spriteEmpty, _spriteHalf, _spriteFull;
+        private static readonly Point DEFAULT_ORIGIN = new Point(90, 50);
         private const int DEFAULT_ICON_OFFSET = 50;
         private const int 
             DEFAULT_WIDTH = 30,
             DEFAULT_HEIGHT = 60;
-        private static readonly Point DEFAULT_ORIGIN = new Point(90, 50);
+
         private float _hpIconOffset;
         private int _maxHp;
 
