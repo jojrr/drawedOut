@@ -88,7 +88,10 @@ namespace drawedOut
                     yCenterPos: 0.55f,
                     relWidth: 0.2f,
                     relHeight: 0.1f,
-                    clickEvent: (()=>{_curState=MenuState.Settings;}),
+                    clickEvent: (()=>{
+                            _curState=MenuState.Settings;
+                            TryInvoke(Invalidate);
+                        }),
                     fontScale: 2f, 
                     txt: "Settings");
             _playBtn = new GameButton(
@@ -101,13 +104,13 @@ namespace drawedOut
                     txt: "Play");
             
             // settings menu
-            // _backgroundBtn = new GameButton(
-            //         xCenterPos: 0.6f,
-            //         yCenterPos: 0.08f,
-            //         relWidth: 0.06f,
-            //         relHeight: 0.05f,
-            //         clickEvent: BackBtnClickEvent,
-            //         txt: "On");
+            _backgroundBtn = new GameButton(
+                    xCenterPos: 0.6f,
+                    yCenterPos: 0.12f,
+                    relWidth: 0.06f,
+                    relHeight: 0.05f,
+                    clickEvent: ()=>{Global.ShowBG=false;},
+                    txt: "On");
             // _fpsBtn = new GameButton(
             //         xCenterPos: 0.6f,
             //         yCenterPos: 0.1f,
@@ -171,8 +174,12 @@ namespace drawedOut
                     yCenterPos: 0.9f,
                     relWidth: 0.1f,
                     relHeight: 0.05f,
-                    clickEvent: (()=>{_curState=MenuState.Start;}),
-                    txt: "Click to rebind");
+                    clickEvent: ()=>
+                    {
+                        _curState=MenuState.Start;
+                        Invalidate();
+                    },
+                    txt: "Back to menu");
         }
 
         private void MainMenu_Load(object sender, EventArgs e)
@@ -222,12 +229,37 @@ namespace drawedOut
                 g.DrawString(titleString, titleFont, Brushes.Black, titlePosX, 20); 
             }
 
-            GameButton.DrawAll(g);
+            if (_curState == MenuState.Start)
+            {
+                _playBtn.Draw(g);
+                _quitBtn.Draw(g);
+                _settingsBtn.Draw(g);
+            }
+            else if (_curState == MenuState.Settings)
+            {
+                _backgroundBtn.Draw(g);
+                // _fpsBtn.Draw(g);
+                // _timeBtn.Draw(g);
+                //
+                // _jumpRebindBtn.Draw(g);
+                // _leftRebindBtn.Draw(g);
+                // _rightRebindBtn.Draw(g);
+                // _abilityOneRebindBtn.Draw(g);
+                // _abilityTwoRebindBtn.Draw(g);
+                // _abilityThreeRebindBtn.Draw(g);
+                
+                _settingsBackBtn.Draw(g);
+            }
         }
 
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)
         {
             GameButton.ClickSelected();
+        }
+
+        private void MainMenu_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F4) Application.Exit();
         }
 
         private void MainMenu_Quit(object sender, FormClosingEventArgs e)

@@ -29,6 +29,11 @@ namespace drawedOut
         public static int Gravity { get => (int)(_GRAVITY*_baseScale); }
 
         /// <summary>
+        /// Should the background be displayed
+        /// </summary>
+        public static bool ShowBG;
+
+        /// <summary>
         /// Threshold for entities to be "active" (either side of screen center)
         /// </summary>
         public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.75); }
@@ -135,12 +140,13 @@ namespace drawedOut
         /// </summary>
         /// <param name="fileDirectory"> The full directory of the file to convert. </param>
         /// <returns> A <see cref="Bitmap"/>, in the shape of a square, scaled to fit the resolution </returns>
-        public static Bitmap ImageToBitmap(string fileDirectory)
+        public static Bitmap ImageToBitmap(string fileDirectory, 
+                UInt16 spriteWidth=256, UInt16 spriteHeight=256)
         {
             return new Bitmap(
                     Image.FromFile(fileDirectory), 
-                    (int)(256*Global.BaseScale), 
-                    (int)(256*Global.BaseScale)
+                    (int)(spriteWidth*Global.BaseScale), 
+                    (int)(spriteHeight*Global.BaseScale)
                     );
         }
 
@@ -156,18 +162,19 @@ namespace drawedOut
         /// A single <see cref="Bitmap"/> image of the specified file in the folder.<br/>
         /// By default if fileName is unset, will return the first item in the folder.
         /// </returns>
-        public static Bitmap GetSingleImage(string folderName, string? fileName=null)
+        public static Bitmap GetSingleImage(string folderName, 
+                string? fileName=null, UInt16 spriteWidth=256, UInt16 spriteHeight=256)
         {
             string filePath = Path.Combine(GetProjFolder(), @"sprites\", folderName);
 
             if (fileName is null) 
             {
                 fileName = Directory.GetFiles(filePath)[0];
-                return ImageToBitmap(fileName);
+                return ImageToBitmap(fileName, spriteWidth, spriteHeight);
             }
 
             filePath = Path.Combine(filePath, fileName);
-            return ImageToBitmap(filePath);
+            return ImageToBitmap(filePath, spriteWidth, spriteHeight);
         }
 
     }

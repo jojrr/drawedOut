@@ -39,6 +39,7 @@ namespace drawedOut
             FormClosing += MainMenu_Quit;
             Paint += MainMenu_Paint;
             MouseDown += MainMenu_MouseDown;
+            KeyDown += MainMenu_KeyDown;
             ResumeLayout(false);
         }
 

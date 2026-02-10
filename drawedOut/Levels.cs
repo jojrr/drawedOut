@@ -67,7 +67,6 @@ namespace drawedOut
 
         protected override void InitCheckpoints()
         { 
-            checkpointOn = new(origin: new Point(1200, 600)); 
             checkpointOne = new(origin: new Point(6200, 600)); 
         }
     }

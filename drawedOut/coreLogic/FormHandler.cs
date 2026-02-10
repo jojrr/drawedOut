@@ -26,8 +26,6 @@ namespace drawedOut
     }
 
 
-
-
     partial class FormHandler
     {
         /// <summary>

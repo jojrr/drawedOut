@@ -19,9 +19,18 @@ namespace drawedOut
         static HpBarUI()
         {
             string spriteFolder = @"hpBarIcon\";
-            _spriteEmpty = Global.GetSingleImage(spriteFolder, "hpIcon0.png");
-            _spriteHalf = Global.GetSingleImage(spriteFolder, "hpIcon1.png");
-            _spriteFull = Global.GetSingleImage(spriteFolder, "hpIcon2.png");
+            _spriteEmpty = Global.GetSingleImage(
+                    spriteFolder, 
+                    "hpIcon0.png",
+                    512, 512);
+            _spriteHalf = Global.GetSingleImage(
+                    spriteFolder, 
+                    "hpIcon1.png",
+                    512, 512);
+            _spriteFull = Global.GetSingleImage(
+                    spriteFolder, 
+                    "hpIcon2.png",
+                    512, 512);
         }
 
         public HpBarUI ( int maxHp, PointF origin, float barWidth=DEFAULT_WIDTH, float barHeight=DEFAULT_HEIGHT, float scaleF = 1, bool isVisible = true)
