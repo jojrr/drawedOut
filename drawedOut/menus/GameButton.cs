@@ -139,7 +139,10 @@ namespace drawedOut
             GameButton? prevHover = SelectedButton;
             SelectedButton = null;
             foreach (GameButton btn in BtnList)
-            { if (btn.CheckMouseHover(mouseP)) break; }
+            { 
+                if (btn._hidden) continue;
+                if (btn.CheckMouseHover(mouseP)) break;
+            }
             if (prevHover != SelectedButton) return true;
             return false;
         }
@@ -155,6 +158,9 @@ namespace drawedOut
             if (SelectedButton is not null)
             { SelectedButton.ClickEvent(); }
         }
+
+        public static void HideAll()
+        { foreach (GameButton b in BtnList) b.Hide(); }
 
         public static void ClearAll() => _btnList.Clear();
     }

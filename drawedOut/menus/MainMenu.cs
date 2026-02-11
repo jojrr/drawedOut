@@ -31,7 +31,16 @@ namespace drawedOut
 
         private static GameButton 
             _backgroundBtn,
-            _fpsBtn,
+
+            _24FpsBtn,
+            _30FpsBtn,
+            _60FpsBtn,
+            _120FpsBtn,
+
+            _720pBtn,
+            _1080pBtn,
+            _1440pBtn,
+
             _timeBtn,
 
             _jumpRebindBtn,
@@ -54,6 +63,7 @@ namespace drawedOut
             this.DoubleBuffered = true;
 
             CreateButtons();
+            UpdateSettingsButtons();
 
             Stopwatch timerSW = Stopwatch.StartNew();
             _menuTimer = new Thread (() => 
@@ -72,7 +82,7 @@ namespace drawedOut
 
         private void FindCursor() => _mouseLoc = PointToClient(Cursor.Position);
 
-        private void CreateButtons()
+        private void CreateMenuButtons()
         {
             // main menu
             _quitBtn = new GameButton(
@@ -88,10 +98,7 @@ namespace drawedOut
                     yCenterPos: 0.55f,
                     relWidth: 0.2f,
                     relHeight: 0.1f,
-                    clickEvent: (()=>{
-                            _curState=MenuState.Settings;
-                            TryInvoke(Invalidate);
-                        }),
+                    clickEvent: ShowSettingsMenu,
                     fontScale: 2f, 
                     txt: "Settings");
             _playBtn = new GameButton(
@@ -102,29 +109,27 @@ namespace drawedOut
                     clickEvent: ()=>TryInvoke(OpenLevelMenu),
                     fontScale: 2f,
                     txt: "Play");
-            
+        }
+
+        private void CreateSettingsBtns()
+        {
             // settings menu
             _backgroundBtn = new GameButton(
                     xCenterPos: 0.6f,
-                    yCenterPos: 0.12f,
+                    yCenterPos: 0.18f,
                     relWidth: 0.06f,
                     relHeight: 0.05f,
                     clickEvent: ()=>{Global.ShowBG=false;},
                     txt: "On");
-            // _fpsBtn = new GameButton(
-            //         xCenterPos: 0.6f,
-            //         yCenterPos: 0.1f,
-            //         relWidth: 0.06f,
-            //         relHeight: 0.05f,
-            //         clickEvent: FpsBtnClickEvent,
-            //         txt: "On");
-            // _timeBtn = new GameButton(
-            //         xCenterPos: 0.6f,
-            //         yCenterPos: 0.12f,
-            //         relWidth: 0.06f,
-            //         relHeight: 0.05f,
-            //         clickEvent: TimeBtnClickEvent,
-            //         txt: "On");
+            CreateFPSBtns(0.58f, 0.26f);
+            CreateResBtns(0.58f, 0.34f);
+            _timeBtn = new GameButton(
+                    xCenterPos: 0.6f,
+                    yCenterPos: 0.12f,
+                    relWidth: 0.06f,
+                    relHeight: 0.05f,
+                    clickEvent: TimeBtnClickEvent,
+                    txt: "On");
             //
             // _leftRebindBtn = new GameButton(
             //         xCenterPos: 0.4f,
@@ -174,26 +179,172 @@ namespace drawedOut
                     yCenterPos: 0.9f,
                     relWidth: 0.1f,
                     relHeight: 0.05f,
-                    clickEvent: ()=>
-                    {
-                        _curState=MenuState.Start;
-                        Invalidate();
-                    },
+                    clickEvent: ShowMainMenu,
                     txt: "Back to menu");
+        }
+
+        private void UpdateSettingsButtons()
+        {
+            // settings menu
+            _backgroundBtn.BtnTxt = "on";
+            // _timeBtn = new GameButton(
+            //         xCenterPos: 0.6f,
+            //         yCenterPos: 0.12f,
+            //         relWidth: 0.06f,
+            //         relHeight: 0.05f,
+            //         clickEvent: TimeBtnClickEvent,
+            //         txt: "On");
+
+            // _leftRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.54f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: LeftRebindClick,
+            //         txt: "Click to rebind");
+            // _rightRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.56f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: RightRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.4f,
+            //         yCenterPos: 0.58f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: JumpRebindClick,
+            //         txt: "Click to rebind");
+            // _abilityOneRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.54f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityOneRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.56f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityTwoRebindClick,
+            //         txt: "Click to rebind");
+            // _jumpRebindBtn = new GameButton(
+            //         xCenterPos: 0.8f,
+            //         yCenterPos: 0.58f,
+            //         relWidth: 0.15f,
+            //         relHeight: 0.05f,
+            //         clickEvent: AbilityThreeRebindClick,
+            //         txt: "Click to rebind");
+            //
+        }
+
+        private void CreateFPSBtns(float xLevel, float yLevel)
+        {
+            float spacing = 0.05f;
+            float btnWidth = 0.03f;
+            float btnHeight = 0.03f;
+            _24FpsBtn = new GameButton(
+                    xCenterPos: xLevel,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>FpsBtnClick(24),
+                    txt: "24");
+            _30FpsBtn = new GameButton(
+                    xCenterPos: xLevel+spacing,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>FpsBtnClick(30),
+                    txt: "30");
+            _60FpsBtn = new GameButton(
+                    xCenterPos: xLevel+spacing*2,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>FpsBtnClick(60),
+                    txt: "60");
+            _120FpsBtn = new GameButton(
+                    xCenterPos: xLevel+spacing*3,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>FpsBtnClick(120),
+                    txt: "120");
+        }
+
+        private void CreateResBtns(float xLevel, float yLevel)
+        {
+            float spacing = 0.08f;
+            float btnWidth = 0.05f;
+            float btnHeight = 0.03f;
+            _720pBtn = new GameButton(
+                    xCenterPos: xLevel,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>{},
+                    txt: "24");
+            _1080pBtn = new GameButton(
+                    xCenterPos: xLevel+spacing,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>{},
+                    txt: "30");
+            _1440pBtn = new GameButton(
+                    xCenterPos: xLevel+spacing*2,
+                    yCenterPos: yLevel,
+                    relWidth: btnWidth,
+                    relHeight: btnHeight,
+                    clickEvent: ()=>{},
+                    txt: "60");
+        }
+
+        private void FpsBtnClick(UInt16 fps)
+        {
+            Global.GameTickFreq = fps;
         }
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
-            _curState = MenuState.Start;
             _active = true;
             _menuTimer.Start();
+            ShowMainMenu();
+
             Invalidate();
+        }
+
+        private void ShowMainMenu()
+        {
+            _curState = MenuState.Start;
+
+            GameButton.HideAll();
+            _playBtn.Show();
+            _settingsBtn.Show();
+            _quitBtn.Show();
+        }
+
+        private void ShowSettingsMenu()
+        {
+            _curState = MenuState.Start;
+
+            GameButton.HideAll();
+            _backgroundBtn.Show();
+            _24FpsBtn.Show();
+            _30FpsBtn.Show();
+            _60FpsBtn.Show();
+            _120FpsBtn.Show();
+            _settingsBackBtn.Show();
+
+            TryInvoke(Invalidate);
         }
 
         private void OpenLevelMenu()
         {
             GameButton.ClearAll();
-            _active=false;
             this.Close();
             TutorialLevel level = new TutorialLevel();
             level.Show();
@@ -226,27 +377,7 @@ namespace drawedOut
                 g.DrawString(titleString, titleFont, Brushes.Black, titlePosX, 20); 
             }
 
-            if (_curState == MenuState.Start)
-            {
-                _playBtn.Draw(g);
-                _quitBtn.Draw(g);
-                _settingsBtn.Draw(g);
-            }
-            else if (_curState == MenuState.Settings)
-            {
-                _backgroundBtn.Draw(g);
-                // _fpsBtn.Draw(g);
-                // _timeBtn.Draw(g);
-                //
-                // _jumpRebindBtn.Draw(g);
-                // _leftRebindBtn.Draw(g);
-                // _rightRebindBtn.Draw(g);
-                // _abilityOneRebindBtn.Draw(g);
-                // _abilityTwoRebindBtn.Draw(g);
-                // _abilityThreeRebindBtn.Draw(g);
-                
-                _settingsBackBtn.Draw(g);
-            }
+            GameButton.DrawAll(g);
         }
 
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)

@@ -41,8 +41,8 @@ namespace drawedOut
         /// <summary>
         /// logic for game framerate
         /// </summary>
-        private static int _gameTickFreq = 60;
-        public static int GameTickFreq 
+        private static UInt16 _gameTickFreq = 60;
+        public static UInt16 GameTickFreq 
         {
             get => _gameTickFreq;
             set 
@@ -62,7 +62,7 @@ namespace drawedOut
         /// </summary>
         private static ImmutableDictionary<Resolutions,Size> ResDict = ImmutableDictionary.CreateRange 
             (new KeyValuePair<Resolutions,Size>[]{
-            KeyValuePair.Create( Resolutions.p720, new Size(1280, 720)   ),
+            KeyValuePair.Create( Resolutions.p720,  new Size(1280, 720)  ),
             KeyValuePair.Create( Resolutions.p1080, new Size(1920, 1080) ),
             KeyValuePair.Create( Resolutions.p1440, new Size(2560, 1440) ),
             });
