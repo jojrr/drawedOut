@@ -11,8 +11,6 @@ namespace drawedOut
             this.Visible = false;
             Handler = this;
 
-            Global.LevelResolution = Global.Resolutions.p1080;
-
             InitializeComponent();
         }
 
