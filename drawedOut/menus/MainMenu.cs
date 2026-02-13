@@ -115,15 +115,32 @@ namespace drawedOut
             {
                 SizeF titleSize = g.MeasureString(settingsString, settingsFont);
                 float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
-                g.DrawString(settingsString, settingsFont, Brushes.Black, titlePosX, 10); 
+                g.DrawString(settingsString, settingsFont, Brushes.Black, 
+                        titlePosX, 10);
+            }
+            string keyHeadingString = "Keybinds";
+            using (Font keyHeadingFont = new Font("Sour Gummy", 30*Global.BaseScale))
+            {
+                SizeF titleSize = g.MeasureString(settingsString, keyHeadingFont);
+                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
+                g.DrawString(keyHeadingString, keyHeadingFont, Brushes.Black, 
+                        titlePosX, 0.46f*Height);
             }
 
             Font defaultFont = Global.DefaultFont;
             float txtXPos = 600*Global.BaseScale; 
 
-            g.DrawString(_backgroundTxt, defaultFont, Brushes.Black, txtXPos, _backgroundBtn.Y);
-            g.DrawString(_fpsTxt, defaultFont, Brushes.Black, txtXPos, _24FpsBtn.Y);
-            g.DrawString(_timeTxt, defaultFont, Brushes.Black, txtXPos, _timeBtn.Y);
+            foreach (KeyValuePair<String, int> element in _settingsStringsYPos)
+            { 
+                g.DrawString(element.Key, defaultFont, 
+                        Brushes.Black, txtXPos, element.Value); 
+            }
+
+            foreach (KeyValuePair<String, Point> element in _bindingStringsPos)
+            {
+                g.DrawString(element.Key, defaultFont, 
+                        Brushes.Black, element.Value);
+            }
         }
 
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)
@@ -140,6 +157,47 @@ namespace drawedOut
         {
             _active = false;
         }
+
+        private void ShowMainMenu()
+        {
+            _curMenuState = MenuState.Start;
+
+            GameButton.HideAll();
+            _playBtn.Show();
+            _settingsBtn.Show();
+            _quitBtn.Show();
+        }
+
+        private void ShowSettingsMenu()
+        {
+            _curMenuState = MenuState.Settings;
+
+            GameButton.HideAll();
+            _backgroundBtn.Show();
+
+            _24FpsBtn.Show();
+            _30FpsBtn.Show();
+            _60FpsBtn.Show();
+            _120FpsBtn.Show();
+
+            _720pBtn.Show();
+            _1080pBtn.Show();
+            _1440pBtn.Show();
+
+            _timeBtn.Show();
+
+            _jumpRebindBtn.Show();
+            _leftRebindBtn.Show();
+            _rightRebindBtn.Show();
+            _abilityOneRebindBtn.Show();
+            _abilityTwoRebindBtn.Show();
+            _abilityThreeRebindBtn.Show();
+
+            _settingsBackBtn.Show();
+
+            TryInvoke(Invalidate);
+        }
+
     }
 }
 

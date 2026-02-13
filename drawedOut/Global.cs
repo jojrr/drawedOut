@@ -115,7 +115,7 @@ namespace drawedOut
         public static Point CenterOfScreen { get => _centerOfScreen; }
 
         /// <summary> The default main font used in the game </summary>
-        public static Font DefaultFont = new Font("Sour Gummy Black", _DEFAULT_FONT_SIZE*BaseScale);
+        public static Font DefaultFont = new Font("Sour Gummy", _DEFAULT_FONT_SIZE*BaseScale);
 
         /// <summary> Calculates the new Center of the screen </summary>
         public static void CalcNewCenter()

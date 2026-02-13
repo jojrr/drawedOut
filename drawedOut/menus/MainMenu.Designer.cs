@@ -54,18 +54,20 @@ namespace drawedOut
 
         // Settings menu components
         private static string 
-            _backgroundTxt,
             _fpsTxt,
             _resTxt,
-            _timeTxt,
 
-            _keysHeading,
             _jumpTxt,
             _leftTxt,
             _rightTxt,
             _abilityOneTxt,
             _abilityTwoTxt,
             _abilityThreeTxt;
+
+        private static Dictionary<String, int> _settingsStringsYPos = 
+            new Dictionary<String, int>();
+        private static Dictionary<String, Point> _bindingStringsPos = 
+            new Dictionary<String, Point>();
 
         private static GameButton 
             _backgroundBtn,
@@ -130,10 +132,10 @@ namespace drawedOut
 
         private void CreateSettingsStrings()
         {
-            _backgroundTxt = "Show lined background";
-            _fpsTxt = "Game tick rate";
-            _resTxt = "Game display resolution";
-            _timeTxt = "Show time in level";
+            _settingsStringsYPos.Add("Show lined background", _backgroundBtn.Y);
+            _settingsStringsYPos.Add("Show time in level", _timeBtn.Y);
+            _settingsStringsYPos.Add("_fpsTxt", _24FpsBtn.Y);
+            _settingsStringsYPos.Add("Game display resolution", _720pBtn.Y);
         }
 
         private void CreateSettingsBtns()
@@ -161,50 +163,10 @@ namespace drawedOut
                         _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
                     },
                     txt: BoolToString(Global.ShowTime));
-            //
-            // _leftRebindBtn = new GameButton(
-            //         xCenterPos: 0.4f,
-            //         yCenterPos: 0.54f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: LeftRebindClick,
-            //         txt: "Click to rebind");
-            // _rightRebindBtn = new GameButton(
-            //         xCenterPos: 0.4f,
-            //         yCenterPos: 0.56f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: RightRebindClick,
-            //         txt: "Click to rebind");
-            // _jumpRebindBtn = new GameButton(
-            //         xCenterPos: 0.4f,
-            //         yCenterPos: 0.58f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: JumpRebindClick,
-            //         txt: "Click to rebind");
-            // _abilityOneRebindBtn = new GameButton(
-            //         xCenterPos: 0.8f,
-            //         yCenterPos: 0.54f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: AbilityOneRebindClick,
-            //         txt: "Click to rebind");
-            // _jumpRebindBtn = new GameButton(
-            //         xCenterPos: 0.8f,
-            //         yCenterPos: 0.56f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: AbilityTwoRebindClick,
-            //         txt: "Click to rebind");
-            // _jumpRebindBtn = new GameButton(
-            //         xCenterPos: 0.8f,
-            //         yCenterPos: 0.58f,
-            //         relWidth: 0.15f,
-            //         relHeight: 0.05f,
-            //         clickEvent: AbilityThreeRebindClick,
-            //         txt: "Click to rebind");
-            //
+            
+            CreateBindBtns(0.4f, 0.55f);
+            CreateBindStrings();
+
             _settingsBackBtn = new GameButton(
                     xCenterPos: 0.5f,
                     yCenterPos: 0.9f,
@@ -295,39 +257,73 @@ namespace drawedOut
                     fontSize: fontSize);
         }
 
-        private void ShowMainMenu()
+        private void CreateBindBtns(float xOrigin, float yPos)
         {
-            _curMenuState = MenuState.Start;
+            float xOffset = 0.3f;
+            float yOffset = 0.08f;
+            float width = 0.12f;
+            float height = 0.035f;
 
-            GameButton.HideAll();
-            _playBtn.Show();
-            _settingsBtn.Show();
-            _quitBtn.Show();
+            _leftRebindBtn = new GameButton(
+                    xCenterPos: xOrigin,
+                    yCenterPos: yPos,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
+            _rightRebindBtn = new GameButton(
+                    xCenterPos: xOrigin,
+                    yCenterPos: yPos+yOffset,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
+            _jumpRebindBtn = new GameButton(
+                    xCenterPos: xOrigin,
+                    yCenterPos: yPos+yOffset*2,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
+
+            _abilityOneRebindBtn = new GameButton(
+                    xCenterPos: xOrigin+xOffset,
+                    yCenterPos: yPos,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
+            _abilityTwoRebindBtn = new GameButton(
+                    xCenterPos: xOrigin+xOffset,
+                    yCenterPos: yPos+yOffset,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
+            _abilityThreeRebindBtn = new GameButton(
+                    xCenterPos: xOrigin+xOffset,
+                    yCenterPos: yPos+yOffset*2,
+                    relWidth: width,
+                    relHeight: height,
+                    clickEvent: ()=>{},
+                    txt: "Click to rebind");
         }
 
-        private void ShowSettingsMenu()
+        private void CreateBindStrings()
         {
-            _curMenuState = MenuState.Settings;
+            float xOffset = 0.15f*Width;
+            int curX = _jumpRebindBtn.X - (int)xOffset;
+            _bindingStringsPos.Add("Move Left: ", new Point(curX, _leftRebindBtn.Y));
+            _bindingStringsPos.Add("Move Right: ", new Point(curX, _rightRebindBtn.Y));
+            _bindingStringsPos.Add("Jump: ", new Point(curX, _jumpRebindBtn.Y));
 
-            GameButton.HideAll();
-            _backgroundBtn.Show();
-
-            _24FpsBtn.Show();
-            _30FpsBtn.Show();
-            _60FpsBtn.Show();
-            _120FpsBtn.Show();
-
-            _720pBtn.Show();
-            _1080pBtn.Show();
-            _1440pBtn.Show();
-
-            _timeBtn.Show();
-
-            _settingsBackBtn.Show();
-
-            TryInvoke(Invalidate);
+            curX = _abilityOneRebindBtn.X - (int) xOffset;
+            _bindingStringsPos.Add("Ability One:", new Point(curX, _abilityOneRebindBtn.Y));
+            _bindingStringsPos.Add("Ability Two:", new Point(curX, _abilityTwoRebindBtn.Y));
+            _bindingStringsPos.Add("Ability Three:", new Point(curX, _abilityThreeRebindBtn.Y));
         }
 
         #endregion
+
     }
 }
