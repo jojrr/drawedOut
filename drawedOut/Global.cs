@@ -1,5 +1,8 @@
 global using System.Collections.Immutable;
 global using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Text;
+
 namespace drawedOut
 {
     ///<summary>
@@ -114,8 +117,22 @@ namespace drawedOut
         private static Point _centerOfScreen;
         public static Point CenterOfScreen { get => _centerOfScreen; }
 
+        private static Font _defaultFont;
         /// <summary> The default main font used in the game </summary>
-        public static Font DefaultFont = new Font("Sour Gummy", _DEFAULT_FONT_SIZE*BaseScale);
+        public static Font DefaultFont => _defaultFont;
+
+        public static void ImportFont()
+        { 
+            PrivateFontCollection fontCollection = new PrivateFontCollection();
+            string path = Path.Combine(GetProjFolder(), @"Fonts\", "SourGummy-VariableFont.ttf");
+
+            fontCollection.AddFontFile(path);
+            if (fontCollection.Families.Length == 0)
+            { throw new Exception("Font failed to load"); }
+
+            _defaultFont = new Font(fontCollection.Families[0], _DEFAULT_FONT_SIZE*_baseScale); 
+            fontCollection.Dispose();
+        }
 
         /// <summary> Calculates the new Center of the screen </summary>
         public static void CalcNewCenter()

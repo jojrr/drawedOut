@@ -38,10 +38,12 @@ namespace drawedOut
         private void UpdateSize()
         {
             this.Size = Global.LevelSize;
-            this.StartPosition = FormStartPosition.CenterScreen;
 
+            GameButton.ClearAll();
             CreateMenuButtons();
             InitSettings();
+            ShowSettingsMenu();
+            CenterToScreen();
 
             Invalidate();
         }

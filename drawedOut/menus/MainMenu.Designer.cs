@@ -132,6 +132,7 @@ namespace drawedOut
 
         private void CreateSettingsStrings()
         {
+            _settingsStringsYPos.Clear();
             _settingsStringsYPos.Add("Show lined background", _backgroundBtn.Y);
             _settingsStringsYPos.Add("Show time in level", _timeBtn.Y);
             _settingsStringsYPos.Add("_fpsTxt", _24FpsBtn.Y);
@@ -311,7 +312,9 @@ namespace drawedOut
 
         private void CreateBindStrings()
         {
+            _bindingStringsPos.Clear();
             float xOffset = 0.15f*Width;
+
             int curX = _jumpRebindBtn.X - (int)xOffset;
             _bindingStringsPos.Add("Move Left: ", new Point(curX, _leftRebindBtn.Y));
             _bindingStringsPos.Add("Move Right: ", new Point(curX, _rightRebindBtn.Y));

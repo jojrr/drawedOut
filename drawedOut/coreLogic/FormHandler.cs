@@ -11,6 +11,8 @@ namespace drawedOut
             this.Visible = false;
             Handler = this;
 
+            Global.ImportFont();
+
             InitializeComponent();
         }
 
