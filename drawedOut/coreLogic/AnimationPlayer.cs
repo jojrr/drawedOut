@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    public class AnimationPlayer
+    internal class AnimationPlayer
     {
         private Bitmap[] _animFrames;
 
@@ -35,7 +35,7 @@ namespace drawedOut
         }
 
 
-        public Bitmap NextFrame(Global.XDirections facingDir = Global.XDirections.right)
+        internal Bitmap NextFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
             Bitmap img;
 

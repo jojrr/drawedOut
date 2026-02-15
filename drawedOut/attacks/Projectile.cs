@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    public class Projectile : Entity
+    internal class Projectile : Entity
     {
         public static IReadOnlyCollection<Projectile> ProjectileList => _projectileList;
         public int Dmg { get => _dmg; }

@@ -1,14 +1,14 @@
 namespace drawedOut
 {
-    public partial class MainMenu : Form
+    internal partial class MainMenu : Form
     {
         private enum MenuState { Start, Levels, Settings };
 
-        // Main menu components
-        private const int _TICK_MS = 30;
-        private static Thread _menuTimer;
         private static bool _active;
         private static Point _mouseLoc;
+        private const int _TICK_MS = 30;
+        private static Thread _menuTimer;
+        private static Keybinds.Actions? _rebindAction=null;
 
         private MenuState _curMenuState;
 
@@ -99,10 +99,46 @@ namespace drawedOut
                 
                 case (MenuState.Settings):
                     DrawSettingsStrings(g);
+                    UpdateKeyBtnStrings();
                     break;
             }
 
             GameButton.DrawAll(g);
+        }
+
+        private void UpdateKeyBtnStrings()
+        {
+            if (_rebindAction is null) 
+            {
+                _jumpRebindBtn.BtnTxt = "Click to rebind";
+                _leftRebindBtn.BtnTxt = "Click to rebind";
+                _rightRebindBtn.BtnTxt = "Click to rebind";
+                _abilityOneRebindBtn.BtnTxt = "Click to rebind";
+                _abilityTwoRebindBtn.BtnTxt = "Click to rebind";
+                _abilityThreeRebindBtn.BtnTxt = "Click to rebind";
+                return;
+            }
+            switch (_rebindAction.Value)
+            {
+                case (Keybinds.Actions.MoveLeft):
+                    _leftRebindBtn.BtnTxt="Enter new key";
+                    break;
+                case (Keybinds.Actions.MoveRight):
+                    _rightRebindBtn.BtnTxt="Enter new key";
+                    break;
+                case (Keybinds.Actions.Jump):
+                    _jumpRebindBtn.BtnTxt="Enter new key";
+                    break;
+                case (Keybinds.Actions.Special1):
+                    _abilityOneRebindBtn.BtnTxt="Enter new key";
+                    break;
+                case (Keybinds.Actions.Special2):
+                    _abilityTwoRebindBtn.BtnTxt="Enter new key";
+                    break;
+                case (Keybinds.Actions.Special3):
+                    _abilityThreeRebindBtn.BtnTxt="Enter new key";
+                    break;
+            }
         }
 
         private void DrawSettingsStrings(Graphics g)
@@ -148,6 +184,16 @@ namespace drawedOut
         private void MainMenu_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F4) Application.Exit();
+            if (_rebindAction is null) return;
+
+            if (Keybinds.Rebind(e.KeyCode, _rebindAction.Value))
+            {
+                CreateBindStrings();
+                Invalidate();
+            }
+            else MessageBox.Show("Key is already in use");
+
+            _rebindAction = null;
         }
 
         private void MainMenu_Quit(object sender, FormClosingEventArgs e)

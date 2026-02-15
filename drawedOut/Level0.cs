@@ -1,7 +1,7 @@
 using System.Windows;
 namespace drawedOut
 {
-    public abstract partial class Level0 : Form
+    internal abstract partial class Level0 : Form
     {
 
         protected static Stopwatch levelTimerSW = new Stopwatch();
@@ -17,8 +17,8 @@ namespace drawedOut
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
 
         private static Global.XDirections? _prevPlayerMovement = null;
+        private static Global.XDirections? _prevLeftRight;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
-        private static Keys? _prevLeftRight;
         private static float 
             _gameTickInterval, 
             _baseScale,
@@ -592,32 +592,6 @@ namespace drawedOut
         {
             switch (e.KeyCode)
             {
-                case Keys.W:
-                    if (playerCharacter.IsOnFloor) _jumping = true; 
-                    break;
-
-                case Keys.A:
-                    if (_movingRight && !_movingLeft && _prevLeftRight is null)
-                    {
-                        _prevLeftRight = Keys.D;
-                        _movingRight = false;
-                    }
-                    _movingLeft = true;
-                    break;
-
-                case Keys.D:
-                    if (_movingLeft && !_movingRight && _prevLeftRight is null)
-                    {
-                        _prevLeftRight = Keys.A;
-                        _movingLeft = false;
-                    }
-                    _movingRight = true;
-                    break;
-
-                case Keys.E:
-                    playerCharacter.DoSpecial1();
-                    break;
-
                 case Keys.Escape:
                     TogglePause();
                     break;
@@ -630,6 +604,43 @@ namespace drawedOut
                 case Keys.F4:
                     Application.Exit();
                     this.Close();
+                    break;
+            }
+
+            if (!Keybinds.Bindings.TryGetValue(e.KeyCode, out Keybinds.Actions action)) return;
+
+            switch (action)
+            {
+                case Keybinds.Actions.Jump:
+                    if (playerCharacter.IsOnFloor) _jumping = true; 
+                    break;
+
+                case Keybinds.Actions.MoveLeft:
+                    if (_movingRight && !_movingLeft && _prevLeftRight is null)
+                    {
+                        _prevLeftRight = Global.XDirections.right;
+                        _movingRight = false;
+                    }
+                    _movingLeft = true;
+                    break;
+
+                case Keybinds.Actions.MoveRight:
+                    if (_movingLeft && !_movingRight && _prevLeftRight is null)
+                    {
+                        _prevLeftRight = Global.XDirections.left;
+                        _movingLeft = false;
+                    }
+                    _movingRight = true;
+                    break;
+
+                case Keybinds.Actions.Special1:
+                    playerCharacter.DoSpecial1();
+                    break;
+
+                case Keybinds.Actions.Special2:
+                    break;
+
+                case Keybinds.Actions.Special3:
                     break;
             }
 
@@ -646,21 +657,23 @@ namespace drawedOut
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
+            if (!Keybinds.Bindings.TryGetValue(e.KeyCode, out Keybinds.Actions action)) return;
+
+            switch (action)
             {
-                case Keys.W:
+                case Keybinds.Actions.Jump:
                     _jumping = false;
                     playerCharacter.StopJump();
                     break;
 
-                case Keys.A:
-                    if (_prevLeftRight == Keys.D) _movingRight = true;
+                case Keybinds.Actions.MoveLeft:
+                    if (_prevLeftRight == Global.XDirections.right) _movingRight = true;
                     _prevLeftRight = null;
                     _movingLeft = false;
                     break;
 
-                case Keys.D:
-                    if (_prevLeftRight == Keys.A) _movingLeft = true;
+                case Keybinds.Actions.MoveRight:
+                    if (_prevLeftRight == Global.XDirections.left) _movingLeft = true;
                     _prevLeftRight = null;
                     _movingRight = false;
                     break;

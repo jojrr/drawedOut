@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    public abstract class Character : Entity
+    internal abstract class Character : Entity
     {
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; private set; }
@@ -313,7 +313,7 @@
         /// Moves the character according to their velocity and checks collision.
         /// also responsible for gravity
         /// </summary>
-        public void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
+        internal void MoveCharacter(double dt, Global.XDirections? direction, double scrollVelocity)
         {
             DoGravTick(dt);
             checkInBoundary();

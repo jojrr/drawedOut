@@ -1,6 +1,6 @@
 ﻿namespace drawedOut
 {
-    public class Platform : Entity
+    internal class Platform : Entity
     {
         public static IReadOnlyCollection<Platform> ActivePlatformList => _activePlatformList;
         public static IReadOnlyCollection<Platform> InactivePlatformList => _inactivePlatformList;

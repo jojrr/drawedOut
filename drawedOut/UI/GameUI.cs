@@ -1,6 +1,6 @@
 ﻿namespace drawedOut 
 {
-    public class GameUI 
+    internal class GameUI 
     {
         public static IReadOnlyCollection<GameUI> UiElements => _uiElements;
         private static List<GameUI> _uiElements = new List<GameUI>();

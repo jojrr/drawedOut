@@ -294,24 +294,30 @@ namespace drawedOut
                     yCenterPos: yPos,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{ 
+                        _rebindAction=Keybinds.Actions.MoveLeft; 
+                        Invalidate();
+                    },
                     fontSize: fontSize);
             _rightRebindBtn = new GameButton(
                     xCenterPos: xOrigin,
                     yCenterPos: yPos+yOffset,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{
+                        _rebindAction=Keybinds.Actions.MoveRight;
+                        Invalidate();
+                    },
                     fontSize: fontSize);
             _jumpRebindBtn = new GameButton(
                     xCenterPos: xOrigin,
                     yCenterPos: yPos+yOffset*2,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{
+                        _rebindAction=Keybinds.Actions.Jump;
+                        Invalidate();
+                    },
                     fontSize: fontSize);
 
             _abilityOneRebindBtn = new GameButton(
@@ -319,24 +325,30 @@ namespace drawedOut
                     yCenterPos: yPos,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{
+                        _rebindAction=Keybinds.Actions.Special1;
+                        Invalidate();
+                    },
                     fontSize: fontSize);
             _abilityTwoRebindBtn = new GameButton(
                     xCenterPos: xOrigin+xOffset,
                     yCenterPos: yPos+yOffset,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{
+                        _rebindAction=Keybinds.Actions.Special2;
+                        Invalidate();
+                    },
                     fontSize: fontSize);
             _abilityThreeRebindBtn = new GameButton(
                     xCenterPos: xOrigin+xOffset,
                     yCenterPos: yPos+yOffset*2,
                     relWidth: width,
                     relHeight: height,
-                    clickEvent: ()=>{},
-                    txt: "Click to rebind",
+                    clickEvent: ()=>{
+                        _rebindAction=Keybinds.Actions.Special3;
+                        Invalidate();
+                    },
                     fontSize: fontSize);
         }
 
@@ -346,14 +358,26 @@ namespace drawedOut
             float xOffset = 0.15f*Width;
 
             int curX = _jumpRebindBtn.X - (int)xOffset;
-            _bindingStringsPos.Add("Move Left: ", new Point(curX, _leftRebindBtn.Y));
-            _bindingStringsPos.Add("Move Right: ", new Point(curX, _rightRebindBtn.Y));
-            _bindingStringsPos.Add("Jump: ", new Point(curX, _jumpRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Move Left: {Keybinds.ActionBindings[Keybinds.Actions.MoveLeft]}", 
+                    new Point(curX, _leftRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Move Right: {Keybinds.ActionBindings[Keybinds.Actions.MoveRight]}", 
+                    new Point(curX, _rightRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Jump: {Keybinds.ActionBindings[Keybinds.Actions.Jump]}", 
+                    new Point(curX, _jumpRebindBtn.Y));
 
             curX = _abilityOneRebindBtn.X - (int) xOffset;
-            _bindingStringsPos.Add("Ability One:", new Point(curX, _abilityOneRebindBtn.Y));
-            _bindingStringsPos.Add("Ability Two:", new Point(curX, _abilityTwoRebindBtn.Y));
-            _bindingStringsPos.Add("Ability Three:", new Point(curX, _abilityThreeRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Ability One: {Keybinds.ActionBindings[Keybinds.Actions.Special1]}", 
+                    new Point(curX, _abilityOneRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Ability Two: {Keybinds.ActionBindings[Keybinds.Actions.Special2]}",
+                    new Point(curX, _abilityTwoRebindBtn.Y));
+            _bindingStringsPos.Add(
+                    $"Ability Three: {Keybinds.ActionBindings[Keybinds.Actions.Special3]}", 
+                    new Point(curX, _abilityThreeRebindBtn.Y));
         }
 
         #endregion

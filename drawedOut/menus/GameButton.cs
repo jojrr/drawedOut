@@ -1,6 +1,6 @@
 namespace drawedOut
 {
-    public class GameButton
+    internal class GameButton
     {
         public static IReadOnlyCollection<GameButton> BtnList => _btnList;
         public static GameButton? SelectedButton { get; private set; }
