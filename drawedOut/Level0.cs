@@ -44,8 +44,7 @@ namespace drawedOut
         private bool
             _timerStarted = false,
             _levelActive = true,
-            _showLevelTime = true,
-            _showHitbox = false,
+            _showDebugInfo = false,
 
             _movingLeft = false,
             _movingRight = false,
@@ -492,10 +491,13 @@ namespace drawedOut
             Projectile.DrawAll(g);
             Platform.DrawAll(g);
 
-            if (_showLevelTime) ShowSpeedrunTime(g);
-            if (_showHitbox) DrawHitboxes(g);
+            if (Global.ShowTime || _showDebugInfo) ShowSpeedrunTime(g);
+            if (_showDebugInfo) 
+            {
+                DrawHitboxes(g);
+                ShowFPSInfo(g);
+            }
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
-            ShowFPSInfo(g);
             if (_isPaused) DrawPauseMenu(g);
         }
 
@@ -512,12 +514,12 @@ namespace drawedOut
 
         private void ShowSpeedrunTime(Graphics g)
         {
-            float baseScale = Global.BaseScale;
-            g.DrawString(
-                    levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
-                    Global.DefaultFont,
-                    Brushes.Black,
-                    new PointF(1800*baseScale,30*baseScale));
+            return;
+            // g.DrawString(
+            //         levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
+            //         Global.DefaultFont,
+            //         Brushes.Black,
+            //         new PointF(1800*baseScale,30*baseScale));
         }
 
 
@@ -567,7 +569,7 @@ namespace drawedOut
             using (Pen recPen = new Pen(Color.FromArgb(200, 50, 50, 50), 6))
             { g.DrawRectangle(recPen, baseRec); }
 
-            using (Font pauseFont = new Font("Sour Gummy", 30*Global.BaseScale))
+            using (Font pauseFont = new Font(Global.SourGummy, 30*Global.BaseScale))
             {
                 string pauseString = "PAUSED";
                 SizeF pauseSize = g.MeasureString(pauseString, pauseFont);
@@ -588,8 +590,6 @@ namespace drawedOut
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Modifiers  == Keys.Alt && e.KeyCode == Keys.F5) Application.Exit();
-
             switch (e.KeyCode)
             {
                 case Keys.W:
@@ -622,9 +622,13 @@ namespace drawedOut
                     TogglePause();
                     break;
 
+                case Keys.F1:
+                    _showDebugInfo=!_showDebugInfo;
+                    break;
+
                 // emergency shutdown
                 case Keys.F4:
-                    FormHandler.CloseHandler();
+                    Application.Exit();
                     this.Close();
                     break;
             }
@@ -712,7 +716,7 @@ namespace drawedOut
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // clear lists 
+            // clear unused lists
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
             Attacks.ClearAllLists();
@@ -720,6 +724,7 @@ namespace drawedOut
             Projectile.ClearAllLists();
             Checkpoint.ClearAllLists();
             GameButton.ClearAll();
+            GameUI.ClearAll();
             _characterAnimations.Clear();
 
             // reset stopwatches

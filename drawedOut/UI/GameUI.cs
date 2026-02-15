@@ -2,7 +2,8 @@
 {
     public class GameUI 
     {
-        public static List<GameUI> UiElements = new List<GameUI>();
+        public static IReadOnlyCollection<GameUI> UiElements => _uiElements;
+        private static List<GameUI> _uiElements = new List<GameUI>();
 
         public bool Visible { get; set; }
         public PointF Origin { get; protected set; }
@@ -27,7 +28,7 @@
             Origin = new PointF(origin.X * Global.BaseScale, origin.Y*Global.BaseScale);
             ElementSize = new SizeF(elementWidth*Global.BaseScale, elementHeight*Global.BaseScale);
             Visible = isVisible; 
-            UiElements.Add(this);
+            _uiElements.Add(this);
         }
 
         /// <summary>
@@ -44,8 +45,10 @@
             Origin = new PointF(origin.X * Global.BaseScale, origin.Y*Global.BaseScale);
             ElementSize = new SizeF(elementSize.Width*Global.BaseScale, elementSize.Height*Global.BaseScale);
             Visible = isVisible; 
-            UiElements.Add(this);
+            _uiElements.Add(this);
         }
+
+        public static void ClearAll() => _uiElements.Clear();
 
         /// <summary> Do not call this method. Only call from the overridden method. </summary>
         public virtual void Draw(Graphics g) => throw new Exception("Not overridden in derived class.");

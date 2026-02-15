@@ -15,7 +15,6 @@ namespace drawedOut
         public MainMenu()
         {
             InitializeComponent();
-            Global.LevelResolution = Global.Resolutions.p1080;
             UpdateSize();
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
@@ -90,7 +89,7 @@ namespace drawedOut
             {
                 case (MenuState.Start):
                     string titleString = "DRAWED OUT";
-                    using (Font titleFont = new Font("Sour Gummy", 100*Global.BaseScale))
+                    using (Font titleFont = new Font(Global.SourGummy, 100*Global.BaseScale))
                     {
                         SizeF titleSize = g.MeasureString(titleString, titleFont);
                         float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
@@ -109,7 +108,7 @@ namespace drawedOut
         private void DrawSettingsStrings(Graphics g)
         {
             string settingsString = "Settings";
-            using (Font settingsFont = new Font("Sour Gummy", 50*Global.BaseScale))
+            using (Font settingsFont = new Font(Global.SourGummy, 50*Global.BaseScale))
             {
                 SizeF titleSize = g.MeasureString(settingsString, settingsFont);
                 float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
@@ -117,7 +116,7 @@ namespace drawedOut
                         titlePosX, 10);
             }
             string keyHeadingString = "Keybinds";
-            using (Font keyHeadingFont = new Font("Sour Gummy", 30*Global.BaseScale))
+            using (Font keyHeadingFont = new Font(Global.SourGummy, 30*Global.BaseScale))
             {
                 SizeF titleSize = g.MeasureString(settingsString, keyHeadingFont);
                 float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);

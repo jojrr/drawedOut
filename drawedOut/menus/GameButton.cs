@@ -122,7 +122,7 @@ namespace drawedOut
 
             if (BtnTxt is null) return;
 
-            using (Font btnFont = new Font("Sour Gummy", _fontSize))
+            using (Font btnFont = new Font(Global.SourGummy, _fontSize))
             {
                 TextRenderer.DrawText(
                         g, 

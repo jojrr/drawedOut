@@ -106,7 +106,7 @@ namespace drawedOut
                 }
 
 
-                _defaultFont = new Font(_defaultFont.FontFamily, _DEFAULT_FONT_SIZE*_baseScale);
+                _defaultFont = new Font(SourGummy, _DEFAULT_FONT_SIZE*_baseScale);
                 _leftScrollBound = (int)(scaleWidth * scrollBoundPercent);
                 _rightScrollBound = (int)(scaleWidth * (1-scrollBoundPercent));
                 CalcNewCenter();
@@ -119,9 +119,10 @@ namespace drawedOut
         private static Point _centerOfScreen;
         public static Point CenterOfScreen { get => _centerOfScreen; }
 
-        private static Font _defaultFont;
         /// <summary> The default main font used in the game </summary>
+        private static Font _defaultFont;
         public static Font DefaultFont => _defaultFont;
+        public static FontFamily SourGummy { get; private set;}
 
         public static void ImportFont()
         { 
@@ -132,7 +133,7 @@ namespace drawedOut
             if (fontCollection.Families.Length == 0)
             { throw new Exception("Font failed to load"); }
 
-            _defaultFont = new Font(fontCollection.Families[0], _DEFAULT_FONT_SIZE*_baseScale); 
+            SourGummy = fontCollection.Families[0];
             fontCollection.Dispose();
         }
 

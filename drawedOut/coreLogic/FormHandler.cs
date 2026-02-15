@@ -11,13 +11,14 @@ namespace drawedOut
             this.Visible = false;
             Handler = this;
 
-            Global.ImportFont();
 
             InitializeComponent();
         }
 
         private void FormHandler_Load(object sender, EventArgs e)
         { 
+            Global.ImportFont();
+            Global.LevelResolution = Global.Resolutions.p1080;
             MainMenu menu = new MainMenu(); 
             menu.Show(); 
         }
