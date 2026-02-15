@@ -2,6 +2,7 @@ namespace drawedOut
 {
     internal class Player : Character
     {
+        public bool IsHit { get; private set; }
         public double Energy { get => _energy; }
         public double MaxEnergy { get => _maxEnergy; }
         public double XVelocity { get => xVelocity; }
@@ -20,29 +21,29 @@ namespace drawedOut
         private double 
             _parryTimeS = 0,
             _parryEndlagS = 0;
-        public bool IsHit { get; private set; }
         private bool _isParrying = false;
         private double _energy, _maxEnergy;
+        private AnimationPlayer _jumpAnim, _fallAnim;
 
         private readonly Attacks 
             _basic1 = new Attacks(
                     parent: null,
                     width: 180,
                     height: 180,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(@"playerChar\basic1\"),
                     xOffset: 100,
-                    spawn: 2,
-                    despawn: 6,
-                    endlag: 1),
+                    spawn: 3,
+                    despawn: 10,
+                    endlag: 0.5f),
             _basic2 = new Attacks(
                     parent: null,
                     width: 240,
                     height: 180,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(@"playerChar\basic2\"),
                     xOffset: 100,
-                    spawn: 2,
+                    spawn: 3,
                     despawn: 8,
-                    endlag: 1.5F),
+                    endlag: 2.5F),
             _special1 = new Attacks(
                     parent: null,
                     width: 500,
@@ -74,6 +75,8 @@ namespace drawedOut
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
+            _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
+            // _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
 
             _basic1.Parent = this;
             _basic2.Parent = this;
@@ -215,34 +218,33 @@ namespace drawedOut
         public override Bitmap NextAnimFrame()
         {
             if (runAnim is null || idleAnim is null) throw new Exception("Player runAnim or idle null");
-            if (curAttack is null)
+
+            if (curAttack is not null)
             {
-                if (yVelocity == 0)
+                if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
                 {
-                    if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
-                    return runAnim.NextFrame(FacingDirection);
+                    Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                    curAttack = null;
+                    return atkAnim;
                 }
-                /*
-                else if (yVelocity > 0)
-                {
-                    return fallAnim.NextFrame(FacingDirection);
-                }
-                else 
-                {
-                    return jumpAnim.NextFrame(FacingDirection);
-                }
-                */
-                return idleAnim.NextFrame(FacingDirection);
+
+                return curAttack.NextAnimFrame(FacingDirection);
             }
 
-            if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
+            if (yVelocity == 0)
             {
-                Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
-                curAttack = null;
-                return atkAnim;
+                if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
+                return runAnim.NextFrame(FacingDirection);
             }
-
-            return curAttack.NextAnimFrame(FacingDirection);
+            // else if (yVelocity > 0)
+            // {
+            //     return _fallAnim.NextFrame(FacingDirection);
+            // }
+            else 
+            {
+                return _jumpAnim.NextFrame(FacingDirection);
+            }
+            return idleAnim.NextFrame(FacingDirection);
         }
 
 

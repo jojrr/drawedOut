@@ -42,7 +42,7 @@
         }
 
         public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, Bitmap sprite,
-                int dmg=1, int knockback=800, bool isLethal=false)
+                int dmg=1, int knockback=800, bool isLethal=true)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;

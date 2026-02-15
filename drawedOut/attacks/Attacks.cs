@@ -210,7 +210,7 @@ namespace drawedOut
                 Parent.ApplyEndlag(endlagS);
             }
             else if (Animation.CurFrame == spawnFrame) CreateHitbox();
-            return Animation.NextFrame();
+            return Animation.NextFrame(facingDir);
         }
 
 
