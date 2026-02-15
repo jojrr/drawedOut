@@ -19,6 +19,7 @@ namespace drawedOut
             UpdateSize();
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
+            this.AutoScaleMode=AutoScaleMode.None;
 
             Stopwatch timerSW = Stopwatch.StartNew();
             _menuTimer = new Thread (() => 
@@ -49,11 +50,6 @@ namespace drawedOut
         }
 
         private void FindCursor() => _mouseLoc = PointToClient(Cursor.Position);
-
-        private void FpsBtnClick(UInt16 fps)
-        {
-            Global.GameTickFreq = fps;
-        }
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
@@ -197,7 +193,7 @@ namespace drawedOut
 
             _settingsBackBtn.Show();
 
-            TryInvoke(Invalidate);
+            this.Invalidate();
         }
 
     }

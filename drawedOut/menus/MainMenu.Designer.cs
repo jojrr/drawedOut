@@ -135,8 +135,9 @@ namespace drawedOut
             _settingsStringsYPos.Clear();
             _settingsStringsYPos.Add("Show lined background", _backgroundBtn.Y);
             _settingsStringsYPos.Add("Show time in level", _timeBtn.Y);
-            _settingsStringsYPos.Add("_fpsTxt", _24FpsBtn.Y);
-            _settingsStringsYPos.Add("Game display resolution", _720pBtn.Y);
+            _settingsStringsYPos.Add($"FPS (current: {Global.GameTickFreq})", _24FpsBtn.Y);
+            _settingsStringsYPos.Add($"Game resolution \n(current: {Global.LevelResolution.ToString()})", _720pBtn.Y);
+            Invalidate();
         }
 
         private void CreateSettingsBtns()
@@ -147,10 +148,7 @@ namespace drawedOut
                     yCenterPos: 0.18f,
                     relWidth: 0.06f,
                     relHeight: 0.05f,
-                    clickEvent: ()=>{
-                        Global.ShowBG=!Global.ShowBG;
-                        _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
-                    },
+                    clickEvent: BgBtnClick,
                     txt: BoolToString(Global.ShowBG));
             CreateFPSBtns(0.54f, 0.33f);
             CreateResBtns(0.55f, 0.40f);
@@ -159,10 +157,7 @@ namespace drawedOut
                     yCenterPos: 0.25f,
                     relWidth: 0.06f,
                     relHeight: 0.05f,
-                    clickEvent: ()=> {
-                        Global.ShowTime=!Global.ShowTime;
-                        _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
-                    },
+                    clickEvent: TimeBtnClick,
                     txt: BoolToString(Global.ShowTime));
             
             CreateBindBtns(0.4f, 0.55f);
@@ -177,9 +172,23 @@ namespace drawedOut
                     txt: "Back to menu");
         }
 
+        private void BgBtnClick() 
+        {
+            Global.ShowBG=!Global.ShowBG;
+            _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
+            Invalidate();
+        }
+
+        private void TimeBtnClick()
+        {
+            Global.ShowTime=!Global.ShowTime;
+            _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
+            Invalidate();
+        }
+
         private void CreateFPSBtns(float xLevel, float yLevel)
         {
-            int fontSize = 15;
+            int fontSize = 20;
             float spacing = 0.05f;
             float btnWidth = 0.03f;
             float btnHeight = 0.035f;
@@ -188,7 +197,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>FpsBtnClick(24),
+                    clickEvent: ()=> FpsBtnClick(24),
                     txt: "24",
                     fontSize: fontSize);
             _30FpsBtn = new GameButton(
@@ -196,7 +205,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>FpsBtnClick(30),
+                    clickEvent: ()=> FpsBtnClick(30),
                     txt: "30",
                     fontSize: fontSize);
             _60FpsBtn = new GameButton(
@@ -204,7 +213,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>FpsBtnClick(60),
+                    clickEvent: ()=> FpsBtnClick(60),
                     txt: "60",
                     fontSize: fontSize);
             _120FpsBtn = new GameButton(
@@ -217,9 +226,16 @@ namespace drawedOut
                     fontSize: fontSize);
         }
 
+        private void FpsBtnClick(UInt16 fps)
+        {
+            if (Global.GameTickFreq == fps) return;
+            Global.GameTickFreq = fps;
+            CreateSettingsStrings();
+        }
+
         private void CreateResBtns(float xLevel, float yLevel)
         {
-            int fontSize = 15;
+            int fontSize = 20;
             float spacing = 0.07f;
             float btnWidth = 0.05f;
             float btnHeight = 0.035f;
@@ -228,21 +244,15 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>{
-                        Global.LevelResolution = Global.Resolutions.p720;
-                        UpdateSize();
-                    },
-                    txt: "720p",
+                    clickEvent: ()=>resBtnClick(Global.Resolutions.p720),
+                    txt: $"720p",
                     fontSize: fontSize);
             _1080pBtn = new GameButton(
                     xCenterPos: xLevel+spacing,
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>{
-                        Global.LevelResolution = Global.Resolutions.p1080;
-                        UpdateSize();
-                    },
+                    clickEvent: ()=>resBtnClick(Global.Resolutions.p1080),
                     txt: "1080p",
                     fontSize: fontSize);
             _1440pBtn = new GameButton(
@@ -250,16 +260,30 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=>{
-                        Global.LevelResolution = Global.Resolutions.p1440;
-                        UpdateSize();
-                    },
+                    clickEvent: ()=>resBtnClick(Global.Resolutions.p1440),
                     txt: "1440p",
                     fontSize: fontSize);
         }
 
+        private void resBtnClick(Global.Resolutions newRes)
+        {
+            if (newRes == Global.LevelResolution) return;
+
+            DialogResult result = MessageBox.Show(
+                $"Are you sure you want to set the resolution to {newRes.ToString()}",
+                "confirm change",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+            if (result == DialogResult.No) return;
+
+            Global.LevelResolution = newRes;
+            CreateSettingsStrings();
+            UpdateSize();
+        }
+
         private void CreateBindBtns(float xOrigin, float yPos)
         {
+            int fontSize=19;
             float xOffset = 0.3f;
             float yOffset = 0.08f;
             float width = 0.12f;
@@ -271,21 +295,24 @@ namespace drawedOut
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
             _rightRebindBtn = new GameButton(
                     xCenterPos: xOrigin,
                     yCenterPos: yPos+yOffset,
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
             _jumpRebindBtn = new GameButton(
                     xCenterPos: xOrigin,
                     yCenterPos: yPos+yOffset*2,
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
 
             _abilityOneRebindBtn = new GameButton(
                     xCenterPos: xOrigin+xOffset,
@@ -293,21 +320,24 @@ namespace drawedOut
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
             _abilityTwoRebindBtn = new GameButton(
                     xCenterPos: xOrigin+xOffset,
                     yCenterPos: yPos+yOffset,
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
             _abilityThreeRebindBtn = new GameButton(
                     xCenterPos: xOrigin+xOffset,
                     yCenterPos: yPos+yOffset*2,
                     relWidth: width,
                     relHeight: height,
                     clickEvent: ()=>{},
-                    txt: "Click to rebind");
+                    txt: "Click to rebind",
+                    fontSize: fontSize);
         }
 
         private void CreateBindStrings()

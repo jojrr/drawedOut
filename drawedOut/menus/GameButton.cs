@@ -116,7 +116,7 @@ namespace drawedOut
 
             if (_showOutline) 
             {
-                using (Pen btnPen = new Pen(Color.Black, 4))
+                using (Pen btnPen = new Pen(Color.Black, (int)(4*Global.BaseScale)))
                 { g.DrawRectangle(btnPen, _bounds); }
             }
 

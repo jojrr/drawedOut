@@ -12,7 +12,7 @@ namespace drawedOut
     {
         public const int 
             _GRAVITY = 4000,
-            _DEFAULT_FONT_SIZE = 20,
+            _DEFAULT_FONT_SIZE = 25,
             MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
@@ -105,6 +105,8 @@ namespace drawedOut
                         break;
                 }
 
+
+                _defaultFont = new Font(_defaultFont.FontFamily, _DEFAULT_FONT_SIZE*_baseScale);
                 _leftScrollBound = (int)(scaleWidth * scrollBoundPercent);
                 _rightScrollBound = (int)(scaleWidth * (1-scrollBoundPercent));
                 CalcNewCenter();
