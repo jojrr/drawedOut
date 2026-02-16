@@ -35,9 +35,9 @@ namespace drawedOut
             sort();
         }
 
-        private T sort()
+        private void sort()
         {
-            if (Length == 1) return _array[0];
+            if (Length < 2) return;
 
             for (int i = Length / 2 - 1; i >= 0; i--)
             { upHeap(i, Length); }
@@ -47,8 +47,6 @@ namespace drawedOut
                 swap(0, i, ref _array);
                 upHeap(0, i);
             }
-
-            return _array[0];
         }
 
         private void upHeap(int index, int lastVal)

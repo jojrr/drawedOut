@@ -716,13 +716,13 @@ namespace drawedOut
         { 
             // save the time taken to complete this level
             SaveData.AddScore(0, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
-            QuitToMenu();
+            TryInvoke(QuitToMenu);
         }
 
         private void QuitToMenu()
         {
             // shown menu
-            this.Close();
+            Close();
             MainMenu menu = new MainMenu();
             menu.Show();
         }

@@ -97,8 +97,6 @@ namespace drawedOut
             GameButton.ClickSelected();
         }
 
-
-
         private void MainMenu_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F4) Application.Exit();
@@ -121,7 +119,10 @@ namespace drawedOut
         }
 
         private void MainMenu_Closing(object sender, FormClosingEventArgs e)
-        { _active = false; }
+        { 
+            GameButton.ClearAll();
+            _active = false; 
+        }
 
 
 # region main menu
@@ -292,7 +293,7 @@ namespace drawedOut
 
             int mins = (int)Math.Floor(timeS.Value)/60;
             int secs = (int)(timeS%60);
-            int ms = (int)Math.Round(timeS.Value * 1000) % 1000;
+            int ms = (int)Math.Round(timeS.Value * 100) % 100;
             return $"{mins:00}:{secs:00}.{ms:00}";
         }
 

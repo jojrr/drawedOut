@@ -24,6 +24,9 @@ namespace drawedOut
         }
 
         public static void CloseHandler() => Handler.Close();
+
+        public void Form_Closing(object sender, FormClosingEventArgs e)
+        { Application.Exit(); }
     }
 
 
@@ -63,6 +66,7 @@ namespace drawedOut
             Name = "FormHandler";
             Text = "FormHandler";
             Load += FormHandler_Load;
+            FormClosing += Form_Closing;
             ResumeLayout(false);
         }
 
