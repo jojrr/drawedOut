@@ -47,11 +47,11 @@ namespace drawedOut
             else throw new Exception("file is null");
         }
 
-        public static void SaveDictAsJson<T>(T dict, string filePath)
+        private static void SaveObjectAsJson<T>(T obj, string filePath, bool append=false)
         {
-            string dictAsJson = JsonSerializer.Serialize(dict, _jsonOptions);
-            using ( StreamWriter sw = new StreamWriter(filePath, false) )
-            { sw.Write(dictAsJson); }
+            string objAsJson = JsonSerializer.Serialize(obj, _jsonOptions);
+            using ( StreamWriter sw = new StreamWriter(filePath, append) )
+            { sw.Write(objAsJson); }
         }
 
         public static float? GetFastestScore(UInt16 levelNo) 
@@ -64,7 +64,7 @@ namespace drawedOut
         public static void AddScore(UInt16 levelNo, float timeS) 
         {
             _levelTimes[$"level{levelNo}"].Add(timeS);
-            SaveDictAsJson<Dictionary<string, MaxHeap<float>>>(_levelTimes, _timeFile);
+            SaveObjectAsJson<Dictionary<string, MaxHeap<float>>>(_levelTimes, _timeFile);
         }
 
         public static Dictionary<Keys, Keybinds.Actions>? GetKeybinds()
@@ -73,8 +73,23 @@ namespace drawedOut
             { return RetriveJSONData<Dictionary<Keys, Keybinds.Actions>>(_keybindFile); }
             else return null;
         }
+
         public static void SaveKeybinds(Dictionary<Keys, Keybinds.Actions> keyActDict)
-        { SaveData.SaveDictAsJson<Dictionary<Keys, Keybinds.Actions>>(keyActDict, _keybindFile); }
+        { SaveObjectAsJson<Dictionary<Keys, Keybinds.Actions>>(keyActDict, _keybindFile); }
+
+        public static Preferences.PreferencesInstance? GetSettings()
+        {
+            if (File.Exists(_settingsFile)) 
+            { return RetriveJSONData<Preferences.PreferencesInstance>(_settingsFile); }
+            else return null;
+        }
+
+        public static void SaveSettings()
+        { 
+            Preferences.Resolution = Global.LevelResolution;
+            Preferences.FPS = Global.GameTickFreq;
+            SaveObjectAsJson<Preferences.PreferencesInstance>(Preferences.Instance, _settingsFile);
+        }
 
     }
 }

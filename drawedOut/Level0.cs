@@ -42,6 +42,7 @@ namespace drawedOut
         private Platform _endWall, _roomWall;
 
         private bool
+            _showTime = false,
             _timerStarted = false,
             _levelActive = true,
             _showDebugInfo = false,
@@ -226,6 +227,7 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            _showTime = Preferences.ShowTime;
             _isPaused = false;
             _deltaTimeSW.Start();
 
@@ -491,7 +493,7 @@ namespace drawedOut
             Projectile.DrawAll(g);
             Platform.DrawAll(g);
 
-            if (Global.ShowTime || _showDebugInfo) ShowSpeedrunTime(g);
+            if (_showTime || _showDebugInfo) ShowSpeedrunTime(g);
             if (_showDebugInfo) 
             {
                 DrawHitboxes(g);

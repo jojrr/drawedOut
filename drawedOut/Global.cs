@@ -31,12 +31,6 @@ namespace drawedOut
         /// </summary>
         public static int Gravity { get => (int)(_GRAVITY*_baseScale); }
 
-        /// <summary> Should the background be displayed </summary>
-        public static bool ShowBG;
-
-        /// <summary> Should the background be displayed </summary>
-        public static bool ShowTime;
-
         /// <summary>
         /// Threshold for entities to be "active" (either side of screen center)
         /// </summary>

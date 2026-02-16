@@ -15,6 +15,8 @@ namespace drawedOut
         public MainMenu()
         {
             InitializeComponent();
+
+            Preferences.LoadInstance(SaveData.GetSettings());
             UpdateSize();
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
@@ -230,15 +232,17 @@ namespace drawedOut
 
         private void BgBtnClick() 
         {
-            Global.ShowBG=!Global.ShowBG;
-            _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
+            Preferences.ShowBG=!Preferences.ShowBG;
+            _backgroundBtn.BtnTxt = BoolToString(Preferences.ShowBG);
+            SaveData.SaveSettings();
             Invalidate();
         }
 
         private void TimeBtnClick()
         {
-            Global.ShowTime=!Global.ShowTime;
-            _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
+            Preferences.ShowTime=!Preferences.ShowTime;
+            _timeBtn.BtnTxt = BoolToString(Preferences.ShowTime);
+            SaveData.SaveSettings();
             Invalidate();
         }
 
@@ -246,6 +250,7 @@ namespace drawedOut
         {
             if (Global.GameTickFreq == fps) return;
             Global.GameTickFreq = fps;
+            SaveData.SaveSettings();
             CreateSettingsStrings();
         }
 
@@ -262,6 +267,7 @@ namespace drawedOut
 
             Global.LevelResolution = newRes;
             CreateSettingsStrings();
+            SaveData.SaveSettings();
             UpdateSize();
         }
 # endregion

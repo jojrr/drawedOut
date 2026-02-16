@@ -117,7 +117,7 @@ namespace drawedOut
                     relWidth: 0.06f,
                     relHeight: 0.05f,
                     clickEvent: BgBtnClick,
-                    txt: BoolToString(Global.ShowBG));
+                    txt: BoolToString(Preferences.ShowBG));
             CreateFPSBtns(0.54f, 0.33f);
             CreateResBtns(0.55f, 0.40f);
             _timeBtn = new GameButton(
@@ -126,7 +126,7 @@ namespace drawedOut
                     relWidth: 0.06f,
                     relHeight: 0.05f,
                     clickEvent: TimeBtnClick,
-                    txt: BoolToString(Global.ShowTime));
+                    txt: BoolToString(Preferences.ShowTime));
 
             CreateBindBtns(0.4f, 0.6f);
             CreateBindStrings();
