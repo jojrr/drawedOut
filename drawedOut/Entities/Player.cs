@@ -103,7 +103,12 @@ namespace drawedOut
             }
             curAttack = _basic1;
         }
-        public void DoBasicAttack2() => curAttack = _basic2;
+        public void DoBasicAttack2() 
+        {
+            _basic1.Animation.ResetAnimation();
+            _basic2.Animation.ResetAnimation();
+            curAttack = _basic2;
+        }
 
         public void DoDamage(Projectile sourceProjectile)
         {
@@ -224,6 +229,7 @@ namespace drawedOut
                 if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
                 {
                     Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
+                    curAttack.Animation.ResetAnimation();
                     curAttack = null;
                     return atkAnim;
                 }
