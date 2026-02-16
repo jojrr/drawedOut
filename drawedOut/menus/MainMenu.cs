@@ -3,12 +3,14 @@ namespace drawedOut
     internal partial class MainMenu : Form
     {
         private enum MenuState { Start, Levels, Settings };
+        private enum Ranks { S, A, B, C, D };
 
         private static bool _active;
         private static Point _mouseLoc;
         private const int _TICK_MS = 30;
         private static Thread _menuTimer;
         private static Keybinds.Actions? _rebindAction=null;
+        private static IReadOnlyDictionary<Ranks, Bitmap> _rankImgs;
 
         private MenuState _curMenuState;
 
@@ -21,6 +23,25 @@ namespace drawedOut
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.AutoScaleMode=AutoScaleMode.None;
+
+            _rankImgs = new Dictionary<Ranks, Bitmap>()
+            {
+                { Ranks.S, Global.GetSingleImage(@"fillerPic\") },
+                { Ranks.A, Global.GetSingleImage(@"fillerPic\") },
+                { Ranks.B, Global.GetSingleImage(@"fillerPic\") },
+                { Ranks.C, Global.GetSingleImage(@"fillerPic\") },
+                { Ranks.D, Global.GetSingleImage(@"fillerPic\") },
+            };
+
+            Dictionary<float,Ranks> tutorialRanks = new Dictionary<float,Ranks>()
+            {
+                { 25, Ranks.S },
+                { 30, Ranks.A },
+                { 40, Ranks.B },
+                { 50, Ranks.C },
+                { -1, Ranks.D },
+            };
+            _tutorialRank = CalcRank(0, tutorialRanks);
 
             Stopwatch timerSW = Stopwatch.StartNew();
             _menuTimer = new Thread (() => 
@@ -35,6 +56,19 @@ namespace drawedOut
                     timerSW.Restart();
                 }
             });
+        }
+
+        private static Ranks? CalcRank(UInt16 levelNo, Dictionary<float, Ranks> timeToRank)
+        {
+            float? levelTime = SaveData.GetFastestScore(levelNo);
+            if (levelTime is null) return null;
+            foreach (float time in timeToRank.Keys)
+            { 
+                if (time == -1) break;
+                if (levelTime > time) continue;
+                return timeToRank[time]; 
+            }
+            return timeToRank[-1]; ;
         }
 
         private void UpdateSize()
@@ -275,11 +309,14 @@ namespace drawedOut
 # region Levels Menu
         private void DrawLevelMenu(Graphics g)
         {
-            int absCompDist = _level1Btn.Y - _tutorialBtn.Y;
+            int rankXPos = _tutorialBtn.Rect.Right + (int)(10*Global.BaseScale);
+
+            // draw times and rank rectangles by looping from 0 to 2, increasing the y values each time.
             for (UInt16 i = 0; i < 3; i++)
             {
-                int componentDistnace = absCompDist*i;
+                int componentDistnace = (_level1Btn.Y - _tutorialBtn.Y)*i;
 
+                // draw times
                 g.DrawString(
                         $"Fastest time: {TimeToString(SaveData.GetFastestScore(i))}", 
                         Global.DefaultFont,
@@ -287,15 +324,33 @@ namespace drawedOut
                         _tutorialBtn.X,
                         _tutorialBtn.Rect.Bottom + _timeOffsetY + componentDistnace);
 
-                using (Pen pen = new Pen(Color.Black, (int)(4*Global.BaseScale)))
+                // draw rank rectangle
+                using (Pen rankPen = new Pen(Color.Black, (int)(4*Global.BaseScale)))
                 {
                     g.DrawRectangle(
-                            pen,
-                            _tutorialBtn.Rect.Right + (int)(10*Global.BaseScale),
+                            rankPen,
+                            rankXPos,
                             _tutorialBtn.Y + componentDistnace,
                             _rankSize,
                             _rankSize);
                 }
+            }
+
+            if (_tutorialRank is not null) 
+            {
+                g.DrawImage(
+                        _rankImgs[_tutorialRank.Value],
+                        rankXPos,
+                        _tutorialBtn.Y,
+                        _rankSize,
+                        _rankSize);
+                //testing
+                g.DrawString(
+                        _tutorialRank.ToString(),
+                        Global.DefaultFont,
+                        Brushes.Black,
+                        rankXPos,
+                        _tutorialBtn.Y-20);
             }
         }
 

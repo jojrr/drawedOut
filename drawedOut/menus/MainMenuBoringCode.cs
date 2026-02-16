@@ -352,7 +352,7 @@ namespace drawedOut
 
         private static int _rankSize;
         private static float _timeOffsetY;
-        private static string
+        private static Ranks?
             _tutorialRank,
             _level1Rank,
             _level2Rank;
