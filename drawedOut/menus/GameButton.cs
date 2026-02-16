@@ -8,7 +8,7 @@ namespace drawedOut
         public int Y { get => _bounds.Y; set => _bounds.Y = value; }
         public Action ClickEvent { get; private init; }
         public string? BtnTxt { get; set; }
-        public Size BoundSize => _bounds.Size;
+        public Rectangle Rect => _bounds;
 
         private static List<GameButton> _btnList = new();
         private Rectangle _bounds;

@@ -41,6 +41,7 @@ namespace drawedOut
 
             GameButton.ClearAll();
             CreateMenuButtons();
+            CreateLevelButtons();
             InitSettings();
             ShowSettingsMenu();
             CenterToScreen();
@@ -49,28 +50,6 @@ namespace drawedOut
         }
 
         private void FindCursor() => _mouseLoc = PointToClient(Cursor.Position);
-
-        private void MainMenu_Load(object sender, EventArgs e)
-        {
-            _active = true;
-            _menuTimer.Start();
-            ShowMainMenu();
-            Invalidate();
-        }
-
-        private void OpenLevelMenu()
-        {
-            GameButton.ClearAll();
-            this.Close();
-            TutorialLevel level = new TutorialLevel();
-            level.Show();
-        }
-
-        private void QuitGame()
-        {
-            FormHandler.CloseHandler();
-            this.Close();
-        }
 
         private void TryInvoke(Action action)
         {
@@ -101,85 +80,24 @@ namespace drawedOut
                     DrawSettingsStrings(g);
                     UpdateKeyBtnStrings();
                     break;
+
+                case (MenuState.Levels):
+                    DrawLevelMenu(g);
+                    break;
             }
+
 
             GameButton.DrawAll(g);
         }
 
-        private void UpdateKeyBtnStrings()
-        {
-            if (_rebindAction is null) 
-            {
-                _jumpRebindBtn.BtnTxt = "Click to rebind";
-                _leftRebindBtn.BtnTxt = "Click to rebind";
-                _rightRebindBtn.BtnTxt = "Click to rebind";
-                _abilityOneRebindBtn.BtnTxt = "Click to rebind";
-                _abilityTwoRebindBtn.BtnTxt = "Click to rebind";
-                _abilityThreeRebindBtn.BtnTxt = "Click to rebind";
-                return;
-            }
-            switch (_rebindAction.Value)
-            {
-                case (Keybinds.Actions.MoveLeft):
-                    _leftRebindBtn.BtnTxt="Enter new key";
-                    break;
-                case (Keybinds.Actions.MoveRight):
-                    _rightRebindBtn.BtnTxt="Enter new key";
-                    break;
-                case (Keybinds.Actions.Jump):
-                    _jumpRebindBtn.BtnTxt="Enter new key";
-                    break;
-                case (Keybinds.Actions.Special1):
-                    _abilityOneRebindBtn.BtnTxt="Enter new key";
-                    break;
-                case (Keybinds.Actions.Special2):
-                    _abilityTwoRebindBtn.BtnTxt="Enter new key";
-                    break;
-                case (Keybinds.Actions.Special3):
-                    _abilityThreeRebindBtn.BtnTxt="Enter new key";
-                    break;
-            }
-        }
 
-        private void DrawSettingsStrings(Graphics g)
-        {
-            string settingsString = "Settings";
-            using (Font settingsFont = new Font(Global.SourGummy, 50*Global.BaseScale))
-            {
-                SizeF titleSize = g.MeasureString(settingsString, settingsFont);
-                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
-                g.DrawString(settingsString, settingsFont, Brushes.Black, 
-                        titlePosX, 10);
-            }
-            string keyHeadingString = "Keybinds";
-            using (Font keyHeadingFont = new Font(Global.SourGummy, 30*Global.BaseScale))
-            {
-                SizeF titleSize = g.MeasureString(settingsString, keyHeadingFont);
-                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
-                g.DrawString(keyHeadingString, keyHeadingFont, Brushes.Black, 
-                        titlePosX, 0.46f*Height);
-            }
-
-            Font defaultFont = Global.DefaultFont;
-            float txtXPos = 600*Global.BaseScale; 
-
-            foreach (KeyValuePair<String, int> element in _settingsStringsYPos)
-            { 
-                g.DrawString(element.Key, defaultFont, 
-                        Brushes.Black, txtXPos, element.Value); 
-            }
-
-            foreach (KeyValuePair<String, Point> element in _bindingStringsPos)
-            {
-                g.DrawString(element.Key, defaultFont, 
-                        Brushes.Black, element.Value);
-            }
-        }
 
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)
         {
             GameButton.ClickSelected();
         }
+
+
 
         private void MainMenu_KeyDown(object sender, KeyEventArgs e)
         {
@@ -196,9 +114,23 @@ namespace drawedOut
             _rebindAction = null;
         }
 
-        private void MainMenu_Quit(object sender, FormClosingEventArgs e)
+        private void QuitGame()
         {
-            _active = false;
+            FormHandler.CloseHandler();
+            Application.Exit();
+        }
+
+        private void MainMenu_Closing(object sender, FormClosingEventArgs e)
+        { _active = false; }
+
+
+# region main menu
+        private void MainMenu_Load(object sender, EventArgs e)
+        {
+            _active = true;
+            _menuTimer.Start();
+            ShowMainMenu();
+            Invalidate();
         }
 
         private void ShowMainMenu()
@@ -209,6 +141,19 @@ namespace drawedOut
             _playBtn.Show();
             _settingsBtn.Show();
             _quitBtn.Show();
+        }
+
+        private void OpenLevelMenu()
+        {
+            _curMenuState = MenuState.Levels;
+
+            GameButton.HideAll();
+
+            _tutorialBtn.Show();
+            _level1Btn.Show();
+            _level2Btn.Show();
+
+            _backBtn.Show();
         }
 
         private void ShowSettingsMenu()
@@ -236,11 +181,134 @@ namespace drawedOut
             _abilityTwoRebindBtn.Show();
             _abilityThreeRebindBtn.Show();
 
-            _settingsBackBtn.Show();
+            _backBtn.Show();
 
             this.Invalidate();
         }
+# endregion
 
+
+
+# region settings menu
+
+        private void DrawSettingsStrings(Graphics g)
+        {
+            string settingsString = "Settings";
+            using (Font settingsFont = new Font(Global.SourGummy, 55*Global.BaseScale))
+            {
+                SizeF titleSize = g.MeasureString(settingsString, settingsFont);
+                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
+                g.DrawString(settingsString, settingsFont, Brushes.Black, 
+                        titlePosX, 20);
+            }
+            string keyHeadingString = "Keybinds";
+            using (Font keyHeadingFont = new Font(Global.SourGummy, 40*Global.BaseScale))
+            {
+                SizeF titleSize = g.MeasureString(settingsString, keyHeadingFont);
+                float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
+                g.DrawString(keyHeadingString, keyHeadingFont, Brushes.Black, 
+                        titlePosX, 0.5f*Height);
+            }
+
+            Font defaultFont = Global.DefaultFont;
+            float txtXPos = 600*Global.BaseScale; 
+
+            foreach (KeyValuePair<String, int> element in _settingsStringsYPos)
+            { 
+                g.DrawString(element.Key, defaultFont, 
+                        Brushes.Black, txtXPos, element.Value); 
+            }
+
+            foreach (KeyValuePair<String, Point> element in _bindingStringsPos)
+            {
+                g.DrawString(element.Key, defaultFont, 
+                        Brushes.Black, element.Value);
+            }
+        }
+
+
+        private void BgBtnClick() 
+        {
+            Global.ShowBG=!Global.ShowBG;
+            _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
+            Invalidate();
+        }
+
+        private void TimeBtnClick()
+        {
+            Global.ShowTime=!Global.ShowTime;
+            _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
+            Invalidate();
+        }
+
+        private void FpsBtnClick(UInt16 fps)
+        {
+            if (Global.GameTickFreq == fps) return;
+            Global.GameTickFreq = fps;
+            CreateSettingsStrings();
+        }
+
+        private void resBtnClick(Global.Resolutions newRes)
+        {
+            if (newRes == Global.LevelResolution) return;
+
+            DialogResult result = MessageBox.Show(
+                $"Are you sure you want to set the resolution to {newRes.ToString()}",
+                "confirm change",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+            if (result == DialogResult.No) return;
+
+            Global.LevelResolution = newRes;
+            CreateSettingsStrings();
+            UpdateSize();
+        }
+# endregion
+
+# region Levels Menu
+        private void DrawLevelMenu(Graphics g)
+        {
+            int absCompDist = _level1Btn.Y - _tutorialBtn.Y;
+            for (UInt16 i = 0; i < 3; i++)
+            {
+                g.DrawString(
+                        $"Fastest time: {TimeToString(SaveData.GetFastestScore(i))}", 
+                        Global.DefaultFont,
+                        Brushes.Black,
+                        _tutorialBtn.X,
+                        _tutorialBtn.Rect.Bottom + _timeOffsetY + absCompDist*i);
+            }
+        }
+
+        // private static string TimeToString(double timeS)
+        // {
+        //     TimeSpan time = TimeSpan.FromSeconds(timeS);
+        //     return time.ToString(@"mm\:ss\:ff");
+        // }
+        
+        private static string TimeToString(double? timeS)
+        {
+            if (timeS is null) return "--:--.--";
+
+            int mins = (int)Math.Floor(timeS.Value)/60;
+            int secs = (int)(timeS%60);
+            int ms = (int)Math.Round(timeS.Value * 1000) % 1000;
+            return $"{mins:00}:{secs:00}.{ms:00}";
+        }
+
+        private void LoadTutorial()
+        {
+            this.Close();
+            TutorialLevel level = new TutorialLevel();
+            level.Show();
+        }
+        private void LoadLevel1()
+        {
+        }
+        private void LoadLevel2()
+        {
+        }
+#endregion
     }
 }
 

@@ -10,7 +10,11 @@ namespace drawedOut
             _settingsFile = _saveFolder + "settings.json";
 
         private static Dictionary<string, MaxHeap<float>> _levelTimes = 
-            new Dictionary<string, MaxHeap<float>> { ["level0"] = new MaxHeap<float>(), };
+            new Dictionary<string, MaxHeap<float>> { 
+                ["level0"] = new MaxHeap<float>(), 
+                ["level1"] = new MaxHeap<float>(), 
+                ["level2"] = new MaxHeap<float>(), 
+            };
 
         private static JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -50,8 +54,12 @@ namespace drawedOut
             { sw.Write(dictAsJson); }
         }
 
-        public static float GetFastestScore(UInt16 levelNo) 
-        { return _levelTimes[$"level{levelNo}"].FullArray[0]; }
+        public static float? GetFastestScore(UInt16 levelNo) 
+        { 
+            string level = $"level{levelNo}";
+            if (_levelTimes[level].Length == 0) return null;
+            else return _levelTimes[level].FullArray[0];
+        }
 
         public static void AddScore(UInt16 levelNo, float timeS) 
         {
