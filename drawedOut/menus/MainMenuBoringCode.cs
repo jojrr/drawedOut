@@ -395,7 +395,7 @@ namespace drawedOut
                     fontScale: 1.5f);
             
             _timeOffsetY = _TIME_OFFSET_Y*Global.BaseScale;
-            _rankSize = (int)(_level1Btn.Rect.Height + Global.DefaultFont.Size + _timeOffsetY);
+            _rankSize = (int)Math.Ceiling(_level1Btn.Rect.Height + Global.DefaultFont.Size*1.5 +_timeOffsetY);
         }
         #endregion
     }

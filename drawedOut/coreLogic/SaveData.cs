@@ -3,8 +3,8 @@ namespace drawedOut
 {
     internal static class SaveData
     {
-        private static readonly string _saveFolder = Path.Combine(Global.GetProjFolder(), @"playerData\");
         private static readonly string 
+            _saveFolder = Path.Combine(Global.GetProjFolder(), @"playerData\"),
             _timeFile = _saveFolder + "times.json",
             _keybindFile = _saveFolder + "keybinds.json",
             _settingsFile = _saveFolder + "settings.json";

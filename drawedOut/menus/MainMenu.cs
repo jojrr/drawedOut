@@ -278,12 +278,24 @@ namespace drawedOut
             int absCompDist = _level1Btn.Y - _tutorialBtn.Y;
             for (UInt16 i = 0; i < 3; i++)
             {
+                int componentDistnace = absCompDist*i;
+
                 g.DrawString(
                         $"Fastest time: {TimeToString(SaveData.GetFastestScore(i))}", 
                         Global.DefaultFont,
                         Brushes.Black,
                         _tutorialBtn.X,
-                        _tutorialBtn.Rect.Bottom + _timeOffsetY + absCompDist*i);
+                        _tutorialBtn.Rect.Bottom + _timeOffsetY + componentDistnace);
+
+                using (Pen pen = new Pen(Color.Black, (int)(4*Global.BaseScale)))
+                {
+                    g.DrawRectangle(
+                            pen,
+                            _tutorialBtn.Rect.Right + (int)(10*Global.BaseScale),
+                            _tutorialBtn.Y + componentDistnace,
+                            _rankSize,
+                            _rankSize);
+                }
             }
         }
 
