@@ -7,7 +7,9 @@ namespace drawedOut
         public double MaxEnergy { get => _maxEnergy; }
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 50, 40 };
 
+        private static bool[] _unlockedMoves = new bool[3];
         private static HpBarUI _hpBar;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
@@ -55,28 +57,22 @@ namespace drawedOut
                     endlag: 0.5F,
                     isLethal: true);
 
-        private static Dictionary<string, bool> _unlockedMoves = new Dictionary<string, bool>();
-
-        static Player()
-        {
-            _unlockedMoves.Add("move1", true);
-            _unlockedMoves.Add("move2", false);
-            _unlockedMoves.Add("move3", false);
-        }
-
         public static void UnlockMoves(){}
 
-        public Player(Point origin, int width, int height, int attackPower, int energy, int hp, 
+        public Player(Point origin, int width, int height, int attackPower, int energy,
                 int xAccel=100, int maxXVelocity=600)
-            :base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
+            :base(origin: origin, width: width, height: height, xAccel: xAccel, maxXVelocity: maxXVelocity,
+                 hp: PlayerCharData.MaxHp)
         {
+            _maxEnergy = PlayerCharData.MaxEnergy;
+            _unlockedMoves = PlayerCharData.UnlockedMoves;
+
             _energy = 0;
-            _maxEnergy = 100;
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
             _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
-            // _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
+            _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
 
             _basic1.Parent = this;
             _basic2.Parent = this;
@@ -87,8 +83,8 @@ namespace drawedOut
 
         public void DoSpecial1()
         {
-            const int energyCost = 30;
-            if (!_unlockedMoves["move1"]) return;
+            int energyCost = SpecialEnergyCosts[0];
+            if (!_unlockedMoves[0]) return;
             if (_energy < energyCost) return;
             _energy -= energyCost;
             curAttack = _special1;
@@ -242,11 +238,11 @@ namespace drawedOut
                 if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
                 return runAnim.NextFrame(FacingDirection);
             }
-            // else if (yVelocity > 0)
-            // {
-            //     return _fallAnim.NextFrame(FacingDirection);
-            // }
-            else 
+            else if (yVelocity > 0)
+            {
+                return _fallAnim.NextFrame(FacingDirection);
+            }
+            else if (yVelocity < 0)
             {
                 return _jumpAnim.NextFrame(FacingDirection);
             }

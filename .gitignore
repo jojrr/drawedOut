@@ -364,4 +364,4 @@ FodyWeavers.xsd
 
 
 # ignore saved player data
-drawedout/playerdata/
+drawedout/saveData/

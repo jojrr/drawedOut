@@ -10,7 +10,7 @@ namespace drawedOut
         protected Platform basePlate;
 
         private readonly int _levelWidth;
-        private readonly UInt16 _levelNo;
+        private readonly byte _levelNo;
         private readonly Point _playerStartPos;
 
         private static Dictionary<Entity, PointF> _zoomOrigins = new Dictionary<Entity, PointF>();
@@ -78,8 +78,7 @@ namespace drawedOut
                     width: 30,
                     height: 160,
                     attackPower: 1,
-                    energy: 100,
-                    hp: 6);
+                    energy: 100);
             InitPlatforms();
             InitCheckpoints();
             InitEnemies();
@@ -136,7 +135,7 @@ namespace drawedOut
         }
 
 
-        public Level0(UInt16 levelNo, int levelWidth, Point playerStartPos)
+        public Level0(byte levelNo, int levelWidth, Point playerStartPos)
         {
             if (levelWidth < 2000) throw new Exception("level too small");
 

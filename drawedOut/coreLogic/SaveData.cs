@@ -4,10 +4,11 @@ namespace drawedOut
     internal static class SaveData
     {
         private static readonly string 
-            _saveFolder = Path.Combine(Global.GetProjFolder(), @"playerData\"),
+            _saveFolder = Path.Combine(Global.GetProjFolder(), @"saveData\"),
             _timeFile = _saveFolder + "times.json",
             _keybindFile = _saveFolder + "keybinds.json",
-            _settingsFile = _saveFolder + "settings.json";
+            _settingsFile = _saveFolder + "settings.json",
+            _playerDataFile = _saveFolder + "playerData.json";
 
         private static Dictionary<string, MaxHeap<float>> _levelTimes = 
             new Dictionary<string, MaxHeap<float>> { 
@@ -27,13 +28,15 @@ namespace drawedOut
         static SaveData()
         {
             Directory.CreateDirectory(_saveFolder);
+            if (!File.Exists(_timeFile)) return;
 
-            if (File.Exists(_timeFile)) 
-            { _levelTimes = RetriveJSONData<Dictionary<string, MaxHeap<float>>>(_timeFile); }
+            _levelTimes = RetriveJSONData<Dictionary<string, MaxHeap<float>>>(_timeFile); 
         }
 
-        private static T RetriveJSONData<T>(string filePath)
+        private static T RetriveJSONData<T>(string filePath) where T : class
         {
+            if (!File.Exists(filePath)) return null;
+
             string jsonTxt = "";
 
             using ( StreamReader sr = new StreamReader(filePath) )
@@ -54,42 +57,40 @@ namespace drawedOut
             { sw.Write(objAsJson); }
         }
 
-        public static float? GetFastestScore(UInt16 levelNo) 
+        public static float? GetFastestScore(byte levelNo) 
         { 
             string level = $"level{levelNo}";
             if (_levelTimes[level].Length == 0) return null;
             else return _levelTimes[level].FullArray[0];
         }
 
-        public static void AddScore(UInt16 levelNo, float timeS) 
+        public static void AddScore(byte levelNo, float timeS) 
         {
             _levelTimes[$"level{levelNo}"].Add(timeS);
             SaveObjectAsJson<Dictionary<string, MaxHeap<float>>>(_levelTimes, _timeFile);
         }
 
+        // keybinds
         public static Dictionary<Keys, Keybinds.Actions>? GetKeybinds()
-        {
-            if (File.Exists(_keybindFile)) 
-            { return RetriveJSONData<Dictionary<Keys, Keybinds.Actions>>(_keybindFile); }
-            else return null;
-        }
+        { return RetriveJSONData<Dictionary<Keys, Keybinds.Actions>>(_keybindFile); }
 
-        public static void SaveKeybinds(Dictionary<Keys, Keybinds.Actions> keyActDict)
-        { SaveObjectAsJson<Dictionary<Keys, Keybinds.Actions>>(keyActDict, _keybindFile); }
+        public static void SaveKeybinds(Dictionary<Keys, Keybinds.Actions> _keybinds)
+        { SaveObjectAsJson<Dictionary<Keys, Keybinds.Actions>>( _keybinds, _keybindFile); }
 
+
+        // settings
         public static Preferences.PreferencesInstance? GetSettings()
-        {
-            if (File.Exists(_settingsFile)) 
-            { return RetriveJSONData<Preferences.PreferencesInstance>(_settingsFile); }
-            else return null;
-        }
+        { return RetriveJSONData<Preferences.PreferencesInstance>(_settingsFile); }
 
         public static void SaveSettings()
-        { 
-            Preferences.Resolution = Global.LevelResolution;
-            Preferences.FPS = Global.GameTickFreq;
-            SaveObjectAsJson<Preferences.PreferencesInstance>(Preferences.Instance, _settingsFile);
-        }
+        { SaveObjectAsJson<Preferences.PreferencesInstance>(Preferences.Instance, _settingsFile); }
 
+
+        // player data
+        public static PlayerCharData.PlayerDataInstance? GetPlayerData()
+        { return RetriveJSONData<PlayerCharData.PlayerDataInstance>(_playerDataFile); }
+
+        public static void SavePlayerData()
+        { SaveObjectAsJson<PlayerCharData.PlayerDataInstance>(PlayerCharData.Instance, _playerDataFile); }
     }
 }

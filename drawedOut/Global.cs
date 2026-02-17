@@ -39,13 +39,15 @@ namespace drawedOut
         /// <summary>
         /// logic for game framerate
         /// </summary>
-        private static UInt16 _gameTickFreq = 60;
-        public static UInt16 GameTickFreq 
+        private static byte _gameTickFreq = 60;
+        public static byte GameTickFreq 
         {
             get => _gameTickFreq;
             set 
             {
                 _gameTickFreq = value; 
+                Preferences.FPS = value;
+
                 if ( 1 > value) _gameTickFreq = 1;
                 if ( 120 < value) _gameTickFreq = 120;
             }
@@ -82,6 +84,8 @@ namespace drawedOut
             set
             {
                 _curResolution = value;
+                Preferences.Resolution = value;
+
                 _levelSize = ResDict[value];
                 float scaleWidth = _levelSize.Width;
                 float scrollBoundPercent = 0.2F;

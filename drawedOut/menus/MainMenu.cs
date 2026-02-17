@@ -58,7 +58,7 @@ namespace drawedOut
             });
         }
 
-        private static Ranks? CalcRank(UInt16 levelNo, Dictionary<float, Ranks> timeToRank)
+        private static Ranks? CalcRank(byte levelNo, Dictionary<float, Ranks> timeToRank)
         {
             float? levelTime = SaveData.GetFastestScore(levelNo);
             if (levelTime is null) return null;
@@ -280,7 +280,7 @@ namespace drawedOut
             Invalidate();
         }
 
-        private void FpsBtnClick(UInt16 fps)
+        private void FpsBtnClick(byte fps)
         {
             if (Global.GameTickFreq == fps) return;
             Global.GameTickFreq = fps;
@@ -312,7 +312,7 @@ namespace drawedOut
             int rankXPos = _tutorialBtn.Rect.Right + (int)(10*Global.BaseScale);
 
             // draw times and rank rectangles by looping from 0 to 2, increasing the y values each time.
-            for (UInt16 i = 0; i < 3; i++)
+            for (byte i = 0; i < 3; i++)
             {
                 int componentDistnace = (_level1Btn.Y - _tutorialBtn.Y)*i;
 
