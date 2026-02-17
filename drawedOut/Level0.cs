@@ -724,7 +724,7 @@ namespace drawedOut
         {
             // shown menu
             Close();
-            MainMenu menu = new MainMenu();
+            MainMenu menu = new MainMenu(MainMenu.MenuState.Levels);
             menu.Show();
         }
 

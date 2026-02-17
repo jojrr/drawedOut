@@ -34,7 +34,7 @@ namespace drawedOut
                     yCenterPos: 0.4f,
                     relWidth: 0.2f,
                     relHeight: 0.1f,
-                    clickEvent: OpenLevelMenu,
+                    clickEvent: ShowLevelMenu,
                     fontScale: 2f,
                     txt: "Play");
             _backBtn = new GameButton(

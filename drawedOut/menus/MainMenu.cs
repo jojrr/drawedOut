@@ -2,7 +2,7 @@ namespace drawedOut
 {
     internal partial class MainMenu : Form
     {
-        private enum MenuState { Start, Levels, Settings };
+        public enum MenuState { Start, Levels, Settings };
         private enum Ranks { S, A, B, C, D };
 
         private static bool _active;
@@ -14,12 +14,11 @@ namespace drawedOut
 
         private MenuState _curMenuState;
 
-        public MainMenu()
+        public MainMenu(MenuState startMenu=MenuState.Start)
         {
             InitializeComponent();
 
             Preferences.LoadInstance(SaveData.GetSettings());
-            UpdateSize();
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.AutoScaleMode=AutoScaleMode.None;
@@ -43,6 +42,10 @@ namespace drawedOut
             };
             _tutorialRank = CalcRank(0, tutorialRanks);
 
+            UpdateSize();
+            if (startMenu == MenuState.Start) ShowMainMenu();
+            else if (startMenu == MenuState.Levels) ShowLevelMenu();
+
             Stopwatch timerSW = Stopwatch.StartNew();
             _menuTimer = new Thread (() => 
             {
@@ -56,6 +59,13 @@ namespace drawedOut
                     timerSW.Restart();
                 }
             });
+        }
+
+        private void MainMenu_Load(object sender, EventArgs e)
+        {
+            _active = true;
+            _menuTimer.Start();
+            Invalidate();
         }
 
         private static Ranks? CalcRank(byte levelNo, Dictionary<float, Ranks> timeToRank)
@@ -133,8 +143,6 @@ namespace drawedOut
             GameButton.DrawAll(g);
         }
 
-
-
         private void MainMenu_MouseDown(object sender, MouseEventArgs e)
         {
             GameButton.ClickSelected();
@@ -169,14 +177,6 @@ namespace drawedOut
 
 
 # region main menu
-        private void MainMenu_Load(object sender, EventArgs e)
-        {
-            _active = true;
-            _menuTimer.Start();
-            ShowMainMenu();
-            Invalidate();
-        }
-
         private void ShowMainMenu()
         {
             _curMenuState = MenuState.Start;
@@ -187,7 +187,7 @@ namespace drawedOut
             _quitBtn.Show();
         }
 
-        private void OpenLevelMenu()
+        private void ShowLevelMenu()
         {
             _curMenuState = MenuState.Levels;
 
