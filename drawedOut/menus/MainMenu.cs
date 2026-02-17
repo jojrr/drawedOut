@@ -99,6 +99,7 @@ namespace drawedOut
         private void MainMenu_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
             switch (_curMenuState)
             {
@@ -118,10 +119,16 @@ namespace drawedOut
                     break;
 
                 case (MenuState.Levels):
+                    string levelString = "Levels";
+                    using (Font levelFont = new Font(Global.SourGummy, 80*Global.BaseScale))
+                    {
+                        SizeF titleSize = g.MeasureString(levelString, levelFont);
+                        float titlePosX = ClientSize.Width/2 - (titleSize.Width/2);
+                        g.DrawString(levelString, levelFont, Brushes.Black, titlePosX, 25); 
+                    }
                     DrawLevelMenu(g);
                     break;
             }
-
 
             GameButton.DrawAll(g);
         }

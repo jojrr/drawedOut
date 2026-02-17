@@ -233,20 +233,11 @@ namespace drawedOut
                 return curAttack.NextAnimFrame(FacingDirection);
             }
 
-            if (yVelocity == 0)
-            {
-                if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
-                return runAnim.NextFrame(FacingDirection);
-            }
-            else if (yVelocity > 0)
-            {
-                return _fallAnim.NextFrame(FacingDirection);
-            }
-            else if (yVelocity < 0)
-            {
-                return _jumpAnim.NextFrame(FacingDirection);
-            }
-            return idleAnim.NextFrame(FacingDirection);
+            if (yVelocity > 0) return _fallAnim.NextFrame(FacingDirection); 
+            else if (yVelocity < 0) return _jumpAnim.NextFrame(FacingDirection);
+
+            if (curXAccel == 0) return idleAnim.NextFrame(FacingDirection);
+            return runAnim.NextFrame(FacingDirection);
         }
 
 
