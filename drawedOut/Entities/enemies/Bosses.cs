@@ -8,14 +8,32 @@ namespace drawedOut
             _X_KNOCK_DAMPEN = 800,
             _Y_KNOCK_DAMPEN = 300,
             MOV_ENDLAG_S = 3;
-        private readonly Attacks _attackOne, _rangedAttackOne;
-        private readonly double _maxRange, _jumpRange;
-        private readonly Platform _activationDoor; 
-        private readonly Action _itemDrop;
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");
         private static Stopwatch _levelTimerSW;
+        private static readonly Attacks _attackOne = new Attacks(
+                    parent: null,
+                    width: 380,
+                    height: 220,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    xOffset: ATK_X_OFFSET,
+                    spawn: 7,
+                    despawn: 11,
+                    endlag: ATK_ENDLAG_S,
+                    dmg: 2);
+        private static readonly ProjectileAttack _rangedAttackOne = new ProjectileAttack(
+                    parent:null,
+                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    endlag: ATK_ENDLAG_S,
+                    spawn: 5,
+                    projectileEvent: ()=>{},
+                    dmg: 3,
+                    isLethal: false);
+
+        private readonly double _maxRange, _jumpRange;
+        private readonly Platform _activationDoor; 
+        private readonly Action _itemDrop;
         private int _curState = 0;
         private double 
             _angleToPlayer,
@@ -26,34 +44,19 @@ namespace drawedOut
                 int hp=6)
             :base(origin:origin, width:width, height:height, hp:hp, xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN)
         {
-            Size atkSize = new Size(380,220);
-
             _itemDrop = itemDrop;
             _maxRange = Width*2.5;
             _jumpRange = 1.5*Height;
             _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
 
-            _attackOne = new Attacks(
-                    parent: this,
-                    size: atkSize,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
-                    xOffset: ATK_X_OFFSET,
-                    spawn: 7,
-                    despawn: 11,
-                    endlag: ATK_ENDLAG_S,
-                    dmg: 2);
-            _rangedAttackOne = new ProjectileAttack(
-                    parent:this,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
-                    endlag: ATK_ENDLAG_S,
-                    spawn: 5,
-                    projectileEvent: DoAttack,
-                    dmg: 3,
-                    isLethal: false);
-
             setRunAnim(@"fillerAnim\");
             setIdleAnim(@"fillerPic\");
+            _attackOne.Reset();
+            _rangedAttackOne.Reset();
+            _attackOne.Parent=this;
+            _rangedAttackOne.Parent=this;
+            _rangedAttackOne.SetEvent(DoAttack);
         }
         
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)

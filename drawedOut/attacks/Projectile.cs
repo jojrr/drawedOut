@@ -10,13 +10,16 @@
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
         private static HashSet<Projectile> _disposedProjectiles = new HashSet<Projectile>();
         private static readonly double _sqrtBaseScale = Math.Sqrt(Global.BaseScale);
-        private readonly float _velocity;
+        private readonly float _velocity, _accel;
         private readonly int _dmg, _knockbackSpeed;
         private readonly Bitmap _sprite;
         private Entity _parent;
         private float 
+            _cosAngle,
+            _sinAngle,
             _xVelocity, 
-            _yVelocity;
+            _yVelocity,
+            _maxSpeed;
 
         /// <summary>
         /// creates a projectile with the following parameters
@@ -27,34 +30,47 @@
         /// <param name="velocity"></param>
         /// <param name="target"></param>
         public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, Bitmap sprite,
-                int dmg=1, int knockback=800, bool isLethal=true)
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
             _sprite = sprite;
             _parent = parent;
+            _accel = accel;
             _velocity = velocity;
+            _maxSpeed = maxSpeed ?? velocity;
             _knockbackSpeed = knockback;
-            calculateVelocities(target);
             _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;
+
+            _maxSpeed = maxSpeed ?? velocity;
+            _maxSpeed = (float)_maxSpeed*Global.BaseScale;
+
+            calculateVelocities(target);
         }
 
         public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, Bitmap sprite,
-                int dmg=1, int knockback=800, bool isLethal=true)
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
             _sprite = sprite;
             _parent = parent;
+            _accel = accel;
             _velocity = velocity;
             _knockbackSpeed = knockback;
-            _xVelocity = (float)(Math.Cos(angle) * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
-            _yVelocity = (float)(Math.Sin(angle) * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
             _projectileList.Add(this);
             IsLethal = isLethal;
             Center = origin;
+
+            _maxSpeed = maxSpeed ?? velocity;
+            _maxSpeed = (float)_maxSpeed*Global.BaseScale;
+
+            _cosAngle = (float)Math.Cos(angle);
+            _sinAngle = (float)Math.Sin(angle);
+            _xVelocity = (float)(_cosAngle * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
+            _yVelocity = (float)(_sinAngle * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
         }
 
         public void ToggleLethal(bool? isLethal) => IsLethal = (isLethal is null) ? !IsLethal : isLethal.Value;
@@ -64,6 +80,12 @@
         /// </summary>
         public void MoveProjectile(double deltaTime)
         {
+            _xVelocity += (float)(_accel*deltaTime*_cosAngle)*Math.Sign(_xVelocity);
+            _yVelocity += (float)(_accel*deltaTime*_sinAngle)*Math.Sign(_yVelocity);
+
+            _xVelocity = Math.Min(Math.Abs(_xVelocity), _maxSpeed)*Math.Sign(_xVelocity);
+            _yVelocity = Math.Min(Math.Abs(_yVelocity), _maxSpeed)*Math.Sign(_yVelocity);
+
             float xVelocity = (float)(_xVelocity*deltaTime);
             float yVelocity = (float)(_yVelocity*deltaTime);
 
@@ -78,9 +100,11 @@
             float yDiff = target.Y - Location.Y;
 
             float velocityAngle = (float)Math.Abs(Math.Atan(yDiff/xDiff)); 
+            _cosAngle = (float)Math.Cos(velocityAngle);
+            _sinAngle = (float)Math.Sin(velocityAngle);
 
-            _xVelocity = (float)(Math.Cos(velocityAngle) * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
-            _yVelocity = (float)(Math.Sin(velocityAngle) * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
+            _xVelocity = (float)(_cosAngle * _velocity * _sqrtBaseScale * Math.Sign(xDiff));
+            _yVelocity = (float)(_sinAngle * _velocity * _sqrtBaseScale * Math.Sign(yDiff));
         }
 
         /// <summary>

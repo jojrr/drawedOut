@@ -10,10 +10,12 @@ namespace drawedOut
         public double Energy { get => _energy; }
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
-        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 50, 40 };
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 10, 40 };
 
-        private static Action? _queueAtk;
         private static HpBarUI _hpBar;
+        private static Action? _queueAtk;
+        private static AnimationPlayer _jumpAnim, _fallAnim;
+        private static readonly Bitmap _projectileSprite;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
             PASSIVE_GAIN_LIMIT = 50,
@@ -28,9 +30,8 @@ namespace drawedOut
             _parryTimeS = 0,
             _parryEndlagS = 0;
         private bool _isParrying = false;
-        private AnimationPlayer _jumpAnim, _fallAnim;
 
-        private readonly Attacks 
+        private static readonly Attacks 
             _basic1 = new Attacks(
                     parent: null,
                     width: 180,
@@ -59,10 +60,20 @@ namespace drawedOut
                     despawn: 12,
                     endlag: 0.5F,
                     isLethal: true);
+        private static readonly ProjectileAttack _special2 = new ProjectileAttack(
+                parent: null,
+                animation: new AnimationPlayer(@"fillerAnim\"),
+                endlag: 1.5f,
+                spawn: 1,
+                projectileEvent: ()=>{}
+            );
 
         static Player()
         {
             UnlockedMoves = new bool[3] { true, false, false };
+            _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
+            _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
+            _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
         }
 
 
@@ -75,25 +86,46 @@ namespace drawedOut
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
-            _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
-            _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
+
+            _fallAnim.ResetAnimation();
+            _jumpAnim.ResetAnimation();
+
+            _basic1.Reset();
+            _basic2.Reset();
+            _special1.Reset();
+            _special2.Reset();
 
             _basic1.Parent = this;
             _basic2.Parent = this;
             _special1.Parent = this;
+            _special2.Parent = this;
+            _special2.SetEvent(fireSpecial2);
         }
 
         public static void LinkHpBar(ref HpBarUI hpBar) => _hpBar = hpBar;
 
-        public void DoSpecial1()
+        public void DoSpecial(byte moveNo)
         {
-            int energyCost = SpecialEnergyCosts[0];
-            if (!UnlockedMoves[0]) return;
+            int energyCost = SpecialEnergyCosts[moveNo];
+            if (!UnlockedMoves[moveNo]) return;
             if (_energy < energyCost) return;
             _energy -= energyCost;
-            curAttack = _special1;
+
+            switch (moveNo)
+            {
+                case 0:
+                    curAttack = _special1;
+                    break;
+                case 1:
+                    curAttack = _special2;
+                    break;
+                // case 2:
+                //     curAttack = _special1;
+                //     break;
+            }
         }
 
+# region player attacks
         public void DoBasicAttack()
         {
             if (curAttack == _basic1) 
@@ -110,6 +142,23 @@ namespace drawedOut
             _basic2.Reset();
             curAttack = _basic2;
         }
+        public void fireSpecial2()
+        {
+            Projectile special2Proj = new Projectile(
+                origin: this.Center,
+                width: 100,
+                height: 100,
+                velocity: 1400,
+                maxSpeed: 5000,
+                angle: 0,
+                xDiff: (FacingDirection == Global.XDirections.right) ? 1: -1,
+                yDiff: 1,
+                accel: 3000,
+                sprite: _projectileSprite,
+                parent: this
+            );
+        }
+# endregion
 
         public void DoDamage(Projectile sourceProjectile)
         {

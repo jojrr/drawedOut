@@ -635,10 +635,11 @@ namespace drawedOut
                     break;
 
                 case Keybinds.Actions.Special1:
-                    playerCharacter.DoSpecial1();
+                    playerCharacter.DoSpecial(0);
                     break;
 
                 case Keybinds.Actions.Special2:
+                    playerCharacter.DoSpecial(1);
                     break;
 
                 case Keybinds.Actions.Special3:
