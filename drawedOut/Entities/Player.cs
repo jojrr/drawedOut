@@ -12,6 +12,7 @@ namespace drawedOut
         public bool IsParrying { get => _isParrying; }
         public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 50, 40 };
 
+        private static Action? _queueAtk;
         private static HpBarUI _hpBar;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
@@ -37,8 +38,8 @@ namespace drawedOut
                     animation: new AnimationPlayer(@"playerChar\basic1\"),
                     xOffset: 100,
                     spawn: 3,
-                    despawn: 10,
-                    endlag: 0.5f),
+                    despawn: 7,
+                    endlag: 0.3f),
             _basic2 = new Attacks(
                     parent: null,
                     width: 240,
@@ -47,7 +48,7 @@ namespace drawedOut
                     xOffset: 100,
                     spawn: 3,
                     despawn: 8,
-                    endlag: 2.5F),
+                    endlag: 1.5F),
             _special1 = new Attacks(
                     parent: null,
                     width: 500,
@@ -95,17 +96,18 @@ namespace drawedOut
 
         public void DoBasicAttack()
         {
-            if (endlagS > 0) 
+            if (curAttack == _basic1) 
             {
-                if (curAttack == _basic1 && !curAttack.IsActive) DoBasicAttack2();
+                _queueAtk = DoBasicAttack2;
                 return;
             }
-            curAttack = _basic1;
+            if (curAttack is null && endlagS == 0) curAttack = _basic1;
         }
         public void DoBasicAttack2() 
         {
-            _basic1.Animation.ResetAnimation();
-            _basic2.Animation.ResetAnimation();
+            if (curAttack != _basic1 || endlagS <= 0) return;
+            _basic1.Reset();
+            _basic2.Reset();
             curAttack = _basic2;
         }
 
@@ -218,6 +220,14 @@ namespace drawedOut
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
         }
 
+        public bool TryQueuedAttack()
+        {
+            if (_queueAtk is null) return false;
+            _queueAtk();
+            _queueAtk = null;
+            return true;
+        }
+
 
         public override Bitmap NextAnimFrame()
         {
@@ -225,16 +235,18 @@ namespace drawedOut
 
             if (curAttack is not null)
             {
+                if (!curAttack.IsActive) TryQueuedAttack();
                 if (curAttack.Animation.CurFrame == curAttack.Animation.LastFrame)
                 {
                     Bitmap atkAnim = curAttack.NextAnimFrame(FacingDirection);
-                    curAttack.Animation.ResetAnimation();
+                    curAttack.Reset();
                     curAttack = null;
                     return atkAnim;
                 }
 
                 return curAttack.NextAnimFrame(FacingDirection);
             }
+            else if (TryQueuedAttack()) NextAnimFrame(); 
 
             if (yVelocity > 0) return _fallAnim.NextFrame(FacingDirection); 
             else if (yVelocity < 0) return _jumpAnim.NextFrame(FacingDirection);

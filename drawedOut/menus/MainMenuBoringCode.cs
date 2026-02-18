@@ -143,7 +143,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=> FpsBtnClick(24),
+                    clickEvent: ()=>FpsBtnClick(24),
                     txt: "24",
                     fontSize: fontSize);
             _30FpsBtn = new GameButton(
@@ -151,7 +151,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=> FpsBtnClick(30),
+                    clickEvent: ()=>FpsBtnClick(30),
                     txt: "30",
                     fontSize: fontSize);
             _60FpsBtn = new GameButton(
@@ -159,7 +159,7 @@ namespace drawedOut
                     yCenterPos: yLevel,
                     relWidth: btnWidth,
                     relHeight: btnHeight,
-                    clickEvent: ()=> FpsBtnClick(60),
+                    clickEvent: ()=>FpsBtnClick(60),
                     txt: "60",
                     fontSize: fontSize);
             _120FpsBtn = new GameButton(

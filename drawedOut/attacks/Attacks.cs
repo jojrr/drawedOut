@@ -4,7 +4,7 @@ namespace drawedOut
     {
         public static IReadOnlyCollection<Attacks> AttacksList => attacksList;
         public AnimationPlayer Animation { get; private init; }
-        public bool IsActive { get => (_atkHitbox is not null); }
+        public bool IsActive => (_atkHitbox is not null);
         public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
 
@@ -200,6 +200,12 @@ namespace drawedOut
         {
             if (AtkHitbox is null) throw new Exception($"{this} is in AttackList but null");
             AtkHitbox.Center = new PointF(x, y);
+        }
+
+        public void Reset()
+        {
+            Dispose();
+            Animation.ResetAnimation();
         }
 
         public virtual Bitmap NextAnimFrame(Global.XDirections facingDir = Global.XDirections.right)

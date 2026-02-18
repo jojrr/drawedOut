@@ -293,8 +293,9 @@ namespace drawedOut
         {
             if (Global.GameTickFreq == fps) return;
             Global.GameTickFreq = fps;
-            SaveData.SaveSettings();
             CreateSettingsStrings();
+            SaveData.SaveSettings();
+            Invalidate();
         }
 
         private void resBtnClick(Global.Resolutions newRes)

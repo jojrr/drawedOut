@@ -51,6 +51,7 @@ namespace drawedOut
             get => _gameTickFreq;
             set 
             {
+                _gameTickFreq = value;
                 if ( 1 > value) _gameTickFreq = 1;
                 if ( 120 < value) _gameTickFreq = 120;
             }
