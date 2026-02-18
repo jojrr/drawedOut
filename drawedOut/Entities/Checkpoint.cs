@@ -75,7 +75,7 @@ namespace drawedOut
         ///</summary>
         public static void LoadState()
         { 
-            foreach (Projectile p in Projectile.ProjectileList) p.Dipose();
+            foreach (Projectile p in Projectile.ProjectileList) p.Dispose();
             foreach (Entity entity in EntityList) 
             {
                 if (entity is Player && _storePlayerLocation is not null)

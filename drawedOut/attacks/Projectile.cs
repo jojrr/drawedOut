@@ -131,9 +131,9 @@
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
         }
 
-        public void Dipose() => _disposedProjectiles.Add(this); 
+        public void Dispose() => _disposedProjectiles.Add(this); 
 
-        public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dipose(); }
+        public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dispose(); }
 
 
         public new static void ClearAllLists()
@@ -151,52 +151,55 @@
 
         }
 
-
-
-        public static void CheckProjectileCollisions(double dt, Form form, Player playerBox, ParallelOptions threadSettings)
+        public virtual void CheckCollision(double dt, Form form, Player playerBox)
         {
-            if (_projectileList.Count == 0) return;
-            Parallel.ForEach(Projectile._projectileList, threadSettings, bullet =>
-            {
-                bullet.MoveProjectile(dt);
-                PointF bLoc = bullet.Center;
+                MoveProjectile(dt);
+                PointF bLoc = Center;
 
-                if (_disposedProjectiles.Contains(bullet)) return;
+                if (_disposedProjectiles.Contains(this)) return;
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
-                    if (!(p.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
+                    if (!(p.Hitbox.IntersectsWith(this.Hitbox))) continue;
 
-                    _disposedProjectiles.Add(bullet);
+                    _disposedProjectiles.Add(this);
                     return;
                 }
 
-                if (!bullet.Hitbox.IntersectsWith(form.ClientRectangle))
+                if (!Hitbox.IntersectsWith(form.ClientRectangle))
                 {
-                    _disposedProjectiles.Add(bullet);
+                    _disposedProjectiles.Add(this);
                     return;
                 }
 
-                if (bullet._parent is Player)
+                if (_parent is Player)
                 {
                     foreach (Enemy e in Enemy.ActiveEnemyList)
                     {
-                        if (!(e.Hitbox.IntersectsWith(bullet.Hitbox))) continue;
+                        if (!(e.Hitbox.IntersectsWith(Hitbox))) continue;
 
-                        _disposedProjectiles.Add(bullet);
-                        e.DoDamage(bullet);
+                        _disposedProjectiles.Add(this);
+                        e.DoDamage(this);
                         return;
                     }
                 }
                 else
                 {
                     // Return if bullet not touching player
-                    if (!playerBox.Hitbox.IntersectsWith(bullet.Hitbox)) return;
-                    if (playerBox.CheckParrying(bullet, dt)) _disposedProjectiles.Add(bullet);
+                    if (!playerBox.Hitbox.IntersectsWith(Hitbox)) return;
+                    if (playerBox.CheckParrying(this, dt)) _disposedProjectiles.Add(this);
                 }
-            });
+
+        }
+
+        public static void CheckProjectileCollisions(double dt, Form form, Player playerBox, ParallelOptions threadSettings)
+        {
+            if (_projectileList.Count == 0) return;
+            Parallel.ForEach(Projectile._projectileList, threadSettings, bullet =>
+            { bullet.CheckCollision(dt, form, playerBox); });
 
             if (_disposedProjectiles.Count == 0) return;
+
             foreach (Projectile p in _disposedProjectiles)
             {
                 _projectileList.Remove(p);

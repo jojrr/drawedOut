@@ -10,12 +10,12 @@ namespace drawedOut
         public double Energy { get => _energy; }
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
-        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 10, 40 };
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 10, 10 };
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
         private static AnimationPlayer _jumpAnim, _fallAnim;
-        private static readonly Bitmap _projectileSprite;
+        private static readonly Bitmap _projectileSprite, _ultSprite;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
             PASSIVE_GAIN_LIMIT = 50,
@@ -60,18 +60,28 @@ namespace drawedOut
                     despawn: 12,
                     endlag: 0.5F,
                     isLethal: true);
-        private static readonly ProjectileAttack _special2 = new ProjectileAttack(
+        private static readonly ProjectileAttack 
+            _special2 = new ProjectileAttack(
                 parent: null,
                 animation: new AnimationPlayer(@"fillerAnim\"),
                 endlag: 1.5f,
                 spawn: 1,
                 projectileEvent: ()=>{}
+            ),
+            _special3 = new ProjectileAttack(
+                parent: null,
+                animation: new AnimationPlayer(@"fillerAnim\"),
+                endlag: 2f,
+                spawn: 10,
+                projectileEvent: ()=>{}
             );
+
 
         static Player()
         {
             UnlockedMoves = new bool[3] { true, false, false };
             _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
+            _ultSprite = Global.GetSingleImage(@"fillerAnim\");
             _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
             _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
         }
@@ -94,16 +104,20 @@ namespace drawedOut
             _basic2.Reset();
             _special1.Reset();
             _special2.Reset();
+            _special3.Reset();
 
             _basic1.Parent = this;
             _basic2.Parent = this;
             _special1.Parent = this;
             _special2.Parent = this;
             _special2.SetEvent(fireSpecial2);
+            _special3.Parent = this;
+            _special3.SetEvent(fireSpecial3);
         }
 
         public static void LinkHpBar(ref HpBarUI hpBar) => _hpBar = hpBar;
 
+# region player attacks
         public void DoSpecial(byte moveNo)
         {
             int energyCost = SpecialEnergyCosts[moveNo];
@@ -119,13 +133,12 @@ namespace drawedOut
                 case 1:
                     curAttack = _special2;
                     break;
-                // case 2:
-                //     curAttack = _special1;
-                //     break;
+                case 2:
+                    curAttack = _special3;
+                    break;
             }
         }
 
-# region player attacks
         public void DoBasicAttack()
         {
             if (curAttack == _basic1) 
@@ -135,14 +148,14 @@ namespace drawedOut
             }
             if (curAttack is null && endlagS == 0) curAttack = _basic1;
         }
-        public void DoBasicAttack2() 
+        private void DoBasicAttack2() 
         {
             if (curAttack != _basic1 || endlagS <= 0) return;
             _basic1.Reset();
             _basic2.Reset();
             curAttack = _basic2;
         }
-        public void fireSpecial2()
+        private void fireSpecial2()
         {
             Projectile special2Proj = new Projectile(
                 origin: this.Center,
@@ -157,6 +170,22 @@ namespace drawedOut
                 sprite: _projectileSprite,
                 parent: this
             );
+        }
+        private void fireSpecial3()
+        {
+            int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
+            PlayerUltProjectile special3Proj = new PlayerUltProjectile(
+                origin: new PointF(this.Center.X + xOffset, -6400),
+                width: 500,
+                accel: 3000,
+                height: 6400,
+                velocity: 2200,
+                maxSpeed: 10000,
+                angle: Math.PI/2,
+                dmg:3,
+                sprite: _ultSprite,
+                parent: this
+                );
         }
 # endregion
 

@@ -1,0 +1,35 @@
+
+namespace drawedOut
+{
+    internal class PlayerUltProjectile:Projectile
+    {
+        private static HashSet<Enemy> _toDamage = new HashSet<Enemy>();
+
+        public PlayerUltProjectile(PointF origin, int width, int height, float velocity, double angle, Entity parent, Bitmap sprite, int dmg, int accel, int maxSpeed)
+            : base(origin:origin, width:width, height:height, velocity:velocity, angle:angle, xDiff:1, yDiff:1,
+                    parent:parent, sprite:sprite, isLethal:true, dmg:dmg, accel:accel, maxSpeed:maxSpeed)
+            { }
+
+        public override void CheckCollision(double dt, Form form, Player playerBox)
+        {
+            MoveProjectile(dt);
+            PointF bLoc = Center;
+
+            foreach (Enemy e in Enemy.ActiveEnemyList)
+            {
+                if (!(e.Hitbox.IntersectsWith(Hitbox))) continue;
+                _toDamage.Add(e);
+            }
+
+            if (this.LocationY > 2100) 
+            {
+                foreach (Enemy e in _toDamage)
+                {
+                    e.DoDamage(this);
+                }
+                _toDamage.Clear();
+                Dispose();
+            }
+        }
+    }
+}

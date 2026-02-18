@@ -643,6 +643,7 @@ namespace drawedOut
                     break;
 
                 case Keybinds.Actions.Special3:
+                    playerCharacter.DoSpecial(2);
                     break;
             }
 
