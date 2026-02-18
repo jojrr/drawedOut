@@ -19,6 +19,8 @@ namespace drawedOut
             InitializeComponent();
 
             Preferences.LoadInstance(SaveData.GetSettings());
+            PlayerDataInstance.LoadInstance(SaveData.GetPlayerData());
+
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.AutoScaleMode=AutoScaleMode.None;
@@ -273,16 +275,16 @@ namespace drawedOut
 
         private void BgBtnClick() 
         {
-            Preferences.ShowBG=!Preferences.ShowBG;
-            _backgroundBtn.BtnTxt = BoolToString(Preferences.ShowBG);
+            Global.ShowBG=!Global.ShowBG;
+            _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
             SaveData.SaveSettings();
             Invalidate();
         }
 
         private void TimeBtnClick()
         {
-            Preferences.ShowTime=!Preferences.ShowTime;
-            _timeBtn.BtnTxt = BoolToString(Preferences.ShowTime);
+            Global.ShowTime=!Global.ShowTime;
+            _timeBtn.BtnTxt = BoolToString(Global.ShowTime);
             SaveData.SaveSettings();
             Invalidate();
         }

@@ -21,10 +21,16 @@ namespace drawedOut
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
 
-        private static float _leftScrollBound = 0;
-        private static float _rightScrollBound = 0;
+        private static float _leftScrollBound = 0, _rightScrollBound = 0;
         public static float LeftScrollBound { get => _leftScrollBound; }
         public static float RightScrollBound { get => _rightScrollBound; }
+
+        // <summary>
+        // Display the background and the time in the level
+        // </summary>
+        public static bool 
+            ShowTime = false,
+            ShowBG = true;
 
         /// <summary>
         /// Base gravity multiplied by the base scale.
@@ -45,9 +51,6 @@ namespace drawedOut
             get => _gameTickFreq;
             set 
             {
-                _gameTickFreq = value; 
-                Preferences.FPS = value;
-
                 if ( 1 > value) _gameTickFreq = 1;
                 if ( 120 < value) _gameTickFreq = 120;
             }
@@ -84,8 +87,6 @@ namespace drawedOut
             set
             {
                 _curResolution = value;
-                Preferences.Resolution = value;
-
                 _levelSize = ResDict[value];
                 float scaleWidth = _levelSize.Width;
                 float scrollBoundPercent = 0.2F;

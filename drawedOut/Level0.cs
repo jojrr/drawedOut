@@ -67,7 +67,7 @@ namespace drawedOut
                     bgBrush: Brushes.Gray,
                     maxVal: 1,
                     borderScale: 0.4f);
-            _energyBar.SetMax((float)(playerCharacter.MaxEnergy), true);
+            _energyBar.SetMax((float)(Player.MaxEnergy), true);
         }
 
         private void InitEntities()
@@ -226,7 +226,7 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _showTime = Preferences.ShowTime;
+            _showTime = Global.ShowTime;
             _isPaused = false;
             _deltaTimeSW.Start();
 
@@ -244,7 +244,7 @@ namespace drawedOut
             InitPauseMenu();
             playerCharacter.Reset();
             InitUI();
-            _hpBar.UpdateMaxHp(playerCharacter.MaxHp);
+            _hpBar.UpdateMaxHp(Player.MaxHp);
             _hpBar.ComputeHP(playerCharacter.Hp);
             Player.LinkHpBar(ref _hpBar);
             _energyBar.Update((float)(playerCharacter.Energy));
@@ -717,6 +717,7 @@ namespace drawedOut
         { 
             // save the time taken to complete this level
             SaveData.AddScore(0, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
+            SaveData.SavePlayerData();
             TryInvoke(QuitToMenu);
         }
 

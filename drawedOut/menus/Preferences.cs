@@ -1,39 +1,29 @@
 namespace drawedOut
 {
-    internal static class Preferences
+    internal class Preferences
     {
-        public static byte FPS = 60;
-        public static bool ShowBG = true;
-        public static bool ShowTime = false;
-        public static Global.Resolutions Resolution = Global.Resolutions.p1080;
-
-        public class PreferencesInstance
+        public byte FPS { get; init; }
+        public bool ShowBG { get; init; }
+        public bool ShowTime { get; init; }
+        public Global.Resolutions Resolution { get; init; }
+        
+        public Preferences()
         {
-            public byte FPS { get; init; }
-            public bool ShowBG { get; init; }
-            public bool ShowTime { get; init; }
-            public Global.Resolutions Resolution { get; init; }
-            
-            public PreferencesInstance()
-            {
-                FPS = Preferences.FPS;
-                ShowBG = Preferences.ShowBG;
-                ShowTime = Preferences.ShowTime;
-                Resolution = Preferences.Resolution;
-            }
+            FPS = Global.GameTickFreq;
+            ShowBG = Global.ShowBG;
+            ShowTime = Global.ShowTime;
+            Resolution = Global.LevelResolution;
         }
 
-        public static PreferencesInstance Instance => new PreferencesInstance();
+        public static Preferences Instance => new Preferences();
 
-        public static void LoadInstance(PreferencesInstance? instance)
+        public static void LoadInstance(Preferences? instance)
         {
             if (instance is null) return;
-            FPS = instance.FPS;
-            ShowBG = instance.ShowBG;
-            ShowTime = instance.ShowTime;
-            Resolution = instance.Resolution;
-            Global.LevelResolution = Resolution;
-            Global.GameTickFreq = FPS;
-        }
+            Global.ShowBG = instance.ShowBG;
+            Global.ShowBG = instance.ShowTime;
+            Global.GameTickFreq = instance.FPS;
+            Global.LevelResolution = instance.Resolution;
+        } 
     }
 }

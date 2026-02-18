@@ -79,18 +79,18 @@ namespace drawedOut
 
 
         // settings
-        public static Preferences.PreferencesInstance? GetSettings()
-        { return RetriveJSONData<Preferences.PreferencesInstance>(_settingsFile); }
+        public static Preferences? GetSettings()
+        { return RetriveJSONData<Preferences>(_settingsFile); }
 
         public static void SaveSettings()
-        { SaveObjectAsJson<Preferences.PreferencesInstance>(Preferences.Instance, _settingsFile); }
+        { SaveObjectAsJson<Preferences>(Preferences.Instance, _settingsFile); }
 
 
         // player data
-        public static PlayerCharData.PlayerDataInstance? GetPlayerData()
-        { return RetriveJSONData<PlayerCharData.PlayerDataInstance>(_playerDataFile); }
+        public static PlayerDataInstance? GetPlayerData()
+        { return RetriveJSONData<PlayerDataInstance>(_playerDataFile); }
 
         public static void SavePlayerData()
-        { SaveObjectAsJson<PlayerCharData.PlayerDataInstance>(PlayerCharData.Instance, _playerDataFile); }
+        { SaveObjectAsJson<PlayerDataInstance>(PlayerDataInstance.Instance, _playerDataFile); }
     }
 }

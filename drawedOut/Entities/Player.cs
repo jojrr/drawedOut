@@ -2,14 +2,16 @@ namespace drawedOut
 {
     internal class Player : Character
     {
+        public new static byte MaxHp = 6;
+        public static UInt16 MaxEnergy = 100;
+        public static bool[] UnlockedMoves;
+
         public bool IsHit { get; private set; }
         public double Energy { get => _energy; }
-        public double MaxEnergy { get => _maxEnergy; }
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
         public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 50, 40 };
 
-        private static bool[] _unlockedMoves = new bool[3];
         private static HpBarUI _hpBar;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
@@ -21,10 +23,10 @@ namespace drawedOut
             PARRY_DURATION_S = 0.65,
             PERFECT_PARRY_WINDOW_S = 0.25;
         private double 
+            _energy,
             _parryTimeS = 0,
             _parryEndlagS = 0;
         private bool _isParrying = false;
-        private double _energy, _maxEnergy;
         private AnimationPlayer _jumpAnim, _fallAnim;
 
         private readonly Attacks 
@@ -57,16 +59,17 @@ namespace drawedOut
                     endlag: 0.5F,
                     isLethal: true);
 
-        public static void UnlockMoves(){}
+        static Player()
+        {
+            UnlockedMoves = new bool[3] { true, false, false };
+        }
+
 
         public Player(Point origin, int width, int height, int attackPower, int energy,
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, xAccel: xAccel, maxXVelocity: maxXVelocity,
-                 hp: PlayerCharData.MaxHp)
+                 hp: MaxHp)
         {
-            _maxEnergy = PlayerCharData.MaxEnergy;
-            _unlockedMoves = PlayerCharData.UnlockedMoves;
-
             _energy = 0;
             IsActive = true;
             setIdleAnim(@"playerChar\idle\");
@@ -84,7 +87,7 @@ namespace drawedOut
         public void DoSpecial1()
         {
             int energyCost = SpecialEnergyCosts[0];
-            if (!_unlockedMoves[0]) return;
+            if (!UnlockedMoves[0]) return;
             if (_energy < energyCost) return;
             _energy -= energyCost;
             curAttack = _special1;
@@ -193,7 +196,7 @@ namespace drawedOut
             return true;
         }
 
-        public void UpdateEnergy(double energy) => _energy = Math.Min(energy, _maxEnergy);
+        public void UpdateEnergy(double energy) => _energy = Math.Min(energy, MaxEnergy);
         public void HealPlayer(int heal) => Hp += heal; 
 
         private new void TickAllCounters(double dt)
