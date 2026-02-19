@@ -6,7 +6,7 @@ namespace drawedOut
 
         public FormHandler()
         {
-            this.WindowState = FormWindowState.Minimized ;
+            this.WindowState = FormWindowState.Minimized;
             this.ShowInTaskbar = false;
             this.Visible = false;
             Handler = this;
@@ -16,17 +16,22 @@ namespace drawedOut
         }
 
         private void FormHandler_Load(object sender, EventArgs e)
-        { 
+        {
             Global.ImportFont();
             Global.LevelResolution = Global.Resolutions.p1080;
-            MainMenu menu = new MainMenu(); 
-            menu.Show(); 
+            MainMenu menu = new MainMenu();
+            menu.Show();
         }
 
         public static void CloseHandler() => Handler.Close();
 
         public void Form_Closing(object sender, FormClosingEventArgs e)
         { Application.Exit(); }
+
+        private void FormHandler_Load_1(object sender, EventArgs e)
+        {
+
+        }
     }
 
 
@@ -62,7 +67,7 @@ namespace drawedOut
             SuspendLayout();
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1,1);
+            ClientSize = new Size(1, 1);
             Name = "FormHandler";
             Text = "FormHandler";
             Load += FormHandler_Load;

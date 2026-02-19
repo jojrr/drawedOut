@@ -134,7 +134,6 @@ namespace drawedOut
             { throw new Exception("Font failed to load"); }
 
             SourGummy = fontCollection.Families[0];
-            fontCollection.Dispose();
         }
 
         /// <summary> Calculates the new Center of the screen </summary>
@@ -164,11 +163,14 @@ namespace drawedOut
         public static Bitmap ImageToBitmap(string fileDirectory, 
                 UInt16 spriteWidth=256, UInt16 spriteHeight=256)
         {
-            return new Bitmap(
-                    Image.FromFile(fileDirectory), 
-                    (int)(spriteWidth*Global.BaseScale), 
-                    (int)(spriteHeight*Global.BaseScale)
-                    );
+            using (Image img = Image.FromFile(fileDirectory))
+            {
+                return new Bitmap(
+                        img,
+                        (int)(spriteWidth*Global.BaseScale), 
+                        (int)(spriteHeight*Global.BaseScale)
+                        );
+            }
         }
 
         /// <summary>
