@@ -76,7 +76,7 @@ namespace drawedOut
                 parent: null,
                 animation: new AnimationPlayer(@"fillerAnim\"),
                 endlag: 2f,
-                spawn: 10,
+                spawn: 0,
                 projectileEvent: ()=>{}
             );
 
@@ -141,9 +141,6 @@ namespace drawedOut
                     break;
                 case 2:
                     curAttack = _special3;
-                    float slowTime = 1f;
-                    _curLvl.DoSlowTime(ULT_SLOW_FACTOR, slowTime);
-                    _curLvl.ZoomScreen(1.1f, slowTime);
                     break;
             }
         }
@@ -185,7 +182,6 @@ namespace drawedOut
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -6400),
-                slowFactor: ULT_SLOW_FACTOR,
                 parent: this,
                 dmg:3,
                 width: 500,
@@ -196,6 +192,9 @@ namespace drawedOut
                 angle: Math.PI/2,
                 sprite: _ultSprite
                 );
+            float slowTime = 1f;
+            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, slowTime);
+            _curLvl.ZoomScreen(1.1f, slowTime);
         }
 # endregion
 

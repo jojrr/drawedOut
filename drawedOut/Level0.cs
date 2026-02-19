@@ -3,6 +3,8 @@ namespace drawedOut
 {
     internal abstract partial class Level0 : Form
     {
+        public static double AbsDeltaTime { get; private set; }
+
         protected static Stopwatch levelTimerSW = new Stopwatch();
         protected static Player playerCharacter;
         private readonly Point _playerStartPos;
@@ -278,6 +280,7 @@ namespace drawedOut
         private double getDeltaTime()
         {
             double deltaTime = _deltaTimeSW.Elapsed.TotalSeconds;
+            AbsDeltaTime = deltaTime;
             _deltaTimeSW.Restart();
             return double.Clamp(deltaTime, 0, 0.1);
         }
