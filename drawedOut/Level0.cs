@@ -35,11 +35,13 @@ namespace drawedOut
         // boss room platforms
         private Platform _endWall, _roomWall;
 
-        private static float 
+        private float 
             _gameTickInterval, 
             _baseScale,
             _curZoom = 1, 
             _slowTimeS = 0,
+            _slowFactor = 0,
+            _zoomDuration = 0,
             _animSlowFactor = 1;
 
         private bool
@@ -185,14 +187,7 @@ namespace drawedOut
                     }
 
                     double deltaTime = slowTime(getDeltaTime());
-                    double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
-
-                    if (_slowTimeS > 0) animationInterval /= Global.SLOW_FACTOR;
-                    if (animationInterval >= Global.ANIMATION_FPS*_animSlowFactor)
-                    {
-                        TickAnimations();
-                        animTickSW.Restart();
-                    }
+                    TickAnimations(animTickSW);
 
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
@@ -215,13 +210,30 @@ namespace drawedOut
             catch (InvalidOperationException) { return; }
         }
 
-        private void TickAnimations()
+        private void TickAnimations(Stopwatch animTickSW)
         {
+            double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
+
+            if (playerCharacter.UltActive) 
+            { 
+                if (animationInterval >= Global.ANIMATION_FPS) 
+                {
+                    _characterAnimations[playerCharacter]=playerCharacter.NextAnimFrame();
+                    animTickSW.Restart();
+                }
+            }
+
+            if (_slowTimeS > 0) animationInterval *= Global.SLOW_FACTOR;
+
+            if (animationInterval < Global.ANIMATION_FPS*_animSlowFactor) return;
+
             foreach (KeyValuePair<Character, Bitmap?> c in _characterAnimations)
             {
+                if (playerCharacter.UltActive && c.Key is Player) continue;
                 if (c.Key.IsActive) _characterAnimations[c.Key] = c.Key.NextAnimFrame(); 
                 else _characterAnimations[c.Key] = null;
             }
+            animTickSW.Restart();
         }
 
 
@@ -271,27 +283,63 @@ namespace drawedOut
         }
 
 
+        public void DoSlowTime(float factor=Global.SLOW_FACTOR, float duration=Global.SLOW_DURATION_S)
+        {
+            if (factor > 1) throw new Exception("slow time factor must not be > 1");
+            _slowTimeS = duration;
+           _slowFactor = factor;
+        }
+
+
         private double slowTime(double deltaTime)
         {
+            if (_zoomDuration > 0)
+            { _zoomDuration-= (float)deltaTime; }
+            else if (_curZoom != 1)
+            {
+                unZoomScreen(); 
+                _zoomDuration = 0;
+            }
+
             if (_slowTimeS > 0)
             {
-                if (Global.ZOOM_FACTOR <= 1)
-                    throw new ArgumentException("ZOOM_FACTOR must be bigger than 1");
-
                 _slowedMov = true;
                 _slowTimeS -= (float)deltaTime;
-                return (deltaTime /= Global.SLOW_FACTOR);
+                return (deltaTime *= _slowFactor);
             }
             else 
             {
                 _slowTimeS = 0;
-                if (_slowedMov) _slowedMov = false;
+                _slowFactor = 0;
+                _slowedMov = false;
                 return deltaTime;
             }
         }
 
 
         private void attackHandler(double deltaTime)
+        {
+            if (playerCharacter.UltActive) _animSlowFactor=5;
+            else
+            {
+                _animSlowFactor=1;
+                checkAttackCollisions();
+            }
+
+            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, _threadSettings); }
+            catch (OperationCanceledException) { return; }
+
+            playerCharacter.TickAllCounters(deltaTime);
+            Enemy.TickCounters(deltaTime);
+            Attacks.UpdateHitboxes();
+            Entity.DisposeRemoved();
+            _energyBar.Update((float)(playerCharacter.Energy));
+
+            if (playerCharacter.Hp <= 0) PlayerDeath();
+        }
+
+
+        private void checkAttackCollisions()
         {
             foreach (Attacks a in Attacks.AttacksList)
             {
@@ -320,18 +368,8 @@ namespace drawedOut
                     a.Dispose();
                 }
             }
-
-            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, _threadSettings); }
-            catch (OperationCanceledException) { return; }
-
-            playerCharacter.TickAllCounters(deltaTime);
-            Enemy.TickCounters(deltaTime);
-            Attacks.UpdateHitboxes();
-            Entity.DisposeRemoved();
-            _energyBar.Update((float)(playerCharacter.Energy));
-
-            if (playerCharacter.Hp <= 0) PlayerDeath();
         }
+
 
         private void PlayerDeath()
         {
@@ -341,20 +379,12 @@ namespace drawedOut
         }
 
 
-        public void SlowTime() => _slowTimeS = Global.SLOW_DURATION_S;
-
-
         private void movementTick(double deltaTime)
         {
             Global.XDirections? playerMovDir = null;
 
             if (_slowTimeS <= 0)
             {
-                if (_curZoom != 1)
-                {
-                    unZoomScreen();
-                    _curZoom = 1;
-                }
                 if (_movingLeft) playerMovDir = Global.XDirections.left;
                 else if (_movingRight) playerMovDir = Global.XDirections.right;
                 _prevPlayerMovement = playerMovDir;
@@ -428,9 +458,12 @@ namespace drawedOut
         }
 
 
-        public void ZoomScreen() 
+        public void ZoomScreen(float factor=Global.ZOOM_FACTOR, float duration=Global.SLOW_DURATION_S)
         {
-            _curZoom = Global.ZOOM_FACTOR;
+            if (_curZoom != 1) return;
+
+            _curZoom = factor;
+            _zoomDuration = duration;
 
             float playerX = playerCharacter.Center.X;
             float playerY = playerCharacter.Center.Y;
@@ -442,10 +475,10 @@ namespace drawedOut
                 float _xDiff = obj.Center.X - playerX;
                 float _yDiff = obj.Center.Y - playerY;
 
-                float newX = x + _xDiff * _curZoom;
-                float newY = y + _yDiff * _curZoom;
+                float newX = x + _xDiff * factor;
+                float newY = y + _yDiff * factor;
 
-                obj.ScaleHitbox(_curZoom);
+                obj.ScaleHitbox(factor);
                 obj.Center = new PointF (newX, newY);
             }
 
@@ -458,7 +491,7 @@ namespace drawedOut
                     playerCharacter.Center = new PointF(
                             Global.CenterOfScreen.X,
                             Global.CenterOfScreen.Y);
-                    playerCharacter.ScaleHitbox(_curZoom);
+                    playerCharacter.ScaleHitbox(factor);
                     continue;
                 }
                 zoomObj(e, midX, midY); 
@@ -516,12 +549,12 @@ namespace drawedOut
 
         private void ShowSpeedrunTime(Graphics g)
         {
-            return;
-            // g.DrawString(
-            //         levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
-            //         Global.DefaultFont,
-            //         Brushes.Black,
-            //         new PointF(1800*baseScale,30*baseScale));
+            float baseScale = Global.BaseScale;
+            g.DrawString(
+                    levelTimerSW.Elapsed.TotalSeconds.ToString("F3"),
+                    Global.DefaultFont,
+                    Brushes.Black,
+                    new PointF(1800*baseScale,30*baseScale));
         }
 
 
@@ -702,6 +735,8 @@ namespace drawedOut
                     playerCharacter.DoBasicAttack();
                     break;
             }
+
+            tryStartTimer();
         }
 
 

@@ -21,7 +21,7 @@ namespace drawedOut
         {
             if (instance is null) return;
             Global.ShowBG = instance.ShowBG;
-            Global.ShowBG = instance.ShowTime;
+            Global.ShowTime = instance.ShowTime;
             Global.GameTickFreq = instance.FPS;
             Global.LevelResolution = instance.Resolution;
         } 

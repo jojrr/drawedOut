@@ -16,8 +16,8 @@ namespace drawedOut
             MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
-            SLOW_FACTOR = 3.5F,
-            SLOW_DURATION_S = 0.35F,
+            SLOW_FACTOR = 0.28F,
+            SLOW_DURATION_S = 0.25F,
             FREEZE_DURATION_S = 0.15F,
             ANIMATION_FPS = 1000/24F;
 

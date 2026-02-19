@@ -10,12 +10,14 @@ namespace drawedOut
         public double Energy { get => _energy; }
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
+        public bool UltActive { get => (curAttack == _special3); }
         public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 10, 10 };
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
         private static AnimationPlayer _jumpAnim, _fallAnim;
         private static readonly Bitmap _projectileSprite, _ultSprite;
+        private const float ULT_SLOW_FACTOR=0.01f;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
             PASSIVE_GAIN_LIMIT = 50,
@@ -31,8 +33,7 @@ namespace drawedOut
         private double 
             _energy,
             _parryTimeS = 0,
-            _parryEndlagS = 0,
-            _movementEndlagS = 0;
+            _parryEndlagS = 0;
 
         private static readonly Attacks 
             _basic1 = new Attacks(
@@ -140,6 +141,9 @@ namespace drawedOut
                     break;
                 case 2:
                     curAttack = _special3;
+                    float slowTime = 1f;
+                    _curLvl.DoSlowTime(ULT_SLOW_FACTOR, slowTime);
+                    _curLvl.ZoomScreen(1.1f, slowTime);
                     break;
             }
         }
@@ -178,19 +182,19 @@ namespace drawedOut
         }
         private void fireSpecial3()
         {
-            iFrames = 1;
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -6400),
+                slowFactor: ULT_SLOW_FACTOR,
+                parent: this,
+                dmg:3,
                 width: 500,
                 accel: 3000,
                 height: 6400,
                 velocity: 2200,
                 maxSpeed: 10000,
                 angle: Math.PI/2,
-                dmg:3,
-                sprite: _ultSprite,
-                parent: this
+                sprite: _ultSprite
                 );
         }
 # endregion
@@ -241,7 +245,7 @@ namespace drawedOut
 
         private void PerfectParry()
         {
-            _curLvl.SlowTime();
+            _curLvl.DoSlowTime();
             _curLvl.ZoomScreen();
             _energy += (int)(PARRY_ENERGY_GAIN*0.5);
             StopParry();
@@ -297,6 +301,7 @@ namespace drawedOut
             if (IsParrying) _parryTimeS += dt;
             if (_parryTimeS >= PARRY_DURATION_S) StopParry();
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
+            if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.5f; }
         }
 
         public bool TryQueuedAttack()
