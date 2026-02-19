@@ -26,9 +26,9 @@
         protected int accel { get => _xAccel; }
         protected Attacks? curAttack;
         protected double
-            xVelocity, yVelocity,
             iFrames,
-            endlagS = 0;
+            xVelocity, yVelocity,
+            movementEndlagS=0, endlagS=0;
 
         /// <summary> the horizontal direction of the platfrom from the character that is colliding </summary>
         private Global.XDirections? _curXColliderDirection = null;
@@ -87,10 +87,11 @@
             _runAnim = new AnimationPlayer(filePath);
         }
 
-        protected void TickEndlag(double dt) => endlagS = Math.Max((endlagS-dt),0); 
-        protected void TickIFrames(double dt) => iFrames = Math.Max((iFrames-dt),0); 
+        protected void TickEndlag(double dt) => endlagS = Math.Max(endlagS-dt,0); 
+        protected void TickIFrames(double dt) => iFrames = Math.Max(iFrames-dt,0); 
+        protected void TickMovFrames(double dt) => movementEndlagS = Math.Max(movementEndlagS-dt, 0); 
         protected void TickAllCounters(double dt)
-        { TickIFrames(dt); TickEndlag(dt); }
+        { TickIFrames(dt); TickEndlag(dt); TickMovFrames(dt); }
 
         public int Hp 
         { 
@@ -318,6 +319,7 @@
             DoGravTick(dt);
             checkInBoundary();
             _lastXDirection = direction;
+            if (movementEndlagS > 0) direction = null;
 
             _curXAccel=0;
 

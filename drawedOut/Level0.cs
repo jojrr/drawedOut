@@ -3,15 +3,14 @@ namespace drawedOut
 {
     internal abstract partial class Level0 : Form
     {
-
         protected static Stopwatch levelTimerSW = new Stopwatch();
         protected static Player playerCharacter;
+        private readonly Point _playerStartPos;
         protected Platform roomDoor;
         protected Platform basePlate;
 
         private readonly int _levelWidth;
         private readonly byte _levelNo;
-        private readonly Point _playerStartPos;
 
         private static Dictionary<Entity, PointF> _zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
@@ -19,11 +18,6 @@ namespace drawedOut
         private static Global.XDirections? _prevPlayerMovement = null;
         private static Global.XDirections? _prevLeftRight;
         private static Stopwatch _deltaTimeSW = new Stopwatch();
-        private static float 
-            _gameTickInterval, 
-            _baseScale,
-            _curZoom = 1, 
-            _slowTimeS = 0;
 
         private CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
         private ParallelOptions _threadSettings = new ParallelOptions();
@@ -40,6 +34,13 @@ namespace drawedOut
 
         // boss room platforms
         private Platform _endWall, _roomWall;
+
+        private static float 
+            _gameTickInterval, 
+            _baseScale,
+            _curZoom = 1, 
+            _slowTimeS = 0,
+            _animSlowFactor = 1;
 
         private bool
             _showTime = false,
@@ -77,6 +78,7 @@ namespace drawedOut
                     origin: _playerStartPos,
                     width: 30,
                     height: 160,
+                    curLevel: this,
                     attackPower: 1,
                     energy: 100);
             InitPlatforms();
@@ -150,10 +152,9 @@ namespace drawedOut
             this.StartPosition = FormStartPosition.CenterScreen;
 
             _levelNo = levelNo;
-            _levelWidth = levelWidth;
+            _levelWidth = levelWidth; 
             _playerStartPos = playerStartPos;
 
-            // sets the refresh interval
             _gameTickInterval = (1000.0F / Global.GameTickFreq);
             _baseScale = Global.BaseScale;
 
@@ -187,7 +188,7 @@ namespace drawedOut
                     double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
 
                     if (_slowTimeS > 0) animationInterval /= Global.SLOW_FACTOR;
-                    if (animationInterval >= Global.ANIMATION_FPS)
+                    if (animationInterval >= Global.ANIMATION_FPS*_animSlowFactor)
                     {
                         TickAnimations();
                         animTickSW.Restart();
@@ -323,7 +324,7 @@ namespace drawedOut
             try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, _threadSettings); }
             catch (OperationCanceledException) { return; }
 
-            playerCharacter.TickCounters(deltaTime);
+            playerCharacter.TickAllCounters(deltaTime);
             Enemy.TickCounters(deltaTime);
             Attacks.UpdateHitboxes();
             Entity.DisposeRemoved();
@@ -340,7 +341,7 @@ namespace drawedOut
         }
 
 
-        public static void SlowTime() => _slowTimeS = Global.SLOW_DURATION_S;
+        public void SlowTime() => _slowTimeS = Global.SLOW_DURATION_S;
 
 
         private void movementTick(double deltaTime)
@@ -427,7 +428,7 @@ namespace drawedOut
         }
 
 
-        public static void ZoomScreen() 
+        public void ZoomScreen() 
         {
             _curZoom = Global.ZOOM_FACTOR;
 

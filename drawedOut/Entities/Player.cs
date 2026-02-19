@@ -25,11 +25,14 @@ namespace drawedOut
             PARRY_ENDLAG_S = 0.2,
             PARRY_DURATION_S = 0.65,
             PERFECT_PARRY_WINDOW_S = 0.25;
+
+        private bool _isParrying = false;
+        private Level0 _curLvl;
         private double 
             _energy,
             _parryTimeS = 0,
-            _parryEndlagS = 0;
-        private bool _isParrying = false;
+            _parryEndlagS = 0,
+            _movementEndlagS = 0;
 
         private static readonly Attacks 
             _basic1 = new Attacks(
@@ -87,13 +90,15 @@ namespace drawedOut
         }
 
 
-        public Player(Point origin, int width, int height, int attackPower, int energy,
+        public Player(Point origin, int width, int height, int attackPower, int energy, Level0 curLevel,
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, xAccel: xAccel, maxXVelocity: maxXVelocity,
                  hp: MaxHp)
         {
             _energy = 0;
             IsActive = true;
+            _curLvl = curLevel;
+
             setIdleAnim(@"playerChar\idle\");
             setRunAnim(@"playerChar\run\");
 
@@ -173,6 +178,7 @@ namespace drawedOut
         }
         private void fireSpecial3()
         {
+            iFrames = 1;
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -6400),
@@ -235,8 +241,8 @@ namespace drawedOut
 
         private void PerfectParry()
         {
-            Level0.SlowTime();
-            Level0.ZoomScreen();
+            _curLvl.SlowTime();
+            _curLvl.ZoomScreen();
             _energy += (int)(PARRY_ENERGY_GAIN*0.5);
             StopParry();
             _parryEndlagS = 0;
@@ -279,20 +285,15 @@ namespace drawedOut
         public void UpdateEnergy(double energy) => _energy = Math.Min(energy, MaxEnergy);
         public void HealPlayer(int heal) => Hp += heal; 
 
-        private new void TickAllCounters(double dt)
-        { 
-            base.TickAllCounters(dt); 
-            _parryEndlagS = Math.Max((_parryEndlagS-dt),0); 
-        }
-
         ///<summary>
         ///reduces endlag by <paramref name="dt"/>
         ///</summary>
         ///<param name="dt"> delta time </param>
-        public void TickCounters(double dt) 
+        public new void TickAllCounters(double dt)
         { 
             IsHit = false;
-            TickAllCounters(dt);
+            base.TickAllCounters(dt); 
+            _parryEndlagS = Math.Max((_parryEndlagS-dt),0); 
             if (IsParrying) _parryTimeS += dt;
             if (_parryTimeS >= PARRY_DURATION_S) StopParry();
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
@@ -364,4 +365,3 @@ namespace drawedOut
         { if (!checkInBoundary()) Hp = 0; }
     }
 }
-

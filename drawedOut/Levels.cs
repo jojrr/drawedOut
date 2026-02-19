@@ -17,12 +17,11 @@ namespace drawedOut
             box5;
 
         public TutorialLevel() : 
-            base(
+            base( 
                     levelNo: 0,
                     levelWidth: LEVELWIDTH,
                     playerStartPos: new Point(850, 550)
-                    ) 
-        { }
+        ) { }
 
         protected override void InitEnemies()
         {
