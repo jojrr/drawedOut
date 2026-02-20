@@ -129,16 +129,17 @@ namespace drawedOut
         public void DoSpecial(byte moveNo)
         {
             if (!UnlockedMoves[moveNo]) return;
+
+            int energyCost = SpecialEnergyCosts[moveNo];
+            if (_energy < energyCost) return;
+
             if (endlagS <= _INPUT_BUFFER_S && curAttack is not null) 
             {
                 _queueAtk = ()=>{DoSpecial(moveNo);};
                 return;
             }
 
-            int energyCost = SpecialEnergyCosts[moveNo];
-            if (_energy < energyCost) return;
             _energy -= energyCost;
-
             switch (moveNo)
             {
                 case 0:

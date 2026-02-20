@@ -40,7 +40,7 @@ namespace drawedOut
 
             Dictionary<float,Ranks> tutorialRanks = new Dictionary<float,Ranks>()
             {
-                { 40, Ranks.S },
+                { 35, Ranks.S },
                 { 60, Ranks.A },
                 { 90, Ranks.B },
                 { 120, Ranks.C },
