@@ -787,6 +787,7 @@ namespace drawedOut
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // clear unused lists
+            BgObj.ClearAllLists();
             Enemy.ClearAllLists();
             Entity.ClearAllLists();
             Attacks.ClearAllLists();

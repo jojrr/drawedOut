@@ -70,5 +70,8 @@ namespace drawedOut
             if (this.DistToMid > Global.EntityLoadThreshold) IsActive = false; 
             else IsActive = true;
         }
+
+        public new static void ClearAllLists()
+        { _bgObjList.Clear(); }
     }
 }
