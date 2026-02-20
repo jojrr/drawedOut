@@ -157,7 +157,7 @@ namespace drawedOut
 
         static MeleeEnemy()
         {
-            string downedSpriteFolder = @"seven\";
+            string downedSpriteFolder = @"fillerAnim\";
             _downedSprite = Global.GetSingleImage(downedSpriteFolder);
         }
 

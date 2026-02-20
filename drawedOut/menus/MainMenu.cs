@@ -14,25 +14,29 @@ namespace drawedOut
 
         private MenuState _curMenuState;
 
+        static MainMenu()
+        {
+            Preferences.LoadInstance(SaveData.GetSettings());
+            PlayerDataInstance.LoadInstance(SaveData.GetPlayerData());
+
+            _rankImgs = new Dictionary<Ranks, Bitmap>()
+            {
+                { Ranks.S, Global.GetSingleImage(@"Ranks\", "rankS.png") },
+                { Ranks.A, Global.GetSingleImage(@"Ranks\", "rankA.png") },
+                { Ranks.B, Global.GetSingleImage(@"Ranks\", "rankB.png") },
+                { Ranks.C, Global.GetSingleImage(@"Ranks\", "rankC.png") },
+                { Ranks.D, Global.GetSingleImage(@"Ranks\", "rankD.png") },
+            };
+
+        }
+
         public MainMenu(MenuState startMenu=MenuState.Start)
         {
             InitializeComponent();
 
-            Preferences.LoadInstance(SaveData.GetSettings());
-            PlayerDataInstance.LoadInstance(SaveData.GetPlayerData());
-
             this.FormBorderStyle = FormBorderStyle.None;
             this.DoubleBuffered = true;
             this.AutoScaleMode=AutoScaleMode.None;
-
-            _rankImgs = new Dictionary<Ranks, Bitmap>()
-            {
-                { Ranks.S, Global.GetSingleImage(@"fillerPic\") },
-                { Ranks.A, Global.GetSingleImage(@"fillerPic\") },
-                { Ranks.B, Global.GetSingleImage(@"fillerPic\") },
-                { Ranks.C, Global.GetSingleImage(@"fillerPic\") },
-                { Ranks.D, Global.GetSingleImage(@"fillerPic\") },
-            };
 
             Dictionary<float,Ranks> tutorialRanks = new Dictionary<float,Ranks>()
             {
@@ -321,6 +325,16 @@ namespace drawedOut
         {
             int rankXPos = _tutorialBtn.Rect.Right + (int)(10*Global.BaseScale);
 
+            if (_tutorialRank is not null) 
+            {
+                g.DrawImage(
+                        _rankImgs[_tutorialRank.Value],
+                        rankXPos,
+                        _tutorialBtn.Y,
+                        _rankSize,
+                        _rankSize);
+            }
+
             // draw times and rank rectangles by looping from 0 to 2, increasing the y values each time.
             for (byte i = 0; i < 3; i++)
             {
@@ -344,23 +358,6 @@ namespace drawedOut
                             _rankSize,
                             _rankSize);
                 }
-            }
-
-            if (_tutorialRank is not null) 
-            {
-                g.DrawImage(
-                        _rankImgs[_tutorialRank.Value],
-                        rankXPos,
-                        _tutorialBtn.Y,
-                        _rankSize,
-                        _rankSize);
-                //testing
-                g.DrawString(
-                        _tutorialRank.ToString(),
-                        Global.DefaultFont,
-                        Brushes.Black,
-                        rankXPos,
-                        _tutorialBtn.Y-20);
             }
         }
 

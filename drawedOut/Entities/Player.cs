@@ -15,8 +15,8 @@ namespace drawedOut
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
-        private static AnimationPlayer _jumpAnim, _fallAnim;
         private static readonly Bitmap _projectileSprite, _ultSprite;
+        private static AnimationPlayer _jumpAnim, _fallAnim, _parryAnim;
         private const float ULT_SLOW_FACTOR=0.01f;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
@@ -88,6 +88,7 @@ namespace drawedOut
             _ultSprite = Global.GetSingleImage(@"fillerAnim\");
             _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
             _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
+            _parryAnim = new AnimationPlayer(@"playerChar\parryAnim\");
         }
 
 
@@ -247,7 +248,6 @@ namespace drawedOut
             _curLvl.DoSlowTime();
             _curLvl.ZoomScreen();
             _energy += (int)(PARRY_ENERGY_GAIN*0.5);
-            StopParry();
             _parryEndlagS = 0;
         }
 
@@ -315,6 +315,13 @@ namespace drawedOut
         public override Bitmap NextAnimFrame()
         {
             if (runAnim is null || idleAnim is null) throw new Exception("Player runAnim or idle null");
+
+            if (IsParrying) 
+            {
+                if (_parryAnim.CurFrame == _parryAnim.LastFrame) return _parryAnim.LastFrameImg(FacingDirection);
+                else return _parryAnim.NextFrame(FacingDirection);
+            }
+            else _parryAnim.ResetAnimation();
 
             if (curAttack is not null)
             {

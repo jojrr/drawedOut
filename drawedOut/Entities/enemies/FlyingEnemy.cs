@@ -26,7 +26,7 @@ namespace drawedOut
 
         static FlyingEnemy()
         {
-            string downedSpriteFolder = @"six\";
+            string downedSpriteFolder = @"fillerAnim\";
             _downedSprite = Global.GetSingleImage(downedSpriteFolder);
             _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
         }

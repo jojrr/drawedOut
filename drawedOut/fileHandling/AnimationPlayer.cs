@@ -34,18 +34,16 @@ namespace drawedOut
             { _animFrames[i] = Global.ImageToBitmap(fileNames[i]); }
         }
 
+        public Bitmap LastFrameImg(Global.XDirections facingDir = Global.XDirections.right)
+        {
+            Bitmap img = (Bitmap)(_animFrames[LastFrame].Clone());
+            if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            return img;
+        }
 
         internal Bitmap NextFrame(Global.XDirections facingDir = Global.XDirections.right)
         {
             Bitmap img;
-
-            if (_totalFrameCount == 1) 
-            {
-                img = (Bitmap)(_animFrames[0].Clone());
-                if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                return img;
-            }
-
             img = (Bitmap)(_animFrames[_frameNo].Clone());
             if (++_frameNo >= _totalFrameCount) ResetAnimation();
             if (facingDir == Global.XDirections.left) img.RotateFlip(RotateFlipType.RotateNoneFlipX);

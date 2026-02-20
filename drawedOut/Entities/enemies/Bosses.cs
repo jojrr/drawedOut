@@ -155,7 +155,7 @@ namespace drawedOut
                     width: 80,
                     height: 80,
                     action: _itemDrop,
-                    sprite: Global.GetSingleImage(@"seven\")
+                    sprite: Global.GetSingleImage(@"fillerAnim\")
                     );
         }
 
