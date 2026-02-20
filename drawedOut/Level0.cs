@@ -64,6 +64,7 @@ namespace drawedOut
 
         private void InitUI()
         {
+            GameUI.ClearAll();
             _hpBar = new HpBarUI(maxHp: 6);
 
             _energyBar = new BarUI(
@@ -379,7 +380,6 @@ namespace drawedOut
 
         private void PlayerDeath()
         {
-            // TryInvoke(new Action( ()=> MessageBox.Show(this, "you are dead", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information)));
             ResetLevel();
             Checkpoint.LoadState();
         }

@@ -8,10 +8,13 @@ namespace drawedOut
         private FirstBoss _firstBoss;
         // private FlyingEnemy flyingOne;
         private Checkpoint _checkpointOne;
-        private BgObj _movSign;
+        private BgObj 
+            _fallSign,
+            _atkSign;
 
         private Platform 
-            _floor,
+            _floor1,
+            _floor2,
             _roofTop,
             _firstTower;
 
@@ -38,9 +41,15 @@ namespace drawedOut
 
         protected override void InitPlatforms()
         {
-            _floor = new(
+            _floor1 = new(
                 origin: new Point(1, 750),
-                width: _LEVELWIDTH,
+                width: 1700,
+                height: 512,
+                toggleable: true,
+                defaultState: true);
+            _floor2 = new(
+                origin: new Point(1900, 750),
+                width: _LEVELWIDTH-1900,
                 height: 512,
                 toggleable: true,
                 defaultState: true);
@@ -61,6 +70,8 @@ namespace drawedOut
         protected override void InitProps()
         { 
             _checkpointOne = new(origin: new Point(6200, 600)); 
+            _fallSign = new(origin: new Point(1500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            _atkSign = new(origin: new Point(3000, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
         }
     }
 }

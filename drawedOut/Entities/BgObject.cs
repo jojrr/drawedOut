@@ -2,18 +2,19 @@ namespace drawedOut
 {
     internal class BgObj: Entity
     {
-        public Bitmap Sprite { get; private set; }
+        public Bitmap Sprite { get; init; }
 
         private static List<BgObj> _bgObjList = new List<BgObj>();
         private const int
             _BASE_WIDTH = 150,
             _BASE_HEIGHT = 150;
 
-        public BgObj(Point origin, int width=_BASE_WIDTH, int height=_BASE_HEIGHT)
+        public BgObj(Point origin, Bitmap sprite, int width=_BASE_WIDTH, int height=_BASE_HEIGHT)
             : base(origin: origin, width: width, height: height)
         { 
             FindFloor(); 
             _bgObjList.Add(this);
+            Sprite = sprite;
         }
 
 
@@ -58,9 +59,16 @@ namespace drawedOut
         {
             foreach (BgObj b in _bgObjList)
             { 
+                if (!b.IsActive) continue;
                 if (!b.SpriteRect.IntersectsWith(clientRect)) continue;
                 g.DrawImage(b.Sprite, b.SpriteRect); 
             }
+        }
+
+        public override void CheckActive()
+        {
+            if (this.DistToMid > Global.EntityLoadThreshold) IsActive = false; 
+            else IsActive = true;
         }
     }
 }
