@@ -88,7 +88,7 @@ namespace drawedOut
                     attackPower: 1,
                     energy: 100);
             InitPlatforms();
-            InitCheckpoints();
+            InitProps();
             InitEnemies();
         }
 
@@ -113,7 +113,7 @@ namespace drawedOut
         }
 
         protected virtual void InitEnemies() => throw new Exception("InitEnemies not defined");
-        protected virtual void InitCheckpoints() => throw new Exception("InitCheckpoints not defined");
+        protected virtual void InitProps() => throw new Exception("InitProps not defined");
         protected virtual void InitPlatforms() 
         {
             basePlate = new(
@@ -526,11 +526,11 @@ namespace drawedOut
         {
             Graphics g = e.Graphics;
             
-            BgObj.DrawAll(g);
-            Checkpoint.DrawAll(g);
-            Item.DrawAll(g);
+            BgObj.DrawAll(g, ClientRectangle);
+            Checkpoint.DrawAll(g, ClientRectangle);
+            Item.DrawAll(g, ClientRectangle);
             DrawCharacters(g);
-            Projectile.DrawAll(g);
+            Projectile.DrawAll(g, ClientRectangle);
             Platform.DrawAll(g);
 
             if (_showDebugInfo) 

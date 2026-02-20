@@ -95,8 +95,14 @@ namespace drawedOut
             }
         }
 
-        public static void DrawAll(Graphics g)
-        { foreach (Item item in Item._itemList) g.DrawImage(item._sprite, item.Hitbox); }
+        public static void DrawAll(Graphics g, Rectangle clientRect)
+        { 
+            foreach (Item item in Item._itemList) 
+            {
+                if (!item.Hitbox.IntersectsWith(clientRect)) continue;
+                g.DrawImage(item._sprite, item.Hitbox); 
+            }
+        }
 
         public override void CheckActive()
         {

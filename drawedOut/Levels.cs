@@ -2,32 +2,31 @@ namespace drawedOut
 {
     internal partial class TutorialLevel : Level0
     {
-        private const int LEVELWIDTH = 8400;
+        private const int _LEVELWIDTH = 8400;
 
-        private MeleeEnemy meleeOne;
-        private FirstBoss firstBoss;
-        private FlyingEnemy flyingOne;
-        private Checkpoint checkpointOne;
-        private Checkpoint checkpointOn;
+        private MeleeEnemy _meleeOne;
+        private FirstBoss _firstBoss;
+        // private FlyingEnemy flyingOne;
+        private Checkpoint _checkpointOne;
+        private BgObj _movSign;
 
         private Platform 
-            floor,
-            box3,
-            box4,
-            box5;
+            _floor,
+            _roofTop,
+            _firstTower;
 
         public TutorialLevel() : 
             base( 
                     levelNo: 0,
-                    levelWidth: LEVELWIDTH,
-                    playerStartPos: new Point(850, 550)
+                    levelWidth: _LEVELWIDTH,
+                    playerStartPos: new Point(450, 550)
         ) { }
 
         protected override void InitEnemies()
         {
-            meleeOne = new(origin:new Point(2850, -550));
-            flyingOne = new(origin:new Point(850, 100));
-            firstBoss = new(
+            _meleeOne = new(origin:new Point(2850, -550));
+            // flyingOne = new(origin:new Point(850, 100));
+            _firstBoss = new(
                     activationDoor: ref roomDoor,
                     origin: new Point(8200, 100),
                     height: 250,
@@ -39,34 +38,29 @@ namespace drawedOut
 
         protected override void InitPlatforms()
         {
-            floor = new(
+            _floor = new(
                 origin: new Point(1, 750),
-                width: LEVELWIDTH,
+                width: _LEVELWIDTH,
                 height: 512,
                 toggleable: true,
                 defaultState: true);
 
-            box3 = new(
-               origin: new Point(300, 250),
+            _roofTop = new(
+               origin: new Point(400, 350),
                width: 400,
-               height: 175);
+               height: 50);
 
-            box4 = new(
+            _firstTower = new(
                origin: new Point(1000, 550),
-               width: 200,
-               height: 250);
-
-            box5 = new(
-               origin: new Point(1500, 550),
                width: 200,
                height: 250);
 
             base.InitPlatforms();
         }
 
-        protected override void InitCheckpoints()
+        protected override void InitProps()
         { 
-            checkpointOne = new(origin: new Point(6200, 600)); 
+            _checkpointOne = new(origin: new Point(6200, 600)); 
         }
     }
 }

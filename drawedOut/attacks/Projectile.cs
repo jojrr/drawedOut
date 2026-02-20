@@ -144,11 +144,10 @@
 
         private void drawSprite(Graphics g) => g.DrawImage(_sprite, Hitbox);
         
-        public static void DrawAll(Graphics g)
+        public static void DrawAll(Graphics g, Rectangle clientRect)
         {
             foreach (Projectile p in _projectileList)
-            { p.drawSprite(g); }
-
+            { if (p.Hitbox.IntersectsWith(clientRect)) p.drawSprite(g); }
         }
 
         public virtual void CheckCollision(double dt, Form form, Player playerBox)

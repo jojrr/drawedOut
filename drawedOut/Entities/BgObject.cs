@@ -7,7 +7,7 @@ namespace drawedOut
         private static List<BgObj> _bgObjList = new List<BgObj>();
         private const int
             _BASE_WIDTH = 150,
-            _BASE_HEIGHT = 140;
+            _BASE_HEIGHT = 150;
 
         public BgObj(Point origin, int width=_BASE_WIDTH, int height=_BASE_HEIGHT)
             : base(origin: origin, width: width, height: height)
@@ -54,10 +54,13 @@ namespace drawedOut
         }
 
 
-        public static void DrawAll(Graphics g)
+        public static void DrawAll(Graphics g, Rectangle clientRect)
         {
             foreach (BgObj b in _bgObjList)
-            { g.DrawImage(b.Sprite, b.SpriteRect); }
+            { 
+                if (!b.SpriteRect.IntersectsWith(clientRect)) continue;
+                g.DrawImage(b.Sprite, b.SpriteRect); 
+            }
         }
     }
 }

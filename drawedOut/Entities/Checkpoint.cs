@@ -89,11 +89,12 @@ namespace drawedOut
             }
         }
 
-        public static void DrawAll(Graphics g)
+        public static void DrawAll(Graphics g, Rectangle clientRect)
         {
             foreach (Checkpoint c in CheckPointList)
             {
                 if (!c.IsActive) continue;
+                if (!c.SpriteRect.IntersectsWith(clientRect)) continue;
                 if (_lastSavedPoint == c) g.DrawImage(_usedSprite, c.SpriteRect);
                 else g.DrawImage(_defaultSprite, c.SpriteRect);
             }
