@@ -62,6 +62,15 @@ namespace drawedOut
             _levelLoaded = false,
             _isPaused = false;
 
+        protected void CreateNewWall(int floorY, int x, int pWidth, int pHeight)
+        {
+            Platform newWall;
+            newWall = new(
+               origin: new Point(x, floorY-pHeight),
+               width: pWidth,
+               height: pHeight);
+        }
+
         private void InitUI()
         {
             GameUI.ClearAll();
@@ -768,10 +777,10 @@ namespace drawedOut
             }
         }
 
-        public void BossDeath()
+        public void FinishLevel()
         { 
             // save the time taken to complete this level
-            SaveData.AddScore(0, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
+            SaveData.AddScore(_levelNo, (float)Math.Round(levelTimerSW.Elapsed.TotalSeconds,2)); 
             SaveData.SavePlayerData();
             TryInvoke(QuitToMenu);
         }

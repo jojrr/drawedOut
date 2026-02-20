@@ -1,14 +1,13 @@
 namespace drawedOut
 {
-    internal partial class TutorialLevel : Level0
+# region tutorial
+    internal class TutorialLevel : Level0
     {
         private const int _LEVELWIDTH = 11200;
 
         private FirstBoss _firstBoss;
 
-        private Platform 
-            _floor1,
-            _floor2;
+        private Platform _floor1, _floor2;
 
         public TutorialLevel() : 
             base( 
@@ -34,7 +33,7 @@ namespace drawedOut
                     origin: new Point(_LEVELWIDTH-500, 100),
                     height: 250,
                     width: 250,
-                    itemDrop: BossDeath,
+                    itemDrop: BossPickup,
                     levelTimerSW: ref levelTimerSW,
                     hp: 6);
         }
@@ -80,15 +79,6 @@ namespace drawedOut
             base.InitPlatforms();
         }
 
-        private void CreateNewWall(int floorY, int x, int pWidth, int pHeight)
-        {
-            Platform newWall;
-            newWall = new(
-               origin: new Point(x, floorY-pHeight),
-               width: pWidth,
-               height: pHeight);
-        }
-
         protected override void InitProps()
         { 
             Checkpoint newCheckpoint;
@@ -101,5 +91,79 @@ namespace drawedOut
             newSign = new(origin: new Point(2600, 100), sprite: Global.GetSingleImage(@"fillerAnim\"));
             newSign = new(origin: new Point(4500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
         }
+
+        private void BossPickup()
+        {
+            if(!Player.UnlockedMoves[1]) Player.MaxHp += 2;
+            Player.UnlockedMoves[1] = true; 
+            FinishLevel();
+        }
     }
+# endregion
+
+
+
+
+
+# region level1
+    internal class Level1 : Level0
+    {
+        private const int _LEVELWIDTH = 2000;
+
+        // private SecondBoss _secondBoss;
+
+        public Level1() : 
+            base( 
+                    levelNo: 0,
+                    levelWidth: _LEVELWIDTH,
+                    playerStartPos: new Point(450, 600)
+                ) { }
+
+        protected override void InitEnemies()
+        {
+            MeleeEnemy meleeEnemy;
+
+            FlyingEnemy flyingEnemy;
+
+            // _firstBoss = new(
+            //         activationDoor: ref roomDoor,
+            //         origin: new Point(_LEVELWIDTH-500, 100),
+            //         height: 250,
+            //         width: 250,
+            //         itemDrop: BossPickup,
+            //         levelTimerSW: ref levelTimerSW,
+            //         hp: 6);
+        }
+
+        protected override void InitPlatforms()
+        {
+            int floorY = 750;
+            Platform floor;
+            floor = new(
+                    origin: new Point(1, floorY),
+                    width: _LEVELWIDTH,
+                    height: 512,
+                    toggleable: true,
+                    defaultState: true);
+
+            Platform newPlat;
+
+            base.InitPlatforms();
+        }
+
+        protected override void InitProps()
+        { 
+            Checkpoint newCheckpoint;
+            newCheckpoint = new(origin: new Point(4600, 600)); 
+            newCheckpoint = new(origin: new Point(_LEVELWIDTH-2300, 500)); 
+        }
+
+        private void BossPickup()
+        {
+            if (SaveData.GetFastestScore(0) is null) Player.MaxHp += 4;
+            FinishLevel();
+        }
+
+    }
+# endregion
 }

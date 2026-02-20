@@ -19,7 +19,7 @@ namespace drawedOut
         static HpBarUI()
         {
             string spriteFolder = @"hpBarIcon\";
-            _spriteEmpty = Global.GetSingleImage(
+            _spriteFull = Global.GetSingleImage(
                     spriteFolder, 
                     "hpIcon0.png",
                     512, 512);
@@ -27,7 +27,7 @@ namespace drawedOut
                     spriteFolder, 
                     "hpIcon1.png",
                     512, 512);
-            _spriteFull = Global.GetSingleImage(
+            _spriteEmpty = Global.GetSingleImage(
                     spriteFolder, 
                     "hpIcon2.png",
                     512, 512);
