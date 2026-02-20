@@ -26,6 +26,7 @@ namespace drawedOut
             _checkPointList.Add(this);
         }
 
+
         private RectangleF SpriteRect
         {
             get 
