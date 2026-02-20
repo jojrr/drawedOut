@@ -182,7 +182,7 @@ namespace drawedOut
         {
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
-                origin: new PointF(this.Center.X + xOffset, -6400),
+                origin: new PointF(this.Center.X + xOffset, -6700),
                 parent: this,
                 dmg:3,
                 width: 500,
@@ -300,7 +300,7 @@ namespace drawedOut
             if (IsParrying) _parryTimeS += dt;
             if (_parryTimeS >= PARRY_DURATION_S) StopParry();
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
-            if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.5f; }
+            if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.9f; }
         }
 
         public bool TryQueuedAttack()

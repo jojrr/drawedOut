@@ -14,12 +14,13 @@ namespace drawedOut
         private readonly int _levelWidth;
         private readonly byte _levelNo;
 
-        private static Dictionary<Entity, PointF> _zoomOrigins = new Dictionary<Entity, PointF>();
         private static Dictionary<Character, Bitmap?> _characterAnimations = new Dictionary<Character, Bitmap?>();
+
+        private static Stopwatch _deltaTimeSW = new Stopwatch();
 
         private static Global.XDirections? _prevPlayerMovement = null;
         private static Global.XDirections? _prevLeftRight;
-        private static Stopwatch _deltaTimeSW = new Stopwatch();
+        private static PointF _prevPlayerPos;
 
         private CancellationTokenSource _cancelTokenSrc = new CancellationTokenSource(); 
         private ParallelOptions _threadSettings = new ParallelOptions();
@@ -473,48 +474,48 @@ namespace drawedOut
 
             float midX = Global.CenterOfScreen.X;
             float midY = Global.CenterOfScreen.Y;
-            void zoomObj(Entity obj, float x, float y)
-            {
-                float _xDiff = obj.Center.X - playerX;
-                float _yDiff = obj.Center.Y - playerY;
-
-                float newX = x + _xDiff * factor;
-                float newY = y + _yDiff * factor;
-
-                obj.ScaleHitbox(factor);
-                obj.Center = new PointF (newX, newY);
-            }
-
 
             foreach (Entity e in Entity.EntityList)
             {
-                _zoomOrigins.Add(e,e.Center);
-                if (e == playerCharacter)
-                {
-                    playerCharacter.Center = new PointF(
-                            Global.CenterOfScreen.X,
-                            Global.CenterOfScreen.Y);
-                    playerCharacter.ScaleHitbox(factor);
-                    continue;
-                }
-                zoomObj(e, midX, midY); 
-            }
-        }
+                if (e == playerCharacter) continue;
 
+                float _xDiff = e.Center.X - playerX;
+                float _yDiff = e.Center.Y - playerY;
+
+                float newX = midX + _xDiff * factor;
+                float newY = midY + _yDiff * factor;
+
+                e.ScaleHitbox(factor);
+                e.Center = new PointF (newX, newY);
+            }
+            _prevPlayerPos = playerCharacter.Center;
+            playerCharacter.Center = new PointF( midX, midY );
+            playerCharacter.ScaleHitbox(factor);
+        }
 
 
         private void unZoomScreen()
         {
-            foreach (KeyValuePair<Entity, PointF> EntityPoints in _zoomOrigins)
+            float playerX = playerCharacter.Center.X;
+            float playerY = playerCharacter.Center.Y;
+            float midX = Global.CenterOfScreen.X;
+            float midY = Global.CenterOfScreen.Y;
+
+            foreach (Entity e in Entity.EntityList)
             { 
-                Entity obj = EntityPoints.Key;
-                PointF point = EntityPoints.Value;
-                obj.ResetScale();
-                obj.Center = point;
+                if (e == playerCharacter) continue;
+                float _xDiff = e.Center.X - playerX;
+                float _yDiff = e.Center.Y - playerY;
+
+                float newX = _prevPlayerPos.X + _xDiff / _curZoom;
+                float newY = _prevPlayerPos.Y + _yDiff / _curZoom;
+
+                e.ResetScale();
+                e.Center = new PointF(newX, newY);
             }
 
+            playerCharacter.Center = _prevPlayerPos;
             playerCharacter.ResetScale();
-            _zoomOrigins.Clear();
             _curZoom = 1; // screen is no longer scaled
         }
 
