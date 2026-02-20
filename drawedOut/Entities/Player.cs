@@ -24,11 +24,12 @@ namespace drawedOut
             PARRY_ENERGY_GAIN = 10;
         private const double 
             _HIT_IFRAMES_S = 0.5,
-            PARRY_ENDLAG_S = 0.2,
-            PARRY_DURATION_S = 0.65,
-            PERFECT_PARRY_WINDOW_S = 0.25;
+            _INPUT_BUFFER_S = 0.5,
+            _PARRY_ENDLAG_S = 0.2,
+            _PARRY_DURATION_S = 0.65,
+            _PERFECT_PARRY_WINDOW_S = 0.25;
 
-        private bool _isParrying = false;
+        private bool _queueParry = false, _isParrying = false;
         private Level0 _curLvl;
         private double 
             _energy,
@@ -44,7 +45,7 @@ namespace drawedOut
                     xOffset: 100,
                     spawn: 3,
                     despawn: 7,
-                    endlag: 0.3f),
+                    endlag: 1.1f),
             _basic2 = new Attacks(
                     parent: null,
                     width: 240,
@@ -128,6 +129,11 @@ namespace drawedOut
         public void DoSpecial(byte moveNo)
         {
             if (!UnlockedMoves[moveNo]) return;
+            if (endlagS <= _INPUT_BUFFER_S && curAttack is not null) 
+            {
+                _queueAtk = ()=>{DoSpecial(moveNo);};
+                return;
+            }
 
             int energyCost = SpecialEnergyCosts[moveNo];
             if (_energy < energyCost) return;
@@ -136,16 +142,20 @@ namespace drawedOut
             switch (moveNo)
             {
                 case 0:
+                    _special1.Reset();
                     curAttack = _special1;
                     break;
                 case 1:
+                    _special2.Reset();
                     curAttack = _special2;
                     break;
                 case 2:
+                    _special3.Reset();
                     curAttack = _special3;
                     _energy = 0;
                     break;
             }
+            _queueAtk = null;
         }
 
         public void DoBasicAttack()
@@ -155,14 +165,20 @@ namespace drawedOut
                 _queueAtk = DoBasicAttack2;
                 return;
             }
-            if (curAttack is null && endlagS == 0) curAttack = _basic1;
+            if (endlagS <= _INPUT_BUFFER_S) _queueAtk = DoBasicAttack; 
+            if (curAttack is null && endlagS == 0) 
+            {
+                _basic1.Reset();
+                curAttack = _basic1;
+                _queueAtk = null;
+            }
         }
         private void DoBasicAttack2() 
         {
             if (curAttack != _basic1 || endlagS <= 0) return;
-            _basic1.Reset();
             _basic2.Reset();
             curAttack = _basic2;
+            _queueAtk = null;
         }
         private void fireSpecial2()
         {
@@ -236,12 +252,26 @@ namespace drawedOut
             _energy = 0;
         }
 
-        public void DoParry() { if (!_isParrying && _parryEndlagS <= 0) _isParrying = true; }
+        public void DoParry() 
+        { 
+            if (curAttack != null) 
+            {
+                _queueParry = true;
+                return;
+            }
+            if (!_isParrying && _parryEndlagS <= 0)
+            {
+                _isParrying = true; 
+                _queueParry = false;
+            }
+        }
 
         public void StopParry()
         {
+            _queueParry = false;
             if (!_isParrying) return;
-            _parryEndlagS = PARRY_ENDLAG_S;
+            _parryEndlagS = _PARRY_ENDLAG_S;
+            endlagS = _PARRY_ENDLAG_S;
             _isParrying = false;
             _parryTimeS = 0;
         }
@@ -258,7 +288,7 @@ namespace drawedOut
         {
             if (!Hitbox.IntersectsWith(atk.AtkHitbox.Hitbox)) return false;
             if (!IsParrying) return false;
-            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) PerfectParry();
+            if (_parryTimeS <= _PERFECT_PARRY_WINDOW_S) PerfectParry();
             _energy += PARRY_ENERGY_GAIN;
             UpdateEnergy(_energy);
             return true;
@@ -278,7 +308,7 @@ namespace drawedOut
                 DoDamage(projectile);
                 return true;
             }
-            if (_parryTimeS <= PERFECT_PARRY_WINDOW_S) 
+            if (_parryTimeS <= _PERFECT_PARRY_WINDOW_S) 
             {
                 projectile.Rebound(dt, this);
                 PerfectParry(); 
@@ -305,7 +335,7 @@ namespace drawedOut
             base.TickAllCounters(dt); 
             _parryEndlagS = Math.Max((_parryEndlagS-dt),0); 
             if (IsParrying) _parryTimeS += dt;
-            if (_parryTimeS >= PARRY_DURATION_S) StopParry();
+            if (_parryTimeS >= _PARRY_DURATION_S) StopParry();
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
             if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.9f; }
         }
@@ -314,8 +344,7 @@ namespace drawedOut
         {
             if (_queueAtk is null) return false;
             _queueAtk();
-            _queueAtk = null;
-            return true;
+            return (_queueAtk is null);
         }
 
 
@@ -323,9 +352,11 @@ namespace drawedOut
         {
             if (runAnim is null || idleAnim is null) throw new Exception("Player runAnim or idle null");
 
+            if (_queueParry) DoParry();
+
             if (IsParrying) 
             {
-                if (_parryAnim.CurFrame == _parryAnim.LastFrame) return _parryAnim.LastFrameImg(FacingDirection);
+                if (_parryAnim.CurFrame==_parryAnim.LastFrame) return _parryAnim.LastFrameImg(FacingDirection); 
                 else return _parryAnim.NextFrame(FacingDirection);
             }
             else _parryAnim.ResetAnimation();
