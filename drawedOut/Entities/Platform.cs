@@ -61,13 +61,54 @@
             _inactivePlatformList.Add(this);
         }
 
+        public RectangleF? GetDrawingBox(float levelW, float levelH, int buffer)
+        {
+            SizeF recSize = Size;
+            levelW += buffer;
+            levelH += buffer;
+
+            float 
+                top = (int)LocationY,
+                bottom = (int)Hitbox.Bottom,
+                left = (int)LocationX,
+                right = (int)Hitbox.Right;
+
+            if (left > levelW) return null;
+            if (top > levelH) return null;
+            if (right < -buffer) return null;
+            if (bottom < -buffer) return null;
+
+            if (bottom > levelH) recSize.Height -= bottom - levelH;
+            if (right > levelW) recSize.Width -= right - levelW;
+
+            if (top < -buffer) 
+            {
+                recSize.Height -= -top - buffer;
+                top = -buffer;
+            }
+            if (left < -buffer)
+            {
+                recSize.Width -= -left - buffer;
+                left = -buffer;
+            }
+
+            return new RectangleF(left, top, recSize.Width, recSize.Height);
+        }
+
         public static void DrawAll(Graphics g)
         {
+            float levelWidth = Global.LevelSize.Width;
+            float levelHeight = Global.LevelSize.Height;
+            int lineSize = (int)(6*Global.BaseScale);
+
             foreach (Platform plat in Platform.ActivePlatformList)
             {
-                RectangleF hitbox = plat.Hitbox;
-                using (Pen blackPen = new Pen(Color.Black, 6))
-                { g.DrawRectangle(blackPen, hitbox); }
+                RectangleF? hitbox = plat.GetDrawingBox(levelWidth, levelHeight, lineSize);
+                using (Pen blackPen = new Pen(Color.Black, lineSize))
+                { 
+                    if (hitbox is null) continue;
+                    g.DrawRectangle(blackPen, hitbox.Value); 
+                }
             }
         }
 

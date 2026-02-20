@@ -555,7 +555,11 @@ namespace drawedOut
             foreach (KeyValuePair<Character, Bitmap?> img in _characterAnimations)
             {
                 if (img.Value is null) continue;
-                g.DrawImage(img.Value, img.Key.AnimRect);
+
+                RectangleF animRect = img.Key.AnimRect;
+                if (!animRect.IntersectsWith(ClientRectangle)) continue;
+
+                g.DrawImage(img.Value, animRect);
             }
         }
 
