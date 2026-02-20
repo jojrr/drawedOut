@@ -11,7 +11,7 @@ namespace drawedOut
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
         public bool UltActive { get => (curAttack == _special3); }
-        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 10, 10 };
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 40, 100 };
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
@@ -127,8 +127,9 @@ namespace drawedOut
 # region player attacks
         public void DoSpecial(byte moveNo)
         {
-            int energyCost = SpecialEnergyCosts[moveNo];
             if (!UnlockedMoves[moveNo]) return;
+
+            int energyCost = SpecialEnergyCosts[moveNo];
             if (_energy < energyCost) return;
             _energy -= energyCost;
 
@@ -142,6 +143,7 @@ namespace drawedOut
                     break;
                 case 2:
                     curAttack = _special3;
+                    _energy = 0;
                     break;
             }
         }
@@ -182,20 +184,21 @@ namespace drawedOut
         {
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
-                origin: new PointF(this.Center.X + xOffset, -6700),
+                origin: new PointF(this.Center.X + xOffset, -7670),
                 parent: this,
-                dmg:3,
+                dmg:5,
+                heal:1,
                 width: 500,
-                accel: 3000,
-                height: 6400,
+                height: 7500,
+                accel: 2500,
                 velocity: 2200,
-                maxSpeed: 10000,
+                maxSpeed: 25000,
                 angle: Math.PI/2,
                 sprite: _ultSprite
                 );
-            float slowTime = 1f;
-            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, slowTime);
-            _curLvl.ZoomScreen(1.1f, slowTime);
+
+            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, 1.5f);
+            _curLvl.ZoomScreen(1.1f, 1);
         }
 # endregion
 
@@ -286,7 +289,11 @@ namespace drawedOut
         }
 
         public void UpdateEnergy(double energy) => _energy = Math.Min(energy, MaxEnergy);
-        public void HealPlayer(int heal) => Hp += heal; 
+        public void HealPlayer(int heal)
+        { 
+            Hp += heal; 
+            _hpBar.ComputeHP(Hp);
+        }
 
         ///<summary>
         ///reduces endlag by <paramref name="dt"/>
