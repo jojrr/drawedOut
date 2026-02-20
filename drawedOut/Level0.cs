@@ -49,6 +49,7 @@ namespace drawedOut
 
         private bool
             _showTime = false,
+            _showHitboxes = false,
             _timerStarted = false,
             _levelActive = true,
             _showDebugInfo = false,
@@ -243,6 +244,7 @@ namespace drawedOut
         private void Form1_Load(object sender, EventArgs e)
         {
             _showTime = Global.ShowTime;
+            _showHitboxes = Global.ShowHitboxes;
             _isPaused = false;
             _deltaTimeSW.Start();
 
@@ -524,18 +526,25 @@ namespace drawedOut
         {
             Graphics g = e.Graphics;
             
+            BgObj.DrawAll(g);
             Checkpoint.DrawAll(g);
             Item.DrawAll(g);
             DrawCharacters(g);
             Projectile.DrawAll(g);
             Platform.DrawAll(g);
 
-            if (_showTime || _showDebugInfo) ShowSpeedrunTime(g);
             if (_showDebugInfo) 
-            {
+            { 
                 DrawHitboxes(g);
+                ShowSpeedrunTime(g);
                 ShowFPSInfo(g);
             }
+            else 
+            {
+                if (_showHitboxes) DrawHitboxes(g);
+                if (_showTime) ShowSpeedrunTime(g);
+            }
+
             foreach (GameUI GUI in GameUI.UiElements) GUI.Draw(g);
             if (_isPaused) DrawPauseMenu(g);
         }

@@ -279,8 +279,8 @@ namespace drawedOut
 
         private void BgBtnClick() 
         {
-            Global.ShowBG=!Global.ShowBG;
-            _backgroundBtn.BtnTxt = BoolToString(Global.ShowBG);
+            Global.ShowHitboxes=!Global.ShowHitboxes;
+            _backgroundBtn.BtnTxt = BoolToString(Global.ShowHitboxes);
             SaveData.SaveSettings();
             Invalidate();
         }

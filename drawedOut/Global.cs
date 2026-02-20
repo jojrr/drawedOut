@@ -10,9 +10,8 @@ namespace drawedOut
     ///</summary>
     internal static class Global
     {
-        public const int 
-            _GRAVITY = 4000,
-            _DEFAULT_FONT_SIZE = 25,
+        public const int
+            DEFAULT_FONT_SIZE = 25,
             MAX_THREADS_TO_USE = 4;
         public const float 
             ZOOM_FACTOR = 1.05F,
@@ -25,12 +24,14 @@ namespace drawedOut
         public static float LeftScrollBound { get => _leftScrollBound; }
         public static float RightScrollBound { get => _rightScrollBound; }
 
+        private const int _GRAVITY = 4000;
+
         // <summary>
         // Display the background and the time in the level
         // </summary>
         public static bool 
             ShowTime = false,
-            ShowBG = true;
+            ShowHitboxes = false;
 
         /// <summary>
         /// Base gravity multiplied by the base scale.
@@ -106,7 +107,7 @@ namespace drawedOut
                 }
 
 
-                _defaultFont = new Font(SourGummy, _DEFAULT_FONT_SIZE*_baseScale);
+                _defaultFont = new Font(SourGummy, DEFAULT_FONT_SIZE*_baseScale);
                 _leftScrollBound = (int)(scaleWidth * scrollBoundPercent);
                 _rightScrollBound = (int)(scaleWidth * (1-scrollBoundPercent));
                 CalcNewCenter();

@@ -24,7 +24,7 @@ namespace drawedOut
         /// The action that is performed when the button is clicked.
         /// </param>
         public GameButton(Point origin, Size recSize, Action clickEvent, 
-                string? txt=null, Bitmap? img=null, int fontSize=Global._DEFAULT_FONT_SIZE, float fontScale=1)
+                string? txt=null, Bitmap? img=null, int fontSize=Global.DEFAULT_FONT_SIZE, float fontScale=1)
         {
             float bScale = Global.BaseScale;
             _bounds = new Rectangle(
@@ -61,7 +61,7 @@ namespace drawedOut
         /// The action that is performed when the button is clicked.
         /// </param>
         public GameButton(float xCenterPos, float yCenterPos, float relWidth, float relHeight, Action clickEvent, 
-                string? txt=null, Bitmap? img=null, int fontSize=Global._DEFAULT_FONT_SIZE, float fontScale=1)
+                string? txt=null, Bitmap? img=null, int fontSize=Global.DEFAULT_FONT_SIZE, float fontScale=1)
         {
             ClickEvent = clickEvent;
             BtnTxt = txt;

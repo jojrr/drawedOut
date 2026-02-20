@@ -101,7 +101,7 @@ namespace drawedOut
         private void CreateSettingsStrings()
         {
             _settingsStringsYPos.Clear();
-            _settingsStringsYPos.Add("Show lined background", _backgroundBtn.Y);
+            _settingsStringsYPos.Add("Show hitboxes", _backgroundBtn.Y);
             _settingsStringsYPos.Add("Show time in level", _timeBtn.Y);
             _settingsStringsYPos.Add($"FPS (current: {Global.GameTickFreq})", _24FpsBtn.Y);
             _settingsStringsYPos.Add($"Game resolution \n(current: {Global.LevelResolution.ToString()})", _720pBtn.Y);
@@ -117,7 +117,7 @@ namespace drawedOut
                     relWidth: 0.06f,
                     relHeight: 0.05f,
                     clickEvent: BgBtnClick,
-                    txt: BoolToString(Global.ShowBG));
+                    txt: BoolToString(Global.ShowHitboxes));
             CreateFPSBtns(0.54f, 0.33f);
             CreateResBtns(0.55f, 0.40f);
             _timeBtn = new GameButton(
