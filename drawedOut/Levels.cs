@@ -2,15 +2,10 @@ namespace drawedOut
 {
     internal partial class TutorialLevel : Level0
     {
-        private const int _LEVELWIDTH = 8400;
+        private const int _LEVELWIDTH = 11200;
 
-        private FlyingEnemy _flyingEnemy;
-        private MeleeEnemy _meleeEnemy;
         private FirstBoss _firstBoss;
 
-        private Checkpoint _newCheckpoint;
-        private Platform _newPlat;
-        private BgObj _newSign;
         private Platform 
             _floor1,
             _floor2;
@@ -24,11 +19,19 @@ namespace drawedOut
 
         protected override void InitEnemies()
         {
-            _meleeEnemy = new(origin:new Point(3500, -550));
-            // flyingOne = new(origin:new Point(850, 100));
+            MeleeEnemy meleeEnemy;
+            meleeEnemy = new(origin:new Point(3500, 250));
+
+            meleeEnemy = new(origin:new Point(6200, 740));
+            meleeEnemy = new(origin:new Point(7000, 740));
+
+            FlyingEnemy flyingEnemy;
+            flyingEnemy = new(origin:new Point(6000, 100));
+            flyingEnemy = new(origin:new Point(6800, 100));
+
             _firstBoss = new(
                     activationDoor: ref roomDoor,
-                    origin: new Point(8200, 100),
+                    origin: new Point(_LEVELWIDTH-500, 100),
                     height: 250,
                     width: 250,
                     itemDrop: BossDeath,
@@ -52,7 +55,8 @@ namespace drawedOut
                 toggleable: true,
                 defaultState: true);
 
-            _newPlat = new(
+            Platform newPlat;
+            newPlat = new(
                origin: new Point(400, 350),
                width: 400,
                height: 50);
@@ -62,12 +66,24 @@ namespace drawedOut
             CreateNewWall(floorY, 2600, 200, 200);
             CreateNewWall(floorY, 3000, 200, 300);
 
+            CreateNewWall(floorY, 5000, 100, 150);
+            CreateNewWall(floorY, 5100, 100, 250);
+            newPlat = new(
+                    origin: new Point(5300,floorY - 350),
+                    width: 1000,
+                    height: 50);
+            newPlat = new(
+                    origin: new Point(6300,floorY - 350),
+                    width: 1000,
+                    height: 50);
+
             base.InitPlatforms();
         }
 
         private void CreateNewWall(int floorY, int x, int pWidth, int pHeight)
         {
-            _newPlat = new(
+            Platform newWall;
+            newWall = new(
                origin: new Point(x, floorY-pHeight),
                width: pWidth,
                height: pHeight);
@@ -75,10 +91,15 @@ namespace drawedOut
 
         protected override void InitProps()
         { 
-            _newCheckpoint = new(origin: new Point(6200, 600)); 
-            _newSign = new(origin: new Point(1500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
-            _newSign = new(origin: new Point(2100, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
-            _newSign = new(origin: new Point(2600, 100), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            Checkpoint newCheckpoint;
+            newCheckpoint = new(origin: new Point(4600, 600)); 
+            newCheckpoint = new(origin: new Point(_LEVELWIDTH-2300, 500)); 
+
+            BgObj newSign;
+            newSign = new(origin: new Point(1500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            newSign = new(origin: new Point(2100, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            newSign = new(origin: new Point(2600, 100), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            newSign = new(origin: new Point(4500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
         }
     }
 }

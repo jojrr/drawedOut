@@ -40,11 +40,10 @@ namespace drawedOut
 
             Dictionary<float,Ranks> tutorialRanks = new Dictionary<float,Ranks>()
             {
-                { 25, Ranks.S },
-                { 30, Ranks.A },
-                { 40, Ranks.B },
-                { 50, Ranks.C },
-                { -1, Ranks.D },
+                { 45, Ranks.S },
+                { 60, Ranks.A },
+                { 90, Ranks.B },
+                { 120, Ranks.C },
             };
             _tutorialRank = CalcRank(0, tutorialRanks);
 
@@ -80,11 +79,10 @@ namespace drawedOut
             if (levelTime is null) return null;
             foreach (float time in timeToRank.Keys)
             { 
-                if (time == -1) break;
                 if (levelTime > time) continue;
                 return timeToRank[time]; 
             }
-            return timeToRank[-1]; ;
+            return Ranks.D;
         }
 
         private void UpdateSize()
