@@ -360,17 +360,20 @@ namespace drawedOut
             foreach (Attacks a in Attacks.AttacksList)
             {
                 RectangleF atkBox = a.AtkHitbox.Hitbox;
-                foreach (Enemy e in Enemy.ActiveEnemyList)
-                {
-                    if (a.Parent == e) continue;
-                    if (!atkBox.IntersectsWith(e.Hitbox)) continue; 
-                    e.DoDamage(a);
-                    a.Dispose();
-                }
                 if (a.Parent is Player) 
                 {
                     foreach (Checkpoint c in Checkpoint.CheckPointList)
-                    { if (atkBox.IntersectsWith(c.Hitbox)) c.SaveState(playerCharacter, basePlate); }
+                    { 
+                        if (!c.IsActive) continue;
+                        if (!atkBox.IntersectsWith(c.Hitbox)) continue;
+                        c.SaveState(playerCharacter, basePlate);
+                    }
+                    foreach (Enemy e in Enemy.ActiveEnemyList)
+                    {
+                        if (!atkBox.IntersectsWith(e.Hitbox)) continue; 
+                        e.DoDamage(a);
+                        a.Dispose();
+                    }
                 }
                 else if (atkBox.IntersectsWith(playerCharacter.Hitbox)) 
                 {
@@ -814,6 +817,8 @@ namespace drawedOut
             // stop threads
             _levelActive = false;
             _cancelTokenSrc.Cancel();
+
+            GC.Collect();
         }
     }
 }
