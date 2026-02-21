@@ -35,7 +35,6 @@ namespace drawedOut
         private readonly Platform _activationDoor; 
         private readonly Action _itemDrop;
         private int _curState = 0;
-        private bool _roost = false;
         private double 
             _angleToPlayer,
             _xDiffToPlayer,
@@ -88,7 +87,6 @@ namespace drawedOut
                             direction:direction,
                             xDistance:xDistance,
                             scrollVelocity:scrollVelocity,
-                            playerCenter:playerCenter,
                             dt:dt);
                     break;
                 case 1:
@@ -96,20 +94,19 @@ namespace drawedOut
                             direction:direction,
                             xDistance:xDistance,
                             scrollVelocity:scrollVelocity,
-                            playerCenter:playerCenter,
-                            dt:dt);
+                            dt:dt,
+                            playerCenter:playerCenter);
                     break;
             }
 
             if (_curState == 5)
             {
                 endlagS = MOV_ENDLAG_S;
-                _roost = true;
                 _curState = 0;
             }
         }
 
-        private void AttackOneLogic(Global.XDirections? direction, double xDistance, double scrollVelocity, double dt, PointF playerCenter)
+        private void AttackOneLogic(Global.XDirections? direction, double xDistance, double scrollVelocity, double dt)
         {
             if (curAttack is not null) 
             {

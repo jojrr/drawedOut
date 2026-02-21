@@ -7,8 +7,8 @@ namespace drawedOut
             ATK_X_OFFSET = 100,
             _X_KNOCK_DAMPEN = 200,
             _Y_KNOCK_DAMPEN = 200,
-            _PREFERRED_HEIGHT = 600,
-            _ROOST_TIME = 2;
+            _PREFERRED_HEIGHT = 400,
+            _ROOST_TIME = 1;
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");

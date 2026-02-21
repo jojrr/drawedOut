@@ -136,6 +136,13 @@
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
         }
 
+        private void Bounce(double dt, bool vertical)
+        {
+            if (vertical) _yVelocity *= -1;
+            else _xVelocity *= -1;
+            this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
+        }
+
         public void Dispose() => _disposedProjectiles.Add(this); 
 
         public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dispose(); }
@@ -162,14 +169,21 @@
                 PointF bLoc = Center;
 
                 if (_disposedProjectiles.Contains(this)) return;
-                if (_bouncy && LocationY < 0) Rebound(dt, this);
+                if (_bouncy && LocationY < 0) 
+                {
+                    LocationY = 0;
+                    Bounce(dt, true);
+                }
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
                     if (!(p.Hitbox.IntersectsWith(this.Hitbox))) continue;
                     if (_bouncy)
                     {
-                        Rebound(dt, this);
+                        bool vert = false;
+                        RectangleF plat = p.Hitbox;
+                        if ( plat.Right > Center.X && Center.X > plat.Left) vert=true;
+                        Bounce(dt, vert);
                         return;
                     }
                     _disposedProjectiles.Add(this);
