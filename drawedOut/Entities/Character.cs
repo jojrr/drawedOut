@@ -307,7 +307,8 @@
         }
 
 
-        public void DoJump() => yVelocity = -_JUMP_VELOCITY; 
+        public void DoJump()
+        { if (IsOnFloor) yVelocity = -_JUMP_VELOCITY; }
 
 
         /// <summary>
@@ -355,9 +356,12 @@
         protected bool checkInBoundary() 
         {
              if (Location.Y <= 0)
-             {
-                 LocationY = 1;
-                 yVelocity = Math.Max(yVelocity, 0);
+             { 
+                 if (yVelocity < 0)
+                 {
+                     LocationY = 1;
+                     yVelocity = 0;
+                 }
              }
              else if (Location.Y > Global.LevelSize.Height) return false;
              return true;

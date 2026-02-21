@@ -34,7 +34,7 @@ namespace drawedOut
         public FlyingEnemy(Point origin,
                 int projectileWidth = 40, int projectileHeight = 40, float maxRange = 400, float minRange = 200, 
                 int projectileSpeed=_DEFAULT_PROJECTILE_VELOCITY, int preferredHeight=_DEFAULT_PREFERRED_HEIGHT)
-            : base(origin: origin, width: 40, height: 40, hp: 3, maxXVelocity: 200)
+            : base(origin: origin, width: 100, height: 100, hp: 3, maxXVelocity: 200)
         {
             float _minRange = Math.Abs(minRange);
             float _maxRange = Math.Abs(maxRange);

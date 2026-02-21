@@ -121,7 +121,7 @@
         public override void CheckActive()
         {
             if (_toggleable) return;
-            if (this.DistToMid > Global.EntityLoadThreshold)
+            if (this.DistToMid > Global.EntityLoadThreshold*2)
             {
                 if (!IsActive) return;
 

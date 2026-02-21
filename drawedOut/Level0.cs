@@ -4,6 +4,7 @@ namespace drawedOut
     internal abstract partial class Level0 : Form
     {
         public static double AbsDeltaTime { get; private set; }
+        public float playerRelX => playerCharacter.LocationX-basePlate.LocationX;
 
         protected static Stopwatch levelTimerSW = new Stopwatch();
         protected static Player playerCharacter;
@@ -62,13 +63,15 @@ namespace drawedOut
             _levelLoaded = false,
             _isPaused = false;
 
-        protected void CreateNewWall(int floorY, int x, int pWidth, int pHeight)
+        protected Platform CreateNewWall(int floorY, int x, int pWidth, int pHeight)
         {
             Platform newWall;
             newWall = new(
                origin: new Point(x, floorY-pHeight),
                width: pWidth,
                height: pHeight);
+
+            return newWall;
         }
 
         private void InitUI()
@@ -127,11 +130,11 @@ namespace drawedOut
         protected virtual void InitPlatforms() 
         {
             basePlate = new(
-               origin: new Point(0, 3000),
+               origin: new Point(0, 42067),
                width: _levelWidth,
                height: 1,
                toggleable: true,
-               defaultState: true);
+               defaultState: false);
 
             float levelRight = basePlate.Width;
             _endWall = new(
@@ -205,12 +208,15 @@ namespace drawedOut
 
                     movementTick(deltaTime);
                     attackHandler(deltaTime); 
+                    otherLogic(deltaTime); 
                     calcFrameInfo(deltaTime);
                     TryInvoke(this.Refresh);
                 }
                 this.TryInvoke(Close);
             });
         }
+
+        protected virtual void otherLogic(double dt) {}
 
         private void FindMouse() => _mouseLoc = PointToClient(Cursor.Position);
 
@@ -281,7 +287,7 @@ namespace drawedOut
         // <summary>
         // assign enemies their respective animations in the _characterAnimations Dictionary.
         // </summary>
-        private void LinkAnimations()
+        protected void LinkAnimations()
         {
             _characterAnimations.Clear();
             _characterAnimations.Add(playerCharacter, playerCharacter.NextAnimFrame());
@@ -390,7 +396,7 @@ namespace drawedOut
         }
 
 
-        private void PlayerDeath()
+        protected virtual void PlayerDeath()
         {
             ResetLevel();
             Checkpoint.LoadState();
@@ -415,7 +421,7 @@ namespace drawedOut
             foreach (Entity e in Entity.EntityList)
                 e.CheckActive();
 
-            if (playerCharacter.IsOnFloor && _jumping) { playerCharacter.DoJump(); }
+            if (_jumping) { playerCharacter.DoJump(); }
             if (isScrolling) scrollVelocity -= playerCharacter.XVelocity;
 
             playerCharacter.MoveCharacter(deltaTime, playerMovDir, scrollVelocity);

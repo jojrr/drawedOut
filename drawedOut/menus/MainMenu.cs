@@ -383,9 +383,15 @@ namespace drawedOut
         }
         private void LoadLevel1()
         {
+            this.Close();
+            Level1 level = new Level1();
+            level.Show();
         }
         private void LoadLevel2()
         {
+            this.Close();
+            Level2 level = new Level2();
+            level.Show();
         }
 #endregion
     }

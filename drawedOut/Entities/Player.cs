@@ -5,6 +5,7 @@ namespace drawedOut
         public new static byte MaxHp = 6;
         public static UInt16 MaxEnergy = 100;
         public static bool[] UnlockedMoves;
+        public static int VisibleHeight { get; private set; }
 
         public bool IsHit { get; private set; }
         public double Energy { get => _energy; }
@@ -100,6 +101,7 @@ namespace drawedOut
         {
             _energy = 0;
             IsActive = true;
+            VisibleHeight = (int)(height*1.3f);
             _curLvl = curLevel;
 
             setIdleAnim(@"playerChar\idle\");

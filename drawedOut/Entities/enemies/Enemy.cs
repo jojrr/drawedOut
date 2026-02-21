@@ -162,11 +162,11 @@ namespace drawedOut
         }
 
         public MeleeEnemy(Point origin)
-            : base(origin: origin, width: 80, height: 160, hp: 3, maxXVelocity: 400)
+            : base(origin: origin, width: 100, height: 180, hp: 3, maxXVelocity: 400)
         {
             Size atkSize = new Size(180,220);
 
-            _maxRange = Width+(atkSize.Width * Global.BaseScale);
+            _maxRange = Width+(atkSize.Width - ATK_X_OFFSET* Global.BaseScale);
             _jumpRange = 1.5*Height;
 
             _mainAtk = new Attacks(
