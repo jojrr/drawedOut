@@ -141,8 +141,16 @@ namespace drawedOut
 
         protected override void otherLogic(double dt)
         {
-            if (playerCharacter.LocationX > _door1.Hitbox.Right + 20) _door1.Activate();
-            else if (playerCharacter.LocationX < _door1.Hitbox.Left) _door1.Deactivate();
+            if (playerCharacter.LocationX > _door1.Hitbox.Right + 20) 
+            {
+                _door1.Activate();
+                Enemy.ReActivate();
+            }
+            else if (playerCharacter.LocationX < _door1.Hitbox.Left) 
+            {
+                _door1.Deactivate();
+                Enemy.DeactivateAll();
+            }
             if (playerCharacter.LocationX > _door4.Hitbox.Right + 20) _door4.Activate();
             else if (playerCharacter.LocationX < _door4.Hitbox.Left) _door4.Deactivate();
             if (Enemy.ActiveEnemyList.Count==0) 
@@ -161,10 +169,26 @@ namespace drawedOut
 
         private void firstWave()
         {
+            int startX = 1200; 
+            int width = 1700;
             MeleeEnemy mEnemy;
+            mEnemy = new( origin: new Point(startX + 200, 200) );
+            mEnemy = new( origin: new Point(startX + width - 200, 600) );
+            FlyingEnemy fEnemy;
+            fEnemy = new( origin: new Point(startX + width/2 - 200, 200) );
+            fEnemy = new( origin: new Point(startX + width/2 - 200, 600) );
         }
         private void secondWave()
         {
+            int startX = 3100; 
+            int width = 1700;
+            MeleeEnemy mEnemy;
+            mEnemy = new( origin: new Point(startX + width - 200, 100) );
+            mEnemy = new( origin: new Point(startX + width - 200, 600) );
+            FlyingEnemy fEnemy;
+            fEnemy = new( origin: new Point(startX + width - 200, 100) );
+            fEnemy = new( origin: new Point(startX + width - 200, 600) );
+            fEnemy = new( origin: new Point(startX + width/2 - 200, 700) );
         }
         private void thirdWave()
         {

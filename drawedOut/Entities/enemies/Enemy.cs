@@ -9,6 +9,7 @@ namespace drawedOut
 
         private static HashSet<Enemy> _activeEnemyList = new HashSet<Enemy>();
         private static HashSet<Enemy> _inactiveEnemyList = new HashSet<Enemy>();
+        private static bool _allInactive = false;
         private const int 
             _DEFAULT_X_KNOCKBACK = 1000, 
             _DEFAULT_Y_KNOCKBACK = 500;
@@ -27,6 +28,9 @@ namespace drawedOut
             _maxDownTime = maxDownTime;
             _inactiveEnemyList.Add(this); 
         }
+        
+        public static void DeactivateAll() => _allInactive = true;
+        public static void ReActivate() => _allInactive = false;
 
         public virtual void DoMovement(double dt, double scrollVelocity, PointF playerCenter) => 
             throw new Exception($"DoMove is not implemented in {this.GetType()}");
@@ -85,6 +89,12 @@ namespace drawedOut
 
         public override void CheckActive()
         {
+            if (_allInactive) 
+            {
+                SetInactive();
+                return;
+            }
+
             if ((Hp <= 0 && !isDowned) || !checkInBoundary())
             { 
                 DoDeath(); 

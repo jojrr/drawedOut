@@ -348,9 +348,7 @@ namespace drawedOut
                 checkAttackCollisions();
             }
 
-            try { Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter, _threadSettings); }
-            catch (OperationCanceledException) { return; }
-
+            Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter);
             playerCharacter.TickAllCounters(deltaTime);
             Enemy.TickCounters(deltaTime);
             Attacks.UpdateHitboxes();

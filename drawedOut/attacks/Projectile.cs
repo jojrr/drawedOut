@@ -191,11 +191,12 @@
 
         }
 
-        public static void CheckProjectileCollisions(double dt, Form form, Player playerBox, ParallelOptions threadSettings)
+        public static void CheckProjectileCollisions(double dt, Form form, Player playerBox)
         {
             if (_projectileList.Count == 0) return;
-            Parallel.ForEach(Projectile._projectileList, threadSettings, bullet =>
-            { bullet.CheckCollision(dt, form, playerBox); });
+
+            foreach (Projectile p in _projectileList)
+            { p.CheckCollision(dt, form, playerBox); }
 
             if (_disposedProjectiles.Count == 0) return;
 

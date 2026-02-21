@@ -155,7 +155,6 @@ namespace drawedOut
                 case 2:
                     _special3.Reset();
                     curAttack = _special3;
-                    _energy = 0;
                     break;
             }
             _queueAtk = null;
@@ -203,6 +202,7 @@ namespace drawedOut
         {
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
             int dmg = (int)(Energy / 20);
+            _energy = 0;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -7670),
                 parent: this,
