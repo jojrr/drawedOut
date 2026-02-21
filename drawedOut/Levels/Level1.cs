@@ -5,7 +5,7 @@ namespace drawedOut
         private const int _LEVELWIDTH = 12000;
 
         private Platform _lockedStep;
-        // private SecondBoss _Oscar;
+        private SecondBoss _Oscar;
 
         public Level1() : 
             base( 
@@ -20,14 +20,13 @@ namespace drawedOut
             spawnTop();
             spawnBottom();
 
-            // _firstBoss = new(
-            //         activationDoor: ref roomDoor,
-            //         origin: new Point(_LEVELWIDTH-500, 100),
-            //         height: 250,
-            //         width: 250,
-            //         itemDrop: BossPickup,
-            //         levelTimerSW: ref levelTimerSW,
-            //         hp: 6);
+            _Oscar = new(
+                    activationDoor: ref roomDoor,
+                    origin: new Point(_LEVELWIDTH-500, 100),
+                    height: 150,
+                    width: 150,
+                    itemDrop: BossPickup,
+                    levelTimerSW: ref levelTimerSW);
         }
 
         protected override void InitPlatforms()

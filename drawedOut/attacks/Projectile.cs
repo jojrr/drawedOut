@@ -14,6 +14,7 @@
         private readonly int _dmg, _knockbackSpeed;
         private readonly Bitmap _sprite;
         private Entity _parent;
+        private bool _bouncy;
         private float 
             _cosAngle,
             _sinAngle,
@@ -30,12 +31,14 @@
         /// <param name="velocity"></param>
         /// <param name="target"></param>
         public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, Bitmap sprite,
-                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null)
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null, 
+                bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
             _sprite = sprite;
             _parent = parent;
+            _bouncy = bouncy;
             _accel = accel;
             _velocity = velocity;
             _maxSpeed = maxSpeed ?? velocity;
@@ -51,12 +54,14 @@
         }
 
         public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, Bitmap sprite,
-                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null)
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null,
+                bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
             _sprite = sprite;
             _parent = parent;
+            _bouncy = bouncy;
             _accel = accel;
             _velocity = velocity;
             _knockbackSpeed = knockback;
@@ -157,11 +162,16 @@
                 PointF bLoc = Center;
 
                 if (_disposedProjectiles.Contains(this)) return;
+                if (_bouncy && LocationY < 0) Rebound(dt, this);
 
                 foreach (Platform p in Platform.ActivePlatformList)
                 {
                     if (!(p.Hitbox.IntersectsWith(this.Hitbox))) continue;
-
+                    if (_bouncy)
+                    {
+                        Rebound(dt, this);
+                        return;
+                    }
                     _disposedProjectiles.Add(this);
                     return;
                 }

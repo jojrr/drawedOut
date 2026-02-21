@@ -47,6 +47,24 @@ namespace drawedOut
             };
             _tutorialRank = CalcRank(0, tutorialRanks);
 
+            Dictionary<float,Ranks> lvl1Ranks = new Dictionary<float,Ranks>()
+            {
+                { 120, Ranks.S },
+                { 150, Ranks.A },
+                { 180, Ranks.B },
+                { 220, Ranks.C },
+            };
+            _level1Rank = CalcRank(1, lvl1Ranks);
+
+            // Dictionary<float,Ranks> lvl2Ranks = new Dictionary<float,Ranks>()
+            // {
+            //     { 120, Ranks.S },
+            //     { 150, Ranks.A },
+            //     { 180, Ranks.B },
+            //     { 220, Ranks.C },
+            // };
+            // _level2Rank = CalcRank(2, lvl2Ranks);
+
             UpdateSize();
             if (startMenu == MenuState.Start) ShowMainMenu();
             else if (startMenu == MenuState.Levels) ShowLevelMenu();
@@ -329,6 +347,24 @@ namespace drawedOut
                         _rankImgs[_tutorialRank.Value],
                         rankXPos,
                         _tutorialBtn.Y,
+                        _rankSize,
+                        _rankSize);
+            }
+            if (_level1Rank is not null) 
+            {
+                g.DrawImage(
+                        _rankImgs[_level1Rank.Value],
+                        rankXPos,
+                        _level1Btn.Y,
+                        _rankSize,
+                        _rankSize);
+            }
+            if (_level2Rank is not null) 
+            {
+                g.DrawImage(
+                        _rankImgs[_level2Rank.Value],
+                        rankXPos,
+                        _level2Btn.Y,
                         _rankSize,
                         _rankSize);
             }
