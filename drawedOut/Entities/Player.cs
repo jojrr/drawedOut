@@ -27,8 +27,8 @@ namespace drawedOut
             _HIT_IFRAMES_S = 0.5,
             _INPUT_BUFFER_S = 0.5,
             _PARRY_ENDLAG_S = 0.2,
-            _PARRY_DURATION_S = 0.65,
-            _PERFECT_PARRY_WINDOW_S = 0.25;
+            _PARRY_DURATION_S = 1.05,
+            _PERFECT_PARRY_WINDOW_S = 0.208;
 
         private bool _queueParry = false, _isParrying = false;
         private Level0 _curLvl;
@@ -44,8 +44,8 @@ namespace drawedOut
                     height: 180,
                     animation: new AnimationPlayer(@"playerChar\basic1\"),
                     xOffset: 100,
-                    spawn: 3,
-                    despawn: 7,
+                    spawn: 2,
+                    despawn: 6,
                     endlag: 1.1f),
             _basic2 = new Attacks(
                     parent: null,
@@ -53,8 +53,8 @@ namespace drawedOut
                     height: 180,
                     animation: new AnimationPlayer(@"playerChar\basic2\"),
                     xOffset: 100,
-                    spawn: 3,
-                    despawn: 8,
+                    spawn: 2,
+                    despawn: 7,
                     endlag: 1.5F),
             _special1 = new Attacks(
                     parent: null,
