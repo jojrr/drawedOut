@@ -8,7 +8,8 @@ namespace drawedOut
             _X_KNOCK_DAMPEN = 200,
             _Y_KNOCK_DAMPEN = 200,
             _PREFERRED_HEIGHT = 400,
-            _ROOST_TIME = 1;
+            _ROOST_TIME = 2,
+            _HP = 9;
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");
@@ -46,7 +47,7 @@ namespace drawedOut
         public SecondBoss(Point origin, int width, int height, ref Platform activationDoor, Action itemDrop, 
                 ref Stopwatch levelTimerSW)
             :base(origin:origin, width:width, height:height, 
-                    xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN, hp:8, xAccel:500)
+                    xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN, hp:_HP, xAccel:500)
         {
             _itemDrop = itemDrop;
             _maxRangeSqrd = 500*Global.BaseScale;
@@ -208,12 +209,12 @@ namespace drawedOut
                 clampSpeed(_maxXSpeed, _maxYSpeed);
             }
 
-            CheckAllPlatformCollision(dt);
-
             Location = new PointF(
                     Location.X + (float)(xVelocity * dt * Global.BaseScale), 
                     Location.Y + (float)(yVelocity * dt * Global.BaseScale)
                     ); 
+
+            CheckAllPlatformCollision(dt);
 
             if ((xAccel == 0 && yAccel == 0) || knockedBack) decelerate(dt);
             if (xVelocity == 0 && yVelocity == 0)  knockedBack = false;

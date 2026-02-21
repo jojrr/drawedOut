@@ -91,7 +91,7 @@ namespace drawedOut
                 _curResolution = value;
                 _levelSize = ResDict[value];
                 float scaleWidth = _levelSize.Width;
-                float scrollBoundPercent = 0.2F;
+                float scrollBoundPercent = 0.4F;
 
                 switch (value)
                 {

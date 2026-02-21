@@ -49,21 +49,21 @@ namespace drawedOut
 
             Dictionary<float,Ranks> lvl1Ranks = new Dictionary<float,Ranks>()
             {
-                { 120, Ranks.S },
-                { 150, Ranks.A },
-                { 180, Ranks.B },
-                { 220, Ranks.C },
+                { 140, Ranks.S },
+                { 180, Ranks.A },
+                { 220, Ranks.B },
+                { 267, Ranks.C },
             };
             _level1Rank = CalcRank(1, lvl1Ranks);
 
-            // Dictionary<float,Ranks> lvl2Ranks = new Dictionary<float,Ranks>()
-            // {
-            //     { 120, Ranks.S },
-            //     { 150, Ranks.A },
-            //     { 180, Ranks.B },
-            //     { 220, Ranks.C },
-            // };
-            // _level2Rank = CalcRank(2, lvl2Ranks);
+            Dictionary<float,Ranks> lvl2Ranks = new Dictionary<float,Ranks>()
+            {
+                { 220, Ranks.S },
+                { 280, Ranks.A },
+                { 320, Ranks.B },
+                { 360, Ranks.C },
+            };
+            _level2Rank = CalcRank(2, lvl2Ranks);
 
             UpdateSize();
             if (startMenu == MenuState.Start) ShowMainMenu();

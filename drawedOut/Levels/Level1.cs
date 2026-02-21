@@ -16,9 +16,9 @@ namespace drawedOut
 
         protected override void InitEnemies()
         {
-            // startSpawn();
-            // spawnTop();
-            // spawnBottom();
+            startSpawn();
+            spawnTop();
+            spawnBottom();
 
             _Oscar = new(
                     activationDoor: ref roomDoor,
