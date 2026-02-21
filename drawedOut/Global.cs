@@ -41,7 +41,7 @@ namespace drawedOut
         /// <summary>
         /// Threshold for entities to be "active" (either side of screen center)
         /// </summary>
-        public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.75); }
+        public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.6); }
 
         /// <summary>
         /// logic for game framerate

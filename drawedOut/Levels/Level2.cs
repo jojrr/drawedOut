@@ -68,14 +68,30 @@ namespace drawedOut
                     width: 800,
                     height: 60);
 
+            Platform room2Plat;
+            CreateNewWall(floorY, 3400, 200, 180);
+            room2Plat = new(
+                    origin: new Point(3750, floorY - 350),
+                    width: 200,
+                    height: 40);
+            room2Plat = new(
+                    origin: new Point(4100, floorY - 550),
+                    width: 700,
+                    height: 60);
+
             Platform room3Plat;
             room3Plat = new(
-                    origin: new Point(7350+200, floorY + 100),
+                    origin: new Point(7350+100, floorY + 100),
                     width: 300,
                     height: 50);
             room3Plat = new(
                     origin: new Point(8350-400, floorY + 100),
                     width: 300,
+                    height: 50);
+            CreateNewWall(floorY, 8500, 100, 180);
+            room3Plat = new(
+                    origin: new Point(7850-400, floorY - 350),
+                    width: 800,
                     height: 50);
 
 
@@ -119,15 +135,16 @@ namespace drawedOut
         protected override void InitProps()
         { 
             Checkpoint newCheckpoint;
+            newCheckpoint = new(origin: new Point( (int)(_door4.LocationX - 800), 500 ));
             newCheckpoint = new(origin: new Point(_LEVELWIDTH-2300, 500)); 
         }
 
         protected override void otherLogic(double dt)
         {
             if (playerCharacter.LocationX > _door1.Hitbox.Right + 20) _door1.Activate();
-            else _door1.Deactivate();
+            else if (playerCharacter.LocationX < _door1.Hitbox.Left) _door1.Deactivate();
             if (playerCharacter.LocationX > _door4.Hitbox.Right + 20) _door4.Activate();
-            else _door4.Deactivate();
+            else if (playerCharacter.LocationX < _door4.Hitbox.Left) _door4.Deactivate();
             if (Enemy.ActiveEnemyList.Count==0) 
             {
                 _door2.Deactivate();
@@ -136,15 +153,32 @@ namespace drawedOut
             }
             else 
             {
-                _door2.Deactivate();
-                _door3.Deactivate();
-                _door5.Deactivate();
+                _door2.Activate();
+                _door3.Activate();
+                _door5.Activate();
             }
         }
 
-        private void firstWave(){}
-        private void secondWave(){}
-        private void thirdWave() {}
+        private void firstWave()
+        {
+            MeleeEnemy mEnemy;
+        }
+        private void secondWave()
+        {
+        }
+        private void thirdWave()
+        {
+            int startX = 7000; 
+            int width = 1700;
+            MeleeEnemy mEnemy;
+            mEnemy = new( origin: new Point(startX + width - 300, 200) );
+            mEnemy = new( origin: new Point(startX + width/2, 100) );
+            FlyingEnemy fEnemy;
+            fEnemy = new( origin: new Point(startX+500, 50));
+            fEnemy = new( origin: new Point(startX+width-100, 50));
+            fEnemy = new( origin: new Point(startX+width/2 - 200, 600));
+            fEnemy = new( origin: new Point(startX+width/2 + 200, 600));
+        }
 
         private void BossPickup()
         {

@@ -12,7 +12,7 @@ namespace drawedOut
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
         public bool UltActive { get => (curAttack == _special3); }
-        public static readonly int[] SpecialEnergyCosts = new int[3] { 30, 40, 100 };
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 25, 25, 20 };
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
@@ -58,26 +58,26 @@ namespace drawedOut
                     endlag: 1.5F),
             _special1 = new Attacks(
                     parent: null,
-                    width: 500,
+                    width: 300,
                     height: 100,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     spawn: 4,
                     xOffset: 100,
                     despawn: 12,
-                    endlag: 0.5F,
+                    endlag: 1.5F,
                     isLethal: true);
         private static readonly ProjectileAttack 
             _special2 = new ProjectileAttack(
                 parent: null,
                 animation: new AnimationPlayer(@"fillerAnim\"),
-                endlag: 1.5f,
+                endlag: 0.8f,
                 spawn: 1,
                 projectileEvent: ()=>{}
             ),
             _special3 = new ProjectileAttack(
                 parent: null,
                 animation: new AnimationPlayer(@"fillerAnim\"),
-                endlag: 2f,
+                endlag: 1f,
                 spawn: 0,
                 projectileEvent: ()=>{}
             );
@@ -202,10 +202,11 @@ namespace drawedOut
         private void fireSpecial3()
         {
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
+            int dmg = (int)(Energy / 20);
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -7670),
                 parent: this,
-                dmg:5,
+                dmg:dmg,
                 heal:1,
                 width: 500,
                 height: 7500,
@@ -340,7 +341,7 @@ namespace drawedOut
             if (IsParrying) _parryTimeS += dt;
             if (_parryTimeS >= _PARRY_DURATION_S) StopParry();
             if (_energy < PASSIVE_GAIN_LIMIT) UpdateEnergy(_energy+(dt*PASSIVE_ENERGY_GAIN_S));
-            if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.9f; }
+            if (UltActive) { movementEndlagS = 0.3f; endlagS = 0.4f; iFrames = 0.8f; }
         }
 
         public bool TryQueuedAttack()
