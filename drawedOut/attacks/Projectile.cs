@@ -146,7 +146,8 @@
         
         public static void DrawAll(Graphics g, Rectangle clientRect)
         {
-            foreach (Projectile p in _projectileList)
+            Projectile[] _toDraw = _projectileList.ToArray();
+            foreach (Projectile p in _toDraw)
             { if (p.Hitbox.IntersectsWith(clientRect)) p.drawSprite(g); }
         }
 

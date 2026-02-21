@@ -201,7 +201,7 @@ namespace drawedOut
         private void fireSpecial3()
         {
             int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
-            int dmg = (int)(Energy / 20);
+            int dmg = (int)(_energy / 20) + 1;
             _energy = 0;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -7670),
@@ -217,7 +217,7 @@ namespace drawedOut
                 sprite: _ultSprite
                 );
 
-            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, 1.5f);
+            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, 3f);
             _curLvl.ZoomScreen(1.1f, 1);
         }
 # endregion
