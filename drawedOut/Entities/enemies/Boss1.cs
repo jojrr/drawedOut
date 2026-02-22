@@ -161,7 +161,7 @@ namespace drawedOut
 
         public void DoAttack()
         {
-            Size projectileSize = new Size(60,60);
+            Size projectileSize = new Size(50,50);
 
             Projectile flyingEnemyProj = new Projectile(
                     origin: this.Center,

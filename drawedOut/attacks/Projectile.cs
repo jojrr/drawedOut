@@ -22,6 +22,19 @@
             _yVelocity,
             _maxSpeed;
 
+        public RectangleF AnimRect 
+        {
+            get 
+            {
+                if (_parent is Player) return Hitbox; 
+
+                float scaleFactor = 1.76f;
+                SizeF drawSize = new SizeF(Size.Width * scaleFactor, Size.Height*scaleFactor);
+                PointF p = new PointF(Center.X - drawSize.Width/2, Center.Y - drawSize.Height/2);
+                return new RectangleF(p,drawSize);
+            }
+        }
+
         /// <summary>
         /// creates a projectile with the following parameters
         /// </summary>
@@ -154,11 +167,11 @@
             _disposedProjectiles.Clear();
         }
 
-        private void drawSprite(Graphics g) => g.DrawImage(_sprite, Hitbox);
+        private void drawSprite(Graphics g) => g.DrawImage(_sprite, AnimRect);
         
         public static void DrawAll(Graphics g, Rectangle clientRect)
         {
-            Projectile[] _toDraw = _projectileList.ToArray();
+            ReadOnlySpan<Projectile> _toDraw = _projectileList.ToArray();
             foreach (Projectile p in _toDraw)
             { if (p.Hitbox.IntersectsWith(clientRect)) p.drawSprite(g); }
         }

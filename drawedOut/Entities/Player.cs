@@ -12,12 +12,14 @@ namespace drawedOut
         public double XVelocity { get => xVelocity; }
         public bool IsParrying { get => _isParrying; }
         public bool UltActive { get => (curAttack == _special3); }
-        public static readonly int[] SpecialEnergyCosts = new int[3] { 25, 25, 20 };
+        public static readonly int[] SpecialEnergyCosts = new int[3] { 20, 25, 20 };
 
         private static HpBarUI _hpBar;
         private static Action? _queueAtk;
         private static readonly Bitmap _projectileSprite, _ultSprite;
-        private static AnimationPlayer _jumpAnim, _fallAnim, _parryAnim;
+        private static AnimationPlayer 
+            _jumpAnim, _fallAnim, _parryAnim,
+            _spec1Anim, _spec2Anim, _ultAnim;
         private const float ULT_SLOW_FACTOR=0.01f;
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
@@ -58,14 +60,15 @@ namespace drawedOut
                     endlag: 1.5F),
             _special1 = new Attacks(
                     parent: null,
-                    width: 300,
+                    width: 200,
                     height: 100,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(@"playerChar\specOne\"),
                     spawn: 4,
                     xOffset: 100,
                     despawn: 12,
                     endlag: 1.5F,
                     isLethal: true);
+
         private static readonly ProjectileAttack 
             _special2 = new ProjectileAttack(
                 parent: null,
@@ -76,7 +79,7 @@ namespace drawedOut
             ),
             _special3 = new ProjectileAttack(
                 parent: null,
-                animation: new AnimationPlayer(@"fillerAnim\"),
+                animation: new AnimationPlayer(@"playerChar\ult\"),
                 endlag: 1f,
                 spawn: 0,
                 projectileEvent: ()=>{}
@@ -86,12 +89,32 @@ namespace drawedOut
         static Player()
         {
             UnlockedMoves = new bool[3] { true, false, false };
+
             _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
             _ultSprite = Global.GetSingleImage(@"fillerAnim\");
+
             _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
             _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
             _parryAnim = new AnimationPlayer(@"playerChar\parryAnim\");
         }
+
+        public override RectangleF AnimRect
+        {
+            get
+            {
+                float sqrSize = Math.Max(Hitbox.Width, Hitbox.Height);
+                sqrSize *= 1.3F;
+                SizeF s;
+
+                if (curAttack == _special1) s = new SizeF(sqrSize*25/16, sqrSize); 
+                else s = new SizeF(sqrSize, sqrSize);
+
+                PointF p = new PointF(Center.X - s.Width/2, Hitbox.Bottom - s.Height);
+
+                return new RectangleF(p,s);
+            }
+        }
+
 
 
         public Player(Point origin, int width, int height, int attackPower, int energy, Level0 curLevel,

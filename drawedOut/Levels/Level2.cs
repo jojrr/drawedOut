@@ -153,15 +153,16 @@ namespace drawedOut
             }
             if (playerCharacter.LocationX > _door4.Hitbox.Right + 20) _door4.Activate();
             else if (playerCharacter.LocationX < _door4.Hitbox.Left) _door4.Deactivate();
+
+            if (Enemy.ActiveEnemyList.Count<=1) _door2.Deactivate();
+            else _door2.Activate();
             if (Enemy.ActiveEnemyList.Count==0) 
             {
-                _door2.Deactivate();
                 _door3.Deactivate();
                 _door5.Deactivate();
             }
             else 
             {
-                _door2.Activate();
                 _door3.Activate();
                 _door5.Activate();
             }

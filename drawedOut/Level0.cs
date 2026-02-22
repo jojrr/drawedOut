@@ -614,7 +614,7 @@ namespace drawedOut
             foreach (Enemy e in Enemy.ActiveEnemyList) 
                 g.DrawRectangle(Pens.Blue, e.Hitbox);
             foreach (Projectile bullet in Projectile.ProjectileList) 
-                g.FillRectangle(Brushes.Red, bullet.Hitbox);
+                g.DrawRectangle(Pens.Red, bullet.Hitbox);
             foreach (Attacks a in Attacks.AttacksList) 
                 g.DrawRectangle(Pens.Red, a.AtkHitbox.Hitbox);
 

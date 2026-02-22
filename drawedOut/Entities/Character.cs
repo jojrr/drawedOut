@@ -110,14 +110,12 @@
             }
         }
 
-        public RectangleF AnimRect 
+        public virtual RectangleF AnimRect 
         {
             get 
             {
                 float sqrSize = Math.Max(Hitbox.Width, Hitbox.Height);
-                if (this is Player) sqrSize *= 1.3F;
-                else sqrSize *= 1.1F;
-
+                sqrSize *= 1.1F;
                 PointF p = new PointF(Center.X - sqrSize/2, Hitbox.Bottom - sqrSize);
                 SizeF s = new SizeF(sqrSize, sqrSize);
                 return new RectangleF(p,s);

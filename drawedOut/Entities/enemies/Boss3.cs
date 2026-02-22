@@ -34,7 +34,7 @@ namespace drawedOut
             _tripleAtk = new(
                     parent: null,
                     animation: new AnimationPlayer(@"fillerAnim\"),
-                    endlag: 0,
+                    endlag: 2,
                     spawn: 14,
                     projectileEvent: ()=>{},
                     dmg: 1,
@@ -100,8 +100,8 @@ namespace drawedOut
             Projectile p = new(
                     origin: new PointF(playerCenter.X, playerCenter.Y - 400),
                     parent: this,
-                    width: 80,
-                    height: 150,
+                    width: 50,
+                    height: 100,
                     velocity: 1,
                     accel: 1500,
                     angle: Math.PI/2,
@@ -210,6 +210,7 @@ namespace drawedOut
             if (!MovingIntoWall) return;
             curAttack = null;
             endlagS = _chargeAtk.Endlag;
+            _chargeAtk.Reset();
         }
 
         private void DoDrop()
