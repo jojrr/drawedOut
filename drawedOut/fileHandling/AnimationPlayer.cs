@@ -18,7 +18,7 @@ namespace drawedOut
         ///initalises an animationPlayer object with the animation frames in the given folder
         ///</summary>
         ///<param name="animationFolder"> the name of the folder within project/sprites/ </param>
-        public AnimationPlayer(string animationFolder)
+        public AnimationPlayer(string animationFolder, UInt16 width=256, UInt16 height=256)
         {
 
             string animPath = Path.Combine(PROJ_PATH, SPRITE_FOLDER, animationFolder);
@@ -31,7 +31,7 @@ namespace drawedOut
 
             _animFrames = new Bitmap[_totalFrameCount];
             for (int i = 0; i < _totalFrameCount; i++) 
-            { _animFrames[i] = Global.ImageToBitmap(fileNames[i]); }
+            { _animFrames[i] = Global.ImageToBitmap(fileNames[i], width, height); }
         }
 
         public Bitmap LastFrameImg(Global.XDirections facingDir = Global.XDirections.right)

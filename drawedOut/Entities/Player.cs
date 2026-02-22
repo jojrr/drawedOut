@@ -53,7 +53,7 @@ namespace drawedOut
                     parent: null,
                     width: 240,
                     height: 180,
-                    animation: new AnimationPlayer(@"playerChar\basic2\"),
+                    animation: new AnimationPlayer(@"playerChar\basic2\", width: 256*25/16),
                     xOffset: 100,
                     spawn: 2,
                     despawn: 7,
