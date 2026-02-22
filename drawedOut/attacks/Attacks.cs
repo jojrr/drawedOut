@@ -7,6 +7,7 @@ namespace drawedOut
         public bool IsActive => (_atkHitbox is not null);
         public bool IsLethal { get; private init; }
         public int AtkDmg { get; private init; }
+        public float Endlag => endlagS;
 
         protected static HashSet<Attacks> attacksList = new HashSet<Attacks>();
         protected readonly float endlagS;

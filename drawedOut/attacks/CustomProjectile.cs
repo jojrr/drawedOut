@@ -7,10 +7,10 @@ namespace drawedOut
         private int _heal; 
 
         public PlayerUltProjectile(PointF origin, int width, int height, float velocity, double angle, 
-                Entity parent, Bitmap sprite, int dmg, int accel, int maxSpeed, int heal)
+                Entity parent, Bitmap sprite, int dmg, int accel, int maxSpeed, int heal, bool fromPlayer=true)
             : base(origin:origin, width:width, height:height, velocity:velocity, angle:angle, xDiff:1, yDiff:1,
                     parent:parent, sprite:sprite, isLethal:true, dmg:dmg, accel:accel, maxSpeed:maxSpeed)
-            { _heal = heal; }
+            { _heal = (fromPlayer) ? heal : 0; }
 
         public override void CheckCollision(double dt, Form form, Player playerBox)
         {

@@ -45,9 +45,9 @@
         private double _coyoteTimeS;
         private const int 
             _TERMINAL_VELOCITY=3000,
-            _JUMP_VELOCITY=1100,
             FRICTION=2000;
         private readonly int
+            _jump_velocity,
             _maxYVelocity,
             _maxXVelocity,
             _xAccel;
@@ -61,7 +61,7 @@
         /// <param name="hp"> 
         ///
         protected Character(Point origin, int width, int height, int hp, int xAccel, int maxXVelocity, 
-            int maxYVelocity=_TERMINAL_VELOCITY)
+            int maxYVelocity=_TERMINAL_VELOCITY, int jumpVelocity=1100)
             : base(origin: origin, width: width, height: height)
         {
             IsOnFloor = false;
@@ -72,6 +72,7 @@
             _xAccel = xAccel;
             _maxXVelocity = maxXVelocity;
             _maxYVelocity = maxYVelocity;
+            _jump_velocity = jumpVelocity;
         }
 
         protected void setIdleAnim(string filePath)
@@ -308,7 +309,7 @@
 
 
         public void DoJump()
-        { if (IsOnFloor) yVelocity = -_JUMP_VELOCITY; }
+        { if (IsOnFloor) yVelocity = -_jump_velocity; }
 
 
         /// <summary>

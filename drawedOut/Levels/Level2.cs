@@ -10,7 +10,7 @@ namespace drawedOut
             _door3,
             _door4,
             _door5;
-        // private ThirdBoss _Tommy;
+        private ThirdBoss _Tommy;
 
         public Level2() : 
             base( 
@@ -25,14 +25,14 @@ namespace drawedOut
             secondWave();
             thirdWave();
 
-            // _firstBoss = new(
-            //         activationDoor: ref roomDoor,
-            //         origin: new Point(_LEVELWIDTH-500, 100),
-            //         height: 250,
-            //         width: 250,
-            //         itemDrop: BossPickup,
-            //         levelTimerSW: ref levelTimerSW,
-            //         hp: 6);
+            _Tommy = new(
+                    activationDoor: ref roomDoor,
+                    origin: new Point(_LEVELWIDTH-500, 100),
+                    height: 220,
+                    width: 220,
+                    itemDrop: BossPickup,
+                    levelTimerSW: ref levelTimerSW,
+                    hp: 12);
         }
 
         protected override void InitPlatforms()

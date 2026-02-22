@@ -16,14 +16,14 @@ namespace drawedOut
         private static Stopwatch _levelTimerSW;
         private static Random _rnd = new Random();
         private static readonly ProjectileAttack 
-            _attackOne = new ProjectileAttack(
+            _ringAtk = new ProjectileAttack(
                     parent: null,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     spawn: 3,
                     endlag: 2,
                     dmg: 1,
                     projectileEvent: ()=>{}),
-            _attackTwo = new ProjectileAttack(
+            _bounceAtk = new ProjectileAttack(
                     parent: null,
                     animation: new AnimationPlayer(@"fillerAnim\"),
                     spawn: 3,
@@ -58,15 +58,15 @@ namespace drawedOut
             _activationDoor = activationDoor;
 
             setIdleAnim(@"fillerPic\");
-            _attackOne.Reset();
-            _attackOne.Parent=this;
-            _attackOne.SetEvent(doAttack1);
-            _attackTwo.Reset();
-            _attackTwo.Parent=this;
-            _attackTwo.SetEvent(doAttack2);
+            _ringAtk.Reset();
+            _ringAtk.Parent=this;
+            _ringAtk.SetEvent(touhouReference);
+            _bounceAtk.Reset();
+            _bounceAtk.Parent=this;
+            _bounceAtk.SetEvent(BouncyProj);
         }
         
-        private void doAttack1()
+        private void touhouReference()
         {
             Projectile p;
             
@@ -82,29 +82,28 @@ namespace drawedOut
                         xDiff: 1,
                         yDiff: 1,
                         parent: this,
+                        dmg: _ringAtk.AtkDmg,
                         sprite: Global.GetSingleImage(@"fillerPic\"));
             }
             _curState++;
         }
 
-        private void doAttack2()
+        private void BouncyProj()
         {
-            Projectile p;
-            
             int projCount = 2;
             for (int i=0; i<projCount; i++)
             {
-                p = new Projectile(
+                Projectile p = new Projectile(
                         origin: this.Center,
                         width: 60,
                         height: 60,
                         velocity: 1000,
                         angle: (_angleToPlayer + i*Math.PI),
-                        xDiff: 1,
+                        xDiff: _xDiff,
                         yDiff: 1,
                         parent: this,
                         bouncy: true,
-                        dmg: 2,
+                        dmg: _bounceAtk.AtkDmg,
                         sprite: Global.GetSingleImage(@"fillerPic\"));
             }
             _curState++;
@@ -164,12 +163,12 @@ namespace drawedOut
                 {
                     if (_rnd.Next(0,2) == 0)
                     {
-                        curAttack = _attackOne;
+                        curAttack = _ringAtk;
                         xAccel = (float)Math.CopySign(accel,xDiff)*100;
                         MoveCharacter(dt, -xAccel, 0);
                         return;
                     }
-                    else curAttack = _attackTwo;
+                    else curAttack = _bounceAtk;
                 }
             }
 

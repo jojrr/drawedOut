@@ -20,8 +20,9 @@ namespace drawedOut
 
         public Enemy(Point origin, int width, int height, int hp,
                 int xAccel=100, int maxXVelocity=600, int xKnockDampen=0, int yKnockDampen=0,
-                float maxDownTime=_DEFAULT_DOWN_TIME_S)
-            : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, maxXVelocity: maxXVelocity)
+                float maxDownTime=_DEFAULT_DOWN_TIME_S, int jumpVelocity=1100)
+            : base(origin: origin, width: width, height: height, hp: hp, xAccel: xAccel, 
+                    maxXVelocity: maxXVelocity, jumpVelocity: jumpVelocity)
         { 
             _xKnockDampen = xKnockDampen;
             _yKnockDampen = yKnockDampen;
