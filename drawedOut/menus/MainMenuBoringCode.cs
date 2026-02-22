@@ -331,10 +331,10 @@ namespace drawedOut
             _bindingStringsPos.Add(
                     $"Ability One: {Keybinds.ActionBindings[Keybinds.Actions.Special1]}", 
                     new Point(curX, _abilityOneRebindBtn.Y));
-            _bindingStringsPos.Add(
+            if (Player.UnlockedMoves[1]) _bindingStringsPos.Add(
                     $"Ability Two: {Keybinds.ActionBindings[Keybinds.Actions.Special2]}",
                     new Point(curX, _abilityTwoRebindBtn.Y));
-            _bindingStringsPos.Add(
+            if (Player.UnlockedMoves[2]) _bindingStringsPos.Add(
                     $"Ability Three: {Keybinds.ActionBindings[Keybinds.Actions.Special3]}", 
                     new Point(curX, _abilityThreeRebindBtn.Y));
         }

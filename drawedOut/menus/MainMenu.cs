@@ -244,8 +244,8 @@ namespace drawedOut
             _leftRebindBtn.Show();
             _rightRebindBtn.Show();
             _abilityOneRebindBtn.Show();
-            _abilityTwoRebindBtn.Show();
-            _abilityThreeRebindBtn.Show();
+            if (Player.UnlockedMoves[1]) _abilityTwoRebindBtn.Show();
+            if (Player.UnlockedMoves[2]) _abilityThreeRebindBtn.Show();
 
             _backBtn.Show();
 
