@@ -185,8 +185,8 @@ namespace drawedOut
                     size: atkSize,
                     animation: _atkAnim,
                     xOffset: ATK_X_OFFSET,
-                    spawn: 7,
-                    despawn: 11,
+                    spawn: 12,
+                    despawn: 16,
                     endlag: ATK_ENDLAG_S);
             setRunAnim(@"meleeEnemy\run");
             setIdleAnim(@"meleeEnemy\idle\");
