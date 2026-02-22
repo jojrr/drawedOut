@@ -10,25 +10,26 @@ namespace drawedOut
             _PREFERRED_HEIGHT = 400,
             _ROOST_TIME = 2,
             _HP = 9;
+        private static readonly string _animPath =  @"boss2\";
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
-            _downedSprite = Global.GetSingleImage(@"fillerPic\");
+            _downedSprite = Global.GetSingleImage(_animPath,"downed.png");
         private static Stopwatch _levelTimerSW;
         private static Random _rnd = new Random();
         private static readonly ProjectileAttack 
             _ringAtk = new ProjectileAttack(
                     parent: null,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
-                    spawn: 3,
+                    animation: new AnimationPlayer(_animPath+@"ringAtk\"),
+                    spawn: 10,
                     endlag: 2,
-                    dmg: 1,
+                    dmg: 2,
                     projectileEvent: ()=>{}),
             _bounceAtk = new ProjectileAttack(
                     parent: null,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
-                    spawn: 3,
-                    endlag: 1,
-                    dmg: 2,
+                    animation: new AnimationPlayer(_animPath+@"bounceAtk\"),
+                    spawn: 11,
+                    endlag: 2,
+                    dmg: 1,
                     projectileEvent: ()=>{});
 
         private readonly double _maxRangeSqrd, _minRangeSqrd;
@@ -57,7 +58,7 @@ namespace drawedOut
             _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
 
-            setIdleAnim(@"fillerPic\");
+            setIdleAnim(_animPath+@"idle\");
             _ringAtk.Reset();
             _ringAtk.Parent=this;
             _ringAtk.SetEvent(touhouReference);
@@ -123,8 +124,7 @@ namespace drawedOut
                     width: 80,
                     height: 80,
                     action: _itemDrop,
-                    sprite: Global.GetSingleImage(@"fillerAnim\")
-                    );
+                    sprite: Global.GetSingleImage(@"icons\", "heart.png"));
         }
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)
