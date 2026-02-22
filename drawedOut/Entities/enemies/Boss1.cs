@@ -8,15 +8,16 @@ namespace drawedOut
             _X_KNOCK_DAMPEN = 800,
             _Y_KNOCK_DAMPEN = 300,
             MOV_ENDLAG_S = 3;
+        private static readonly string _animFolder = @"boss1\"; 
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
-            _downedSprite = Global.GetSingleImage(@"fillerPic\");
+            _downedSprite = Global.GetSingleImage(_animFolder,"downed.png");
         private static Stopwatch _levelTimerSW;
         private static readonly Attacks _attackOne = new Attacks(
                     parent: null,
                     width: 380,
                     height: 220,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animFolder+@"atk\"),
                     xOffset: ATK_X_OFFSET,
                     spawn: 7,
                     despawn: 11,
@@ -24,7 +25,7 @@ namespace drawedOut
                     dmg: 2);
         private static readonly ProjectileAttack _rangedAttackOne = new ProjectileAttack(
                     parent:null,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animFolder+@"rangeAtk\"),
                     endlag: ATK_ENDLAG_S,
                     spawn: 5,
                     projectileEvent: ()=>{},
@@ -50,8 +51,8 @@ namespace drawedOut
             _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
 
-            setRunAnim(@"fillerAnim\");
-            setIdleAnim(@"fillerPic\");
+            setRunAnim(_animFolder+@"run\");
+            setIdleAnim(_animFolder+@"idle\");
             _attackOne.Reset();
             _rangedAttackOne.Reset();
             _attackOne.Parent=this;
@@ -155,8 +156,7 @@ namespace drawedOut
                     width: 80,
                     height: 80,
                     action: _itemDrop,
-                    sprite: Global.GetSingleImage(@"fillerAnim\")
-                    );
+                    sprite: Global.GetSingleImage(@"icons\", "auraBall.png"));
         }
 
         public void DoAttack()

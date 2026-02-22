@@ -4,7 +4,6 @@ namespace drawedOut
     {
         private const int 
             _FRICTION = 200,
-            _ATTACK_FRAME = 8,
             _MOV_ENDLAG_S = 1,
             _ATK_ENDLAG_S = 3,
             _MAX_MOVEMENT_TIME_S = 2,
@@ -13,6 +12,7 @@ namespace drawedOut
         private static readonly Bitmap 
             _projectileSprite,
             _downedSprite;
+        private static readonly string _animFolder = @"flyingEnemy\";
         private readonly ProjectileAttack _projectileAttack;
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
@@ -26,8 +26,7 @@ namespace drawedOut
 
         static FlyingEnemy()
         {
-            string downedSpriteFolder = @"fillerAnim\";
-            _downedSprite = Global.GetSingleImage(downedSpriteFolder);
+            _downedSprite = Global.GetSingleImage(_animFolder, "downed.png");
             _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png");
         }
 
@@ -54,12 +53,24 @@ namespace drawedOut
 
             _projectileAttack = new ProjectileAttack(
                     parent: this,
-                    animation: new AnimationPlayer(animationFolder: @"fillerAnim\"),
+                    animation: new AnimationPlayer(animationFolder: _animFolder+@"atk\"),
                     endlag: _ATK_ENDLAG_S,
-                    spawn:_ATTACK_FRAME,
+                    spawn: 13,
                     projectileEvent: createProjectile);
 
-            setIdleAnim(@"fillerAnim\");
+            setIdleAnim(_animFolder+@"idle\");
+        }
+
+        public virtual RectangleF AnimRect 
+        {
+            get 
+            {
+                float sqrSize = Math.Max(Hitbox.Width, Hitbox.Height);
+                sqrSize *= 1.5F;
+                PointF p = new PointF(Center.X - sqrSize/2, Hitbox.Bottom - sqrSize);
+                SizeF s = new SizeF(sqrSize, sqrSize);
+                return new RectangleF(p,s);
+            }
         }
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)

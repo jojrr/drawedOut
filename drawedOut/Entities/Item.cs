@@ -26,7 +26,7 @@ namespace drawedOut
             : base(origin: origin, width: width, height: height)
         { 
             Center = origin;
-            _sprite = sprite;
+            _sprite = (Bitmap)(sprite.Clone());
             _doAction = action;
             _hasGravity = hasGravity; 
             _itemList.Add(this);
@@ -83,6 +83,7 @@ namespace drawedOut
         public override void Reset() 
         {
             SetInactive();
+            _sprite.Dispose();
             Delete();
         }
 

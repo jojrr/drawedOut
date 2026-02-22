@@ -83,10 +83,11 @@ namespace drawedOut
             newCheckpoint = new(origin: new Point(_LEVELWIDTH-2300, 500)); 
 
             BgObj newSign;
-            newSign = new(origin: new Point(1500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
-            newSign = new(origin: new Point(2100, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
-            newSign = new(origin: new Point(2600, 100), sprite: Global.GetSingleImage(@"fillerAnim\"));
-            newSign = new(origin: new Point(4500, 500), sprite: Global.GetSingleImage(@"fillerAnim\"));
+            string folder = @"icons\";
+            newSign = new(origin: new Point(1500, 500), sprite: Global.GetSingleImage(folder, "fallSign.png"));
+            newSign = new(origin: new Point(2100, 500), sprite: Global.GetSingleImage(folder, "atk.png"));
+            newSign = new(origin: new Point(2600, 100), sprite: Global.GetSingleImage(folder, "finisher.png"));
+            newSign = new(origin: new Point(4500, 500), sprite: Global.GetSingleImage(folder, "save.png"));
         }
 
         private void BossPickup()
