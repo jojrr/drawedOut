@@ -43,13 +43,14 @@
         /// <param name="height"></param>
         /// <param name="velocity"></param>
         /// <param name="target"></param>
-        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, Bitmap sprite,
+        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, 
+                Bitmap sprite,
                 float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null, 
                 bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
-            _sprite = sprite;
+            _sprite = (Bitmap)(sprite.Clone());
             _parent = parent;
             _bouncy = bouncy;
             _accel = accel;
@@ -66,13 +67,14 @@
             calculateVelocities(target);
         }
 
-        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, double yDiff, Entity parent, Bitmap sprite,
+        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, 
+                double yDiff, Entity parent, Bitmap sprite,
                 float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null,
                 bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
             _dmg = dmg;
-            _sprite = sprite;
+            _sprite = (Bitmap)(sprite.Clone());
             _parent = parent;
             _bouncy = bouncy;
             _accel = accel;
@@ -157,6 +159,7 @@
         }
 
         public void Dispose() => _disposedProjectiles.Add(this); 
+        public void DisposeSprite() => _sprite.Dispose();
 
         public override void CheckActive() { if (this.DistToMid > Global.EntityLoadThreshold) Dispose(); }
 
@@ -241,6 +244,7 @@
             foreach (Projectile p in _disposedProjectiles)
             {
                 _projectileList.Remove(p);
+                p.DisposeSprite();
                 p.Delete();
             }
 

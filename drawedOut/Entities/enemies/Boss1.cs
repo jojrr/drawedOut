@@ -9,7 +9,7 @@ namespace drawedOut
             _Y_KNOCK_DAMPEN = 300,
             MOV_ENDLAG_S = 3;
         private static readonly Bitmap 
-            _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
+            _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");
         private static Stopwatch _levelTimerSW;
         private static readonly Attacks _attackOne = new Attacks(

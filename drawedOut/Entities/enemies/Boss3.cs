@@ -8,7 +8,8 @@ namespace drawedOut
             _Y_KNOCK_DAMPEN = 300,
             _MOV_ENDLAG_S = 3;
         private static readonly Bitmap 
-            _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
+            _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
+            _dropProjSprite = Global.GetSingleImage(@"projectiles\", "dropBullet.png"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");
         private static readonly Random rnd = new Random();
         private static readonly Attacks 
@@ -109,7 +110,7 @@ namespace drawedOut
                     xDiff: 1,
                     yDiff: 1,
                     dmg: _tripleAtk.AtkDmg,
-                    sprite: _projectileSprite);
+                    sprite: _dropProjSprite);
         }
 
         private void doJumpAtk()
@@ -128,7 +129,7 @@ namespace drawedOut
                         yDiff: 1,
                         parent: this,
                         dmg: _jumpAtk.AtkDmg,
-                        sprite: Global.GetSingleImage(@"fillerPic\"));
+                        sprite: _projectileSprite);
             }
             _toSlam = true;
             _curState--;

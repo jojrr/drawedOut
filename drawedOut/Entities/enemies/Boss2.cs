@@ -11,7 +11,7 @@ namespace drawedOut
             _ROOST_TIME = 2,
             _HP = 9;
         private static readonly Bitmap 
-            _projectileSprite = Global.GetSingleImage(@"fillerPic\"),
+            _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
             _downedSprite = Global.GetSingleImage(@"fillerPic\");
         private static Stopwatch _levelTimerSW;
         private static Random _rnd = new Random();
@@ -83,7 +83,7 @@ namespace drawedOut
                         yDiff: 1,
                         parent: this,
                         dmg: _ringAtk.AtkDmg,
-                        sprite: Global.GetSingleImage(@"fillerPic\"));
+                        sprite: _projectileSprite);
             }
             _curState++;
         }
@@ -104,7 +104,7 @@ namespace drawedOut
                         parent: this,
                         bouncy: true,
                         dmg: _bounceAtk.AtkDmg,
-                        sprite: Global.GetSingleImage(@"fillerPic\"));
+                        sprite: _projectileSprite);
             }
             _curState++;
         }

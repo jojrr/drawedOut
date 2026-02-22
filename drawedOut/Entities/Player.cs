@@ -72,9 +72,9 @@ namespace drawedOut
         private static readonly ProjectileAttack 
             _special2 = new ProjectileAttack(
                 parent: null,
-                animation: new AnimationPlayer(@"fillerAnim\"),
+                animation: new AnimationPlayer(@"playerChar\specTwo"),
                 endlag: 0.8f,
-                spawn: 1,
+                spawn: 5,
                 projectileEvent: ()=>{}
             ),
             _special3 = new ProjectileAttack(
@@ -90,8 +90,8 @@ namespace drawedOut
         {
             UnlockedMoves = new bool[3] { true, false, false };
 
-            _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
-            _ultSprite = Global.GetSingleImage(@"fillerAnim\");
+            _projectileSprite = Global.GetSingleImage(@"projectiles\", "playerBullet.png");
+            _ultSprite = Global.GetSingleImage(@"projectiles\", "ultProj.png");
 
             _jumpAnim = new AnimationPlayer(@"playerChar\jumpAnim\");
             _fallAnim = new AnimationPlayer(@"playerChar\fallAnim\");
@@ -207,19 +207,27 @@ namespace drawedOut
         }
         private void fireSpecial2()
         {
+            Bitmap projectileSprite = (Bitmap)(_projectileSprite.Clone());
+            int xDiff = 1;
+            if (FacingDirection == Global.XDirections.left)
+            {
+                projectileSprite.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                xDiff = -1;
+            }
             Projectile special2Proj = new Projectile(
-                origin: this.Center,
+                origin: new PointF(Center.X, Center.Y - Size.Height/2),
                 width: 100,
                 height: 100,
                 velocity: 1400,
                 maxSpeed: 5000,
                 angle: 0,
-                xDiff: (FacingDirection == Global.XDirections.right) ? 1: -1,
+                xDiff: xDiff,
                 yDiff: 1,
                 accel: 3000,
-                sprite: _projectileSprite,
+                sprite: projectileSprite,
                 parent: this
             );
+            projectileSprite.Dispose();
         }
         private void fireSpecial3()
         {

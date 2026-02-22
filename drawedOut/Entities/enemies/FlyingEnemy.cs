@@ -28,7 +28,7 @@ namespace drawedOut
         {
             string downedSpriteFolder = @"fillerAnim\";
             _downedSprite = Global.GetSingleImage(downedSpriteFolder);
-            _projectileSprite = Global.GetSingleImage(@"fillerAnim\");
+            _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png");
         }
 
         public FlyingEnemy(Point origin,

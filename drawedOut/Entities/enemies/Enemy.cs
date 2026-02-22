@@ -162,14 +162,14 @@ namespace drawedOut
         private readonly double 
             _maxRange,
             _jumpRange;
+        private readonly AnimationPlayer _atkAnim = new AnimationPlayer(@"meleeEnemy\atk\");
         private static Bitmap _downedSprite;
         private readonly Attacks _mainAtk;
         private double _movementTimer;
 
         static MeleeEnemy()
         {
-            string downedSpriteFolder = @"fillerAnim\";
-            _downedSprite = Global.GetSingleImage(downedSpriteFolder);
+            _downedSprite = Global.GetSingleImage(@"meleeEnemy\", "downed.png");
         }
 
         public MeleeEnemy(Point origin)
@@ -183,13 +183,13 @@ namespace drawedOut
             _mainAtk = new Attacks(
                     parent: this,
                     size: atkSize,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: _atkAnim,
                     xOffset: ATK_X_OFFSET,
                     spawn: 7,
                     despawn: 11,
                     endlag: ATK_ENDLAG_S);
-            setRunAnim(@"fillerAnim\");
-            setIdleAnim(@"fillerPic\");
+            setRunAnim(@"meleeEnemy\run");
+            setIdleAnim(@"meleeEnemy\idle\");
         }
 
         public override void DoMovement(double dt, double scrollVelocity, PointF playerCenter)

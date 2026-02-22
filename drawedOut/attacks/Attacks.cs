@@ -274,7 +274,7 @@ namespace drawedOut
                 _launchProjectile();
                 Parent.ApplyEndlag(endlagS);
             }
-            return Animation.NextFrame();
+            return Animation.NextFrame(facingDir);
         }
     }
 }
