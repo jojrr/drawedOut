@@ -55,14 +55,8 @@ namespace drawedOut
             makeDoors(floorY);
 
             Platform room1Plat;
-            room1Plat = new(
-                    origin: new Point(1200, floorY - Player.VisibleHeight),
-                    width: 200,
-                    height: 50);
-            room1Plat = new(
-                    origin: new Point(2700, floorY - Player.VisibleHeight),
-                    width: 200,
-                    height: 50);
+            CreateNewWall(floorY, 1200, 200, 180);
+            CreateNewWall(floorY, 2700, 200, 180);
             room1Plat = new(
                     origin: new Point(1200+(2900-1200)/2-400, floorY - Player.VisibleHeight*2),
                     width: 800,

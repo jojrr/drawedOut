@@ -58,10 +58,10 @@ namespace drawedOut
 
             Dictionary<float,Ranks> lvl2Ranks = new Dictionary<float,Ranks>()
             {
-                { 220, Ranks.S },
-                { 280, Ranks.A },
-                { 320, Ranks.B },
-                { 360, Ranks.C },
+                { 180, Ranks.S },
+                { 230, Ranks.A },
+                { 280, Ranks.B },
+                { 320, Ranks.C },
             };
             _level2Rank = CalcRank(2, lvl2Ranks);
 

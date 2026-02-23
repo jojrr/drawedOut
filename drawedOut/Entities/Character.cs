@@ -191,7 +191,8 @@
 
             if (_yStickEntity == collisionTarget) return true;
 
-            if ((_xStickEntity == _yStickEntity) && IsOnFloor) // Stops the character from bugging on corners
+            // Stops the character from bugging on corners
+            if ((_xStickEntity == _yStickEntity) && IsOnFloor) 
                 SetXCollider(null, null, collisionTarget);
             else
                 checkXCollider(targetHitbox, collisionTarget, dt);
