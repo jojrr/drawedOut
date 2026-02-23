@@ -239,8 +239,7 @@ namespace drawedOut
                     width: 80,
                     height: 80,
                     action: _itemDrop,
-                    sprite: Global.GetSingleImage(@"fillerAnim\")
-                    );
+                    sprite: Global.GetSingleImage(@"icons\", "pencil.png"));
         }
 
         protected override void CheckDowned(bool isLethal)
