@@ -136,7 +136,7 @@ namespace drawedOut
                toggleable: true,
                defaultState: false);
 
-            float levelRight = basePlate.Width;
+            float levelRight = _levelWidth;
             _endWall = new(
                     origin: new Point((int)levelRight-20, 0),
                     width: 100,

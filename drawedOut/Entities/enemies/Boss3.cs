@@ -72,7 +72,7 @@ namespace drawedOut
                     xKnockDampen:_X_KNOCK_DAMPEN, yKnockDampen:_Y_KNOCK_DAMPEN)
         {
             _itemDrop = itemDrop;
-            _maxRange = Width*2.2;
+            _maxRange = Width*1.5;
             _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
             endlagS = 2;

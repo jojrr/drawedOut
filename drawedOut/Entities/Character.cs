@@ -44,7 +44,7 @@
         private bool _knockedBack = false;
         private double _coyoteTimeS;
         private const int 
-            _TERMINAL_VELOCITY=3000,
+            _TERMINAL_VELOCITY=2000,
             FRICTION=2000;
         private readonly int
             _jump_velocity,
@@ -368,8 +368,8 @@
 
         protected void clampSpeed(int maxXSpeed, int maxYSpeed) 
         {
-            xVelocity = Math.Min( Math.Abs(xVelocity), maxXSpeed) * Math.Sign(xVelocity);
-            yVelocity = Math.Min( Math.Abs(yVelocity), maxYSpeed) * Math.Sign(yVelocity);
+            xVelocity = Math.Min(Math.Abs(xVelocity), maxXSpeed) * Math.Sign(xVelocity);
+            yVelocity = Math.Min(Math.Abs(yVelocity), maxYSpeed) * Math.Sign(yVelocity);
         }
 
         private void decelerate(double dt)

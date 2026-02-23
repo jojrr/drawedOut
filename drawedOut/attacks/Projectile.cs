@@ -3,8 +3,14 @@
     internal class Projectile : Entity
     {
         public static IReadOnlyCollection<Projectile> ProjectileList => _projectileList;
+        private static readonly Bitmap _enemyProjectileSprite = Global.GetSingleImage(
+                @"projectiles\", "enemyBullet.png");
         public int Dmg { get => _dmg; }
+        public int MaxSpeed { get => _maxSpeed; }
         public bool IsLethal { get; private set; }
+        public Entity Parent { get => _parent; }
+        public int Velocity { get => (int)Math.Sqrt(
+                _xVelocity*_xVelocity + _yVelocity*_yVelocity); }
 
         private static HashSet<Projectile> _projectileList = new HashSet<Projectile>();
         // stores projectiles to be disposed of (as list cannot be altered mid-loop)
@@ -14,13 +20,17 @@
         private readonly int _dmg, _knockbackSpeed;
         private readonly Bitmap _sprite;
         private Entity _parent;
+
         private bool _bouncy;
+        private int 
+            _maxSpeed,
+            _deflect = 0,
+            _bounceCount = 0;
         private float 
             _cosAngle,
             _sinAngle,
             _xVelocity, 
-            _yVelocity,
-            _maxSpeed;
+            _yVelocity;
 
         public RectangleF AnimRect 
         {
@@ -43,9 +53,9 @@
         /// <param name="height"></param>
         /// <param name="velocity"></param>
         /// <param name="target"></param>
-        public Projectile (PointF origin, int width, int height, float velocity, PointF target, Entity parent, 
+        public Projectile (PointF origin, int width, int height, int velocity, PointF target, Entity parent, 
                 Bitmap sprite,
-                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null, 
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, int? maxSpeed=null, 
                 bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
@@ -62,14 +72,14 @@
             Center = origin;
 
             _maxSpeed = maxSpeed ?? velocity;
-            _maxSpeed = (float)_maxSpeed*Global.BaseScale;
+            _maxSpeed = (int)(_maxSpeed*Global.BaseScale);
 
             calculateVelocities(target);
         }
 
-        public Projectile (PointF origin, int width, int height, float velocity, double angle, double xDiff, 
+        public Projectile (PointF origin, int width, int height, int velocity, double angle, double xDiff, 
                 double yDiff, Entity parent, Bitmap sprite,
-                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, float? maxSpeed=null,
+                float accel=0, int dmg=1, int knockback=800, bool isLethal=true, int? maxSpeed=null,
                 bool bouncy=false)
             : base(origin: origin, width: width, height: height)
         {
@@ -85,7 +95,7 @@
             Center = origin;
 
             _maxSpeed = maxSpeed ?? velocity;
-            _maxSpeed = (float)_maxSpeed*Global.BaseScale;
+            _maxSpeed = (int)(_maxSpeed*Global.BaseScale);
 
             _cosAngle = (float)Math.Cos(angle);
             _sinAngle = (float)Math.Sin(angle);
@@ -153,6 +163,11 @@
 
         private void Bounce(double dt, bool vertical)
         {
+            if (_bounceCount++ > 3) 
+            {
+                Dispose();
+                return;
+            }
             if (vertical) _yVelocity *= -1;
             else _xVelocity *= -1;
             this.Center = new PointF(Center.X + (float)(_xVelocity*dt), Center.Y + (float)(_yVelocity*dt));
@@ -227,16 +242,32 @@
                 {
                     // Return if bullet not touching player
                     if (!playerBox.Hitbox.IntersectsWith(Hitbox)) return;
-                    if (playerBox.CheckParrying(this, dt)) _disposedProjectiles.Add(this);
+                    if (!playerBox.CheckParrying(this, dt)) DoDeflect(playerBox, this);
+                    _disposedProjectiles.Add(this);
                 }
 
         }
 
+        private void DoDeflect(Player playerBox, Projectile p)
+        {
+            Projectile newProj = new(
+                    origin: playerBox.Center,
+                    width: (int)(p.AnimRect.Width*1.5),
+                    height: (int)(p.AnimRect.Height*1.5),
+                    velocity: p.Velocity,
+                    parent: playerBox,
+                    sprite: _enemyProjectileSprite,
+                    target: p.Parent.Center,
+                    dmg: p.Dmg,
+                    maxSpeed: p.MaxSpeed);
+        }
+
+
         public static void CheckProjectileCollisions(double dt, Form form, Player playerBox)
         {
             if (_projectileList.Count == 0) return;
-
-            foreach (Projectile p in _projectileList)
+            ReadOnlySpan<Projectile> _toCheck = _projectileList.ToArray();
+            foreach (Projectile p in _toCheck)
             { p.CheckCollision(dt, form, playerBox); }
 
             if (_disposedProjectiles.Count == 0) return;

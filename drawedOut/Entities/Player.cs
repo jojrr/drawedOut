@@ -345,7 +345,6 @@ namespace drawedOut
             }
             if (_parryTimeS <= _PERFECT_PARRY_WINDOW_S) 
             {
-                projectile.Rebound(dt, this);
                 PerfectParry(); 
                 return false;
             }

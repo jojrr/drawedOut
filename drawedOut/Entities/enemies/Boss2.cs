@@ -9,7 +9,7 @@ namespace drawedOut
             _Y_KNOCK_DAMPEN = 200,
             _PREFERRED_HEIGHT = 400,
             _ROOST_TIME = 2,
-            _HP = 9;
+            _HP = 10;
         private static readonly string _animPath =  @"boss2\";
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
@@ -35,6 +35,7 @@ namespace drawedOut
         private readonly double _maxRangeSqrd, _minRangeSqrd;
         private readonly Platform _activationDoor; 
         private readonly Action _itemDrop;
+        private readonly int _preferredHeight;
         private bool _roost = false;
         private int 
             _curState = 0,
@@ -57,6 +58,7 @@ namespace drawedOut
             _minRangeSqrd*=_minRangeSqrd;
             _levelTimerSW = levelTimerSW;
             _activationDoor = activationDoor;
+            _preferredHeight = (int)(_PREFERRED_HEIGHT*Global.BaseScale);
 
             setIdleAnim(_animPath+@"idle\");
             _ringAtk.Reset();
@@ -151,7 +153,7 @@ namespace drawedOut
             float xAccel=0;
             float yAccel=0;
 
-            if (yDiff > -_PREFERRED_HEIGHT) yAccel = -accel;
+            if (yDiff > -_preferredHeight) yAccel = -accel;
 
             if ( _minRangeSqrd < distToPlayerSqrd && distToPlayerSqrd < _maxRangeSqrd )
             {
@@ -188,7 +190,7 @@ namespace drawedOut
                 xAccel -= CosAngle*accel;
                 yAccel -= SinAngle*accel;
             }
-            if (yDiff + yVelocity > _PREFERRED_HEIGHT && !knockedBack) yAccel = 0; 
+            if (yDiff + yVelocity > _preferredHeight && !knockedBack) yAccel = 0; 
 
             MoveCharacter(dt, xAccel, yAccel);
 
