@@ -69,7 +69,7 @@ namespace drawedOut
             newWall = new(
                origin: new Point(x, floorY-pHeight),
                width: pWidth,
-               height: pHeight);
+               height: pHeight+1);
 
             return newWall;
         }

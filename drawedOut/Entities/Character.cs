@@ -151,17 +151,18 @@
         {
             if (xVelocity == 0) return;
             float centerX = Center.X;
-            float finalX = centerX + (float)(xVelocity*dt);
-            float left = (float)(Math.Min(finalX, centerX)*0.98);
-            float right = (float)(Math.Max(finalX, centerX)*1.02);
+            double finalX = centerX + xVelocity*dt;
+            double left = Math.Min(finalX, centerX)*0.9;
+            double right = Math.Max(finalX, centerX)*1.1;
             if (left <= targetHitbox.Right && right >= targetHitbox.Left)
             {
                 Global.XDirections collidingDirection;
 
-                if (centerX - collisionTarget.Center.X < 0) collidingDirection = Global.XDirections.right; // platform is on right of character
+                // platform is on right of character
+                if (centerX - collisionTarget.Center.X < 0) collidingDirection = Global.XDirections.right; 
                 else collidingDirection = Global.XDirections.left; // platform is on left of character
 
-                if (_xStickEntity is null && LocationY > targetHitbox.Y) xVelocity = 0; 
+                xVelocity = 0; 
 
                 SetXCollider(collidingDirection, targetHitbox, collisionTarget); 
             }
@@ -276,15 +277,9 @@
             if (_xStickTarget is not null)
             {
                 if (_curXColliderDirection == Global.XDirections.right)
-                {
-                    LocationX = _xStickTarget.Value.Left - this.Width;
-                    xVelocity = Math.Min(0, xVelocity);
-                }
+                    LocationX = _xStickTarget.Value.Left - this.Width; 
                 else if (_curXColliderDirection == Global.XDirections.left)
-                {
-                    LocationX = _xStickTarget.Value.Right;
-                    xVelocity = Math.Max(0, xVelocity);
-                }
+                    LocationX = _xStickTarget.Value.Right; 
             }
         }
 
@@ -336,7 +331,8 @@
 
             xVelocity += _curXAccel;
 
-            CheckAllPlatformCollision(dt); // check collider after xVelocity as been decided as checkXCollider uses xVelocity
+            // check collider after xVelocity as been decided as checkXCollider uses xVelocity
+            CheckAllPlatformCollision(dt); 
 
             if (Math.Abs(scrollVelocity) > 0) ScrollChar(dt, scrollVelocity);
             else Location = new PointF( 
@@ -344,7 +340,6 @@
                     Location.Y + (float)(yVelocity * dt * Global.BaseScale)); 
 
             if (Math.Abs(xVelocity) <= _maxXVelocity) _knockedBack = false;
-            if (xVelocity == 0) return;
 
             if (!_knockedBack) clampSpeed(_maxXVelocity, _TERMINAL_VELOCITY);
             else clampSpeed(_xKnockbackVelocity, _yKnockbackVelocity);
