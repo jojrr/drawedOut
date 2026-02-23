@@ -21,9 +21,9 @@ namespace drawedOut
 
         protected override void InitEnemies()
         {
-            firstWave();
-            secondWave();
-            thirdWave();
+            // firstWave();
+            // secondWave();
+            // thirdWave();
 
             _Tommy = new(
                     activationDoor: ref roomDoor,

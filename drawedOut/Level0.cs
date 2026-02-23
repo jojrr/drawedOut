@@ -814,6 +814,8 @@ namespace drawedOut
             GameUI.ClearAll();
             _characterAnimations.Clear();
 
+            Enemy.ReActivate();
+
             // reset stopwatches
             _deltaTimeSW.Reset();
             levelTimerSW.Reset();

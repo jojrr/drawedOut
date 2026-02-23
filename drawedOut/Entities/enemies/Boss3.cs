@@ -7,46 +7,48 @@ namespace drawedOut
             _X_KNOCK_DAMPEN = 600,
             _Y_KNOCK_DAMPEN = 300,
             _MOV_ENDLAG_S = 3;
+        private static readonly string _animPath = @"boss3\";
         private static readonly Bitmap 
             _projectileSprite = Global.GetSingleImage(@"projectiles\", "enemyBullet.png"),
             _dropProjSprite = Global.GetSingleImage(@"projectiles\", "dropBullet.png"),
-            _downedSprite = Global.GetSingleImage(@"fillerPic\");
+            _downedSprite = Global.GetSingleImage(_animPath,"downed.png");
         private static readonly Random rnd = new Random();
         private static readonly Attacks 
             _chargeAtk = new Attacks(
                     parent: null,
                     width: 180,
                     height: 180,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animPath+@"dashAnim\"),
                     xOffset: 0,
-                    spawn: 0,
+                    spawn: 16,
                     endlag: 1,
-                    dmg: 2),
+                    dmg: 3),
             _slamAtk = new Attacks(
                     parent: null,
                     width: 600,
                     height: 80,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animPath+@"slamAnim\"),
                     xOffset: 0,
                     spawn: 0,
+                    despawn: 1,
                     endlag: 2,
-                    dmg: 3);
+                    dmg: 2);
         private static readonly ProjectileAttack 
             _tripleAtk = new(
                     parent: null,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animPath+@"dropAtk\"),
                     endlag: 2,
-                    spawn: 14,
+                    spawn: 21,
                     projectileEvent: ()=>{},
-                    dmg: 1,
+                    dmg: 2,
                     isLethal: false),
             _jumpAtk = new(
                     parent: null,
-                    animation: new AnimationPlayer(@"fillerAnim\"),
+                    animation: new AnimationPlayer(_animPath+@"jumpAtk\"),
                     endlag: 0,
                     spawn: 14,
                     projectileEvent: ()=>{},
-                    dmg: 1,
+                    dmg: 3,
                     isLethal: false);
 
         private static Stopwatch _levelTimerSW;
@@ -75,8 +77,8 @@ namespace drawedOut
             _activationDoor = activationDoor;
             endlagS = 2;
 
-            setRunAnim(@"fillerAnim\");
-            setIdleAnim(@"fillerPic\");
+            setRunAnim(@"fillerPic\");
+            setIdleAnim(_animPath+@"idle\");
             _chargeAtk.Reset();
             _chargeAtk.Parent=this;
             _slamAtk.Reset();
@@ -195,7 +197,7 @@ namespace drawedOut
             else if (curAttack == _tripleAtk) direction = null;
 
 
-            MoveCharacter(dt, direction, 0);
+            MoveCharacter(dt, null, 0);
 
             if (_curState == 10)
             {
@@ -204,14 +206,30 @@ namespace drawedOut
             }
         }
 
+        bool _doneDash = false;
         private void chargeAtkLogic(double dt)
         {
+            void stopDash()
+            {
+                curAttack = null;
+                _chargeAtk.Reset();
+                _doneDash = false;
+            }
+
+            if (!curAttack.IsActive)
+            {
+                if (_doneDash) stopDash();
+                return;
+            }
+            if (MovingIntoWall) 
+            {
+                stopDash();
+                endlagS = _chargeAtk.Endlag;
+            }
+
+            _doneDash = true;
             xVelocity = _chargeVelocity;
             MoveCharacter(dt, null, 0);
-            if (!MovingIntoWall) return;
-            curAttack = null;
-            endlagS = _chargeAtk.Endlag;
-            _chargeAtk.Reset();
         }
 
         private void DoDrop()
