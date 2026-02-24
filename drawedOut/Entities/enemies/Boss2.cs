@@ -194,9 +194,10 @@ namespace drawedOut
 
             MoveCharacter(dt, xAccel, yAccel);
 
-            if (_curState == 5) 
+            if (_curState >= 5) 
             {
                 _roost = true;
+                _curState = 0;
                 endlagS = _ROOST_TIME;
             }
         }

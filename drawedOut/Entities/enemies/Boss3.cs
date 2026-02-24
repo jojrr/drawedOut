@@ -199,7 +199,7 @@ namespace drawedOut
 
             MoveCharacter(dt, null, 0);
 
-            if (_curState == 10)
+            if (_curState >= 10)
             {
                 endlagS = _MOV_ENDLAG_S;
                 _curState = 0;
