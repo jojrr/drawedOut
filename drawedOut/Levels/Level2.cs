@@ -58,7 +58,7 @@ namespace drawedOut
             CreateNewWall(floorY, 1200, 200, 180);
             CreateNewWall(floorY, 2700, 200, 180);
             room1Plat = new(
-                    origin: new Point(1200+(2900-1200)/2-400, floorY - Player.VisibleHeight*2),
+                    origin: new Point(1200+(2900-1200)/2-400, floorY - (int)(Player.VisibleHeight*1.5)),
                     width: 800,
                     height: 60);
 
