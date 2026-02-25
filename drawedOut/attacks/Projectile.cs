@@ -252,8 +252,8 @@
         {
             Projectile newProj = new(
                     origin: playerBox.Center,
-                    width: (int)(p.AnimRect.Width*1.5),
-                    height: (int)(p.AnimRect.Height*1.5),
+                    width: (int)(p.AnimRect.Width*1.1),
+                    height: (int)(p.AnimRect.Height*1.1),
                     velocity: p.Velocity,
                     parent: playerBox,
                     sprite: _enemyProjectileSprite,

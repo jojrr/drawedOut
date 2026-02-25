@@ -88,6 +88,9 @@ namespace drawedOut
                     maxVal: 1,
                     borderScale: 0.4f);
             _energyBar.SetMax((float)(Player.MaxEnergy), true);
+            _hpBar.UpdateMaxHp(Player.MaxHp);
+            _hpBar.ComputeHP(playerCharacter.Hp);
+            Player.LinkHpBar(ref _hpBar);
         }
 
         private void InitEntities()
@@ -185,6 +188,8 @@ namespace drawedOut
             _threadSettings.MaxDegreeOfParallelism = Global.MAX_THREADS_TO_USE;
 
             ResetLevel();
+            InitUI();
+            _energyBar.Update((float)(playerCharacter.Energy));
             LinkAnimations();
 
             _gameTickThread = new Thread(() =>
@@ -277,11 +282,6 @@ namespace drawedOut
             InitEntities();
             InitPauseMenu();
             playerCharacter.Reset();
-            InitUI();
-            _hpBar.UpdateMaxHp(Player.MaxHp);
-            _hpBar.ComputeHP(playerCharacter.Hp);
-            Player.LinkHpBar(ref _hpBar);
-            _energyBar.Update((float)(playerCharacter.Energy));
         }
 
         // <summary>
@@ -397,6 +397,7 @@ namespace drawedOut
         protected virtual void PlayerDeath()
         {
             ResetLevel();
+            _energyBar.Update((float)(playerCharacter.Energy));
             Checkpoint.LoadState();
         }
 

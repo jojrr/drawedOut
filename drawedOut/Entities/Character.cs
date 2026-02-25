@@ -134,11 +134,9 @@
         /// <param name="collisionTarget"> the <see cref="Entity"/> that is being checked </param>
         private void checkYCollider(RectangleF targetHitbox, Entity collisionTarget)
         {
-            // Checks if there is a platform below
             if (Hitbox.Bottom <= targetHitbox.Bottom && Hitbox.Top < targetHitbox.Top)
                 SetYCollider(Global.YDirections.bottom, targetHitbox, collisionTarget);
-            
-            // Checks if there is a platform above the character
+
             else if (targetHitbox.Top < Hitbox.Top && Hitbox.Bottom > targetHitbox.Bottom)
                 SetYCollider(Global.YDirections.top, targetHitbox, collisionTarget);
         }
@@ -286,18 +284,18 @@
 
         private void DoGravTick(double dt)
         {
-            // if there is no floor beneath -> gravity occurs
-            if (_curYColliderDirection != Global.YDirections.bottom)
-            {
-                IsOnFloor = false;
-                yVelocity += _GRAVITY*dt;
-            }
-
             // Coyote time ticks down 
             if (_coyoteTimeS > 0)
             {
                 _coyoteTimeS -= dt;
                 IsOnFloor = true; // allows for more responsive jumping
+            }
+
+            // if there is no floor beneath -> gravity occurs
+            if (_curYColliderDirection != Global.YDirections.bottom)
+            {
+                IsOnFloor = false;
+                yVelocity += _GRAVITY*dt;
             }
         }
 
