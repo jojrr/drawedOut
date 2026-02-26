@@ -61,6 +61,19 @@
             _inactivePlatformList.Add(this);
         }
 
+        /// <summary>
+        /// Get the rectangle to draw of this platform after applying culling
+        /// </summary>
+        /// <param name="levelW"> the width of the screen (pixels) </param>
+        /// <param name="levelH"> the height of the screen (pixels) </param>
+        /// <param name="buffer"> 
+        /// The amount of the rectangle that should still be drawn off-screen.(pixels)
+        /// </param>
+        /// <returns> 
+        /// Null if platform is completely off-screen. 
+        /// Otherwise, portion of platform that is on-screen as a rectangle, 
+        /// after taking into account the buffer value. 
+        /// </returns>
         public RectangleF? GetDrawingBox(float levelW, float levelH, int buffer)
         {
             SizeF recSize = Size;
