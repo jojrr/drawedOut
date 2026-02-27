@@ -31,7 +31,7 @@ namespace drawedOut
 
         private void FindFloor()
         {
-            int x = (int)(this.LocationX);
+            int x = (int)(this.Center.X);
             int y1 = (int)(this.Hitbox.Bottom);
 
             while (++y1 <= Global.LevelSize.Height)

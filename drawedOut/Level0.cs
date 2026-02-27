@@ -89,7 +89,6 @@ namespace drawedOut
                     borderScale: 0.4f);
             _energyBar.SetMax((float)(Player.MaxEnergy), true);
             _hpBar.UpdateMaxHp(Player.MaxHp);
-            _hpBar.ComputeHP(playerCharacter.Hp);
             Player.LinkHpBar(ref _hpBar);
         }
 
@@ -189,7 +188,6 @@ namespace drawedOut
 
             ResetLevel();
             InitUI();
-            _energyBar.Update((float)(playerCharacter.Energy));
             LinkAnimations();
 
             _gameTickThread = new Thread(() =>
@@ -397,6 +395,7 @@ namespace drawedOut
         protected virtual void PlayerDeath()
         {
             ResetLevel();
+            _hpBar.ComputeHP(playerCharacter.Hp);
             _energyBar.Update((float)(playerCharacter.Energy));
             Checkpoint.LoadState();
         }
