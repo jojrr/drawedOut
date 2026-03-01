@@ -284,19 +284,17 @@
 
         private void DoGravTick(double dt)
         {
-            // Coyote time ticks down 
-            if (_coyoteTimeS > 0)
-            {
-                _coyoteTimeS -= dt;
-                IsOnFloor = true; // allows for more responsive jumping
-            }
-
             // if there is no floor beneath -> gravity occurs
             if (_curYColliderDirection != Global.YDirections.bottom)
             {
                 IsOnFloor = false;
                 yVelocity += _GRAVITY*dt;
             }
+            
+            _coyoteTimeS -= dt;
+            // Coyote time ticks down 
+            if (_coyoteTimeS > 0) IsOnFloor = true; // allows for more responsive jumping
+            else _coyoteTimeS = 0;
         }
 
 

@@ -120,7 +120,7 @@ namespace drawedOut
         public Player(Point origin, int width, int height, int attackPower, int energy, Level0 curLevel,
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, xAccel: xAccel, maxXVelocity: maxXVelocity,
-                 hp: MaxHp)
+                 hp: MaxHp, jumpVelocity: 1400)
         {
             _energy = 0;
             IsActive = true;
