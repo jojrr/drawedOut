@@ -69,7 +69,7 @@ namespace drawedOut
                     width: 200,
                     height: 40);
             room2Plat = new(
-                    origin: new Point(4100, floorY - 550),
+                    origin: new Point(4100, floorY - 500),
                     width: 700,
                     height: 60);
 
@@ -129,7 +129,7 @@ namespace drawedOut
         protected override void InitProps()
         { 
             Checkpoint newCheckpoint;
-            newCheckpoint = new(origin: new Point( (int)(_door4.LocationX - 800), 500 ));
+            newCheckpoint = new(origin: new Point(6000, 500));
             newCheckpoint = new(origin: new Point(_LEVELWIDTH-2300, 500)); 
         }
 

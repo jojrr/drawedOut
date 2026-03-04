@@ -112,8 +112,8 @@ namespace drawedOut
             Animation = animation;
             spawnFrame = spawn;
             despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
-            _xOffset = xOffset * Global.BaseScale;
-            _yOffset = yOffset * Global.BaseScale;
+            _xOffset = xOffset;
+            _yOffset = yOffset;
         }
 
         /// <summary>
@@ -163,8 +163,8 @@ namespace drawedOut
             Animation = animation;
             spawnFrame = spawn;
             despawnFrame = (despawn == -1) ? animation.LastFrame : despawn;
-            _xOffset = xOffset * Global.BaseScale;
-            _yOffset = yOffset * Global.BaseScale;
+            _xOffset = xOffset;
+            _yOffset = yOffset;
         }
 
         /// <summary>
@@ -230,13 +230,14 @@ namespace drawedOut
             {
                 PointF ParentCenter = atk.Parent.Center;
 
+                float bScale = Global.BaseScale;
                 float xOffset = atk._xOffset;
                 if (atk.Parent.FacingDirection == Global.XDirections.left)
                     xOffset = -xOffset;
 
                 atk.UpdateHitboxCenter( 
-                        x: ParentCenter.X + xOffset,
-                        y: ParentCenter.Y - atk._yOffset);
+                        x: ParentCenter.X + xOffset*bScale,
+                        y: ParentCenter.Y - atk._yOffset*bScale);
             }
 
             if (_disposedAttacks.Count == 0) return;

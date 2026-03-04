@@ -120,7 +120,7 @@ namespace drawedOut
         public Player(Point origin, int width, int height, int attackPower, int energy, Level0 curLevel,
                 int xAccel=100, int maxXVelocity=600)
             :base(origin: origin, width: width, height: height, xAccel: xAccel, maxXVelocity: maxXVelocity,
-                 hp: MaxHp, jumpVelocity: 1400)
+                 hp: MaxHp, jumpVelocity: 1200)
         {
             _energy = 0;
             IsActive = true;
@@ -231,7 +231,7 @@ namespace drawedOut
         }
         private void fireSpecial3()
         {
-            int xOffset = (FacingDirection == Global.XDirections.right) ? 367 : -367;
+            int xOffset = (FacingDirection == Global.XDirections.right) ? 267 : -267;
             int dmg = (int)(_energy / 20) + 1;
             _energy = 0;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
