@@ -108,7 +108,9 @@ namespace drawedOut
 
         public new static void ClearAllLists()
         {
+            _levelXOffset=0;
             _lastSavedPoint=null;
+            _storePlayerLocation=null;
             _checkPointList.Clear();
         }
     }
