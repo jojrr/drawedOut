@@ -9,8 +9,7 @@ namespace drawedOut
         protected static Stopwatch levelTimerSW = new Stopwatch();
         protected static Player playerCharacter;
         private readonly Point _playerStartPos;
-        protected Platform roomDoor;
-        protected Platform basePlate;
+        protected Platform basePlate, roomDoor;
 
         private readonly int _levelWidth;
         private readonly byte _levelNo;
@@ -28,8 +27,7 @@ namespace drawedOut
         private Thread _gameTickThread;
 
         // pause menu components
-        private GameButton _resumeBtn;
-        private GameButton _quitBtn;
+        private GameButton _quitBtn, _resumeBtn;
         private Point _mouseLoc;
 
         // UI elements
@@ -50,19 +48,24 @@ namespace drawedOut
 
         private bool
             _showTime = false,
+            _levelActive = true,
             _showHitboxes = false,
             _timerStarted = false,
-            _levelActive = true,
             _showDebugInfo = false,
 
+            _jumping = false,
             _movingLeft = false,
             _movingRight = false,
-            _jumping = false,
 
+            _isPaused = false,
             _slowedMov = false,
-            _levelLoaded = false,
-            _isPaused = false;
+            _levelLoaded = false;
 
+        /// <summary> Method to create a wall, with the bottom on the floor </summary>
+        /// <param name="floorY">The y level of the floor </param>
+        /// <param name="x">x levle of the platform </param>
+        /// <param name="pWidth">Width of the platform</param> 
+        /// <param name="pHeight">Height of the platform</param> 
         protected Platform CreateNewWall(int floorY, int x, int pWidth, int pHeight)
         {
             Platform newWall;
@@ -792,6 +795,7 @@ namespace drawedOut
             TryInvoke(QuitToMenu);
         }
 
+        /// <summary> Method to quit to the level select menu </summary>
         private void QuitToMenu()
         {
             // shown menu
