@@ -2,6 +2,9 @@
 {
     internal abstract class Character : Entity
     {
+        
+        // NOTE: all velocities in pixels/second
+
         public Global.XDirections FacingDirection { get; protected set; }
         public bool IsOnFloor { get; private set; }
         public bool MovingIntoPlatform 
@@ -55,11 +58,6 @@
         /// <summary>
         /// Initalises a "character" (entity with velocity and gravity)
         /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="hp"> 
-        ///
         protected Character(Point origin, int width, int height, int hp, int xAccel, int maxXVelocity, 
             int maxYVelocity=_TERMINAL_VELOCITY, int jumpVelocity=1100)
             : base(origin: origin, width: width, height: height)
@@ -150,6 +148,7 @@
             if (xVelocity == 0) return;
             float centerX = Center.X;
             double finalX = centerX + xVelocity*dt;
+            // check slightly beyond the left and slightly beyond the right of the player's movement vector
             double left = Math.Min(finalX, centerX)*0.9;
             double right = Math.Max(finalX, centerX)*1.1;
             if (left <= targetHitbox.Right && right >= targetHitbox.Left)
@@ -265,7 +264,7 @@
                 // adds coyote time if there is a platform below the character, and sets the Y value of the character to the platform
                 else if (_curYColliderDirection == Global.YDirections.bottom)
                 {
-                    _coyoteTimeS = 0.05;
+                    _coyoteTimeS = 0.05; // coyoteTime as 0.05s 
                     LocationY = _yStickTarget.Value.Y - Height + 1;
                     yVelocity = Math.Min(yVelocity, 0);
                 }
@@ -291,9 +290,11 @@
                 yVelocity += _GRAVITY*dt;
             }
             
+            // coyote time allows the player to jump despite not technically being on the floor within a certain window of falling off a platform
+            // allows for more responsive-feeling platforming
             _coyoteTimeS -= dt;
             // Coyote time ticks down 
-            if (_coyoteTimeS > 0) IsOnFloor = true; // allows for more responsive jumping
+            if (_coyoteTimeS > 0) IsOnFloor = true;
             else _coyoteTimeS = 0;
         }
 

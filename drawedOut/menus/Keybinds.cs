@@ -6,7 +6,9 @@ namespace drawedOut
         public static IReadOnlyDictionary<Keys, Actions> Bindings => _keyActionDict;
         public static IReadOnlyDictionary<Actions, Keys> ActionBindings => _actionKeyDict;
 
+        // used to quickly get the action when a key is pressed in game
         private static Dictionary<Keys, Actions> _keyActionDict = new Dictionary<Keys, Actions>();
+        // used to quickly get the key to override when an action is clicked in settings
         private static Dictionary<Actions, Keys> _actionKeyDict = new Dictionary<Actions, Keys>();
 
         static Keybinds()

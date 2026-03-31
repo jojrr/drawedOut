@@ -12,13 +12,15 @@ namespace drawedOut
     {
         public const int
             DEFAULT_FONT_SIZE = 25,
-            MAX_THREADS_TO_USE = 4;
+            MAX_THREADS_TO_USE = 4; // the max number of threads used by parallel processes 
+                                    //(used in paralell options)
         public const float 
-            ZOOM_FACTOR = 1.05F,
-            SLOW_FACTOR = 0.28F,
-            SLOW_DURATION_S = 0.25F,
-            FREEZE_DURATION_S = 0.15F,
-            ANIMATION_FPS = 1000/24F;
+            ZOOM_FACTOR = 1.05F,        // zoom screen by 5%
+            SLOW_FACTOR = 0.28F,        // slow to 28% of original speed
+            SLOW_DURATION_S = 0.25F,    // slow for 0.25 seconds
+            FREEZE_DURATION_S = 0.15F,  // freeze for 0.15 seconds.
+            ANIMATION_FPS = 1000/24F;   // set the animations to play at 24fps
+                                        //1000/24 gets the time duration that each frame should be on screen for
 
         private static float _leftScrollBound = 0, _rightScrollBound = 0;
         public static float LeftScrollBound { get => _leftScrollBound; }
@@ -40,6 +42,8 @@ namespace drawedOut
 
         /// <summary>
         /// Threshold for entities to be "active" (either side of screen center)
+        /// current value = 0.6 (60% the width of the screen from the centre on both sides, <br/>
+        /// So 10% of the screen width past the viewport area
         /// </summary>
         public static int EntityLoadThreshold { get => (int)(_levelSize.Width*0.6); }
 
@@ -91,8 +95,9 @@ namespace drawedOut
                 _curResolution = value;
                 _levelSize = ResDict[value];
                 float scaleWidth = _levelSize.Width;
-                float scrollBoundPercent = 0.4F;
+                float scrollBoundPercent = 0.4F; // percent of width of screen from both sides of the screen that should also the level to scroll when the player moves against the respective side. (0.4 = 40% width of screen)
 
+                // _baseScale = 1 at 1080p resolution and the base scale is changed appropriately for the other resolutions
                 switch (value)
                 {
                     case Resolutions.p720:
@@ -107,10 +112,10 @@ namespace drawedOut
                 }
 
 
-                _defaultFont = new Font(SourGummy, DEFAULT_FONT_SIZE*_baseScale);
+                _defaultFont = new Font(SourGummy, DEFAULT_FONT_SIZE*_baseScale); // scale the font
                 _leftScrollBound = (int)(scaleWidth * scrollBoundPercent);
                 _rightScrollBound = (int)(scaleWidth * (1-scrollBoundPercent));
-                CalcNewCenter();
+                CalcNewCenter(); // get the new center point of the screen -> used for calculations
             }
         }
 
@@ -125,6 +130,9 @@ namespace drawedOut
         public static Font DefaultFont => _defaultFont;
         public static FontFamily SourGummy { get; private set;}
 
+        /// <summary>
+        /// import the font into the project from the ttf file.
+        /// </summary>
         public static void ImportFont()
         { 
             PrivateFontCollection fontCollection = new PrivateFontCollection();
@@ -157,9 +165,12 @@ namespace drawedOut
         }
 
         /// <summary>
-        /// Convert retrived image file into a bitmap with a standardised scaling used across the game.
+        /// Convert retrived image file into a bitmap with a standardised scaling used across the game. <br/>
+        /// Default resolution is 256x256 due to windows forms struggling with large images.
         /// </summary>
         /// <param name="fileDirectory"> The full directory of the file to convert. </param>
+        /// <param name="spriteWidth"> The pixel width of the image </param>
+        /// <param name="spriteHeight"> The pixel height of the image </param>
         /// <returns> A <see cref="Bitmap"/>, in the shape of a square, scaled to fit the resolution </returns>
         public static Bitmap ImageToBitmap(string fileDirectory, 
                 UInt16 spriteWidth=256, UInt16 spriteHeight=256)
@@ -175,13 +186,16 @@ namespace drawedOut
         }
 
         /// <summary>
-        /// get a single image from the specified folder.
+        /// get a single image from the specified folder. <br/>
+        /// Default resolution is 256x256 due to windows forms struggling with large images.
         /// </summary>
         /// <param name="folderName"> the name of the folder stored within the "sprites/" directory </param>
         /// <param name="fileName"> 
         /// The name of the file within the specified folder <br/>
         /// Default: null (returns first item) 
         /// </param>
+        /// <param name="spriteWidth"> The pixel width of the image </param>
+        /// <param name="spriteHeight"> The pixel height of the image </param>
         /// <returns> 
         /// A single <see cref="Bitmap"/> image of the specified file in the folder.<br/>
         /// By default if fileName is unset, will return the first item in the folder.

@@ -20,7 +20,7 @@ namespace drawedOut
         private static AnimationPlayer 
             _jumpAnim, _fallAnim, _parryAnim,
             _spec1Anim, _spec2Anim, _ultAnim;
-        private const float ULT_SLOW_FACTOR=0.01f;
+        private const float ULT_SLOW_FACTOR=0.01f; // ultimate ability will slow the game to 1% of the original speed.
         private const int 
             PASSIVE_ENERGY_GAIN_S = 6,
             PASSIVE_GAIN_LIMIT = 50,
@@ -231,25 +231,25 @@ namespace drawedOut
         }
         private void fireSpecial3()
         {
-            int xOffset = (FacingDirection == Global.XDirections.right) ? 267 : -267;
-            int dmg = (int)(_energy / 20) + 1;
+            int xOffset = (FacingDirection == Global.XDirections.right) ? 267 : -267; // xOffset of the centre of the projectile
+            int dmg = (int)(_energy / 20) + 1; // add one damage to _energy/20
             _energy = 0;
             PlayerUltProjectile special3Proj = new PlayerUltProjectile(
                 origin: new PointF(this.Center.X + xOffset, -7670),
                 parent: this,
                 dmg:dmg,
-                heal:1,
+                heal:1,             // heal the player by 1
                 width: 500,
                 height: 7500,
                 accel: 2500,
                 velocity: 2200,
-                maxSpeed: 25000,
-                angle: Math.PI/2,
+                maxSpeed: 25000,    // projectile accelerates and this is the max speed (pixels/second)
+                angle: Math.PI/2,   // 90 degrees from the right, so goes down
                 sprite: _ultSprite
                 );
 
-            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, 3f);
-            _curLvl.ZoomScreen(1.1f, 1);
+            _curLvl.DoSlowTime(ULT_SLOW_FACTOR, 3f); // apply slow for 3s
+            _curLvl.ZoomScreen(1.1f, 1);             // zoom by 10% for 1s 
         }
 # endregion
 
@@ -265,6 +265,11 @@ namespace drawedOut
         }
 
 
+        /// <summary>
+        /// Do Melee damage to the player
+        /// </summary>
+        /// <param name="xSpeed"> the x speed of the knockback </param>
+        /// <param name="ySpeed"> the y speed of the knockback </param>
         public void DoDamage(Attacks sourceAttack, int xSpeed=1000, int ySpeed=500)
         {
             if (iFrames>0) return;
@@ -315,7 +320,7 @@ namespace drawedOut
         {
             _curLvl.DoSlowTime();
             _curLvl.ZoomScreen();
-            _energy += (int)(PARRY_ENERGY_GAIN*0.5);
+            _energy += (int)(PARRY_ENERGY_GAIN*0.5); // add bonus energy
             _parryEndlagS = 0;
         }
 
@@ -444,6 +449,10 @@ namespace drawedOut
             return true;
         }
 
+        /// <summary>
+        /// check if the player is in the bounds of the screen
+        /// if not, kill the player
+        /// </summary>
         public override void CheckActive() 
         { if (!checkInBoundary()) Hp = 0; }
     }

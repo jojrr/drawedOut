@@ -8,6 +8,7 @@ namespace drawedOut
         private static Checkpoint? _lastSavedPoint = null;
         private static PointF? _storePlayerLocation = null;
         private static Bitmap _defaultSprite, _usedSprite;
+        // the default width and height of the objects 
         private const int
             _BASE_WIDTH = 200,
             _BASE_HEIGHT = 140;
@@ -31,7 +32,7 @@ namespace drawedOut
         {
             get 
             {
-                SizeF recSize = new SizeF(Width,Width);
+                SizeF recSize = new SizeF(Width,Width); // square hitbox
                 PointF point = new PointF(Center.X - recSize.Width/2, Hitbox.Bottom - recSize.Width);
                 return new RectangleF(point, recSize);
             }
@@ -41,6 +42,7 @@ namespace drawedOut
         public void SaveState(Player player, Platform basePlat)
         {
             if (_lastSavedPoint == this) return;
+            // store the x offset of the level at the point when the player hits the checkpoint
             _levelXOffset = basePlat.OriginLocation.X - basePlat.LocationX;
             _storePlayerLocation = player.Location;
             _lastSavedPoint = this;

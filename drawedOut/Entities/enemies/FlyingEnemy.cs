@@ -7,13 +7,14 @@ namespace drawedOut
             _MOV_ENDLAG_S = 1,
             _ATK_ENDLAG_S = 3,
             _MAX_MOVEMENT_TIME_S = 2,
-            _DEFAULT_PREFERRED_HEIGHT = 160,
+            _DEFAULT_PREFERRED_HEIGHT = 160, // the enemy will try to keep this distance above the player
             _DEFAULT_PROJECTILE_VELOCITY = 1000;
         private static readonly Bitmap 
             _projectileSprite,
             _downedSprite;
         private static readonly string _animFolder = @"flyingEnemy\";
         private readonly ProjectileAttack _projectileAttack;
+        // NOTE: squared distances are used to reduce computation
         private readonly float _maxRangeSqrd, _minRangeSqrd, _preferredHeight;
         private readonly int _projectileSpeed;
         private readonly Size _projectileSize;
@@ -163,7 +164,7 @@ namespace drawedOut
         private void decelerate(double dt)
         {
             double deceleration = _FRICTION*dt;
-            if (knockedBack) deceleration *= 10;
+            if (knockedBack) deceleration *= 10; //increase deceleration when knocked back
             double xSpeed = Math.Abs(xVelocity);
             double ySpeed = Math.Abs(yVelocity);
             if (Math.Abs(xVelocity) > deceleration)  xVelocity = Math.CopySign(xSpeed-deceleration, xVelocity);

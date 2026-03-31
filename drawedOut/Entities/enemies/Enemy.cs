@@ -10,12 +10,15 @@ namespace drawedOut
         private static HashSet<Enemy> _activeEnemyList = new HashSet<Enemy>();
         private static HashSet<Enemy> _inactiveEnemyList = new HashSet<Enemy>();
         private static bool _allInactive = false;
+        // default knockback taken in pixels/second from attacks
         private const int 
             _DEFAULT_X_KNOCKBACK = 1000, 
             _DEFAULT_Y_KNOCKBACK = 500;
         private const float _DEFAULT_DOWN_TIME_S = 5;
+        // knocbback dampening from player attacsk 
         private readonly int _xKnockDampen, _yKnockDampen;
         private readonly float _maxDownTime;
+        // timer to track how long the enemy has been downed for
         private double _downTimer = 0;
 
         public Enemy(Point origin, int width, int height, int hp,
@@ -126,7 +129,8 @@ namespace drawedOut
                 return;
             }
             _downTimer += dt;
-            iFrames = 67;
+            iFrames = 67;   // apply arbitrary duration of iFrames as long as the enemy is downed
+                            // (should probably be bigger than duration of one game tick)
         }
 
         protected void DoDeath()
@@ -157,11 +161,11 @@ namespace drawedOut
         private const int 
             ATK_ENDLAG_S = 1,
             MOV_ENDLAG_S = 3,
-            ATK_X_OFFSET = 100,
+            ATK_X_OFFSET = 100,     // in pixels
             MAX_MOVEMENT_TIME_S = 3;
         private readonly double 
-            _maxRange,
-            _jumpRange;
+            _maxRange,  // (in pixels) if the player is further than this horizontally, the enemy will move towards the player.
+            _jumpRange; // (in pixels) if the player is further than this vertically, the enemy will jump
         private readonly AnimationPlayer _atkAnim = new AnimationPlayer(@"meleeEnemy\atk\");
         private static Bitmap _downedSprite;
         private readonly Attacks _mainAtk;

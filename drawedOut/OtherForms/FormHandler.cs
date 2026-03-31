@@ -27,13 +27,10 @@ namespace drawedOut
 
         public void Form_Closing(object sender, FormClosingEventArgs e)
         { Application.Exit(); }
-
-        private void FormHandler_Load_1(object sender, EventArgs e)
-        {
-
-        }
     }
 
+
+    // designer code here because I want to avoid an extra file
 
     partial class FormHandler
     {

@@ -38,6 +38,8 @@ namespace drawedOut
             this.DoubleBuffered = true;
             this.AutoScaleMode=AutoScaleMode.None;
 
+            // NOTE: rank times are in seconds
+
             Dictionary<float,Ranks> tutorialRanks = new Dictionary<float,Ranks>()
             {
                 { 35, Ranks.S },

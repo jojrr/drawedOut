@@ -2,12 +2,13 @@ namespace drawedOut
 {
     internal class SecondBoss : Enemy
     {
+
         private const int 
             _FRICTION = 200,
             ATK_X_OFFSET = 100,
             _X_KNOCK_DAMPEN = 200,
             _Y_KNOCK_DAMPEN = 200,
-            _PREFERRED_HEIGHT = 400,
+            _PREFERRED_HEIGHT = 400, // the boss will try to keep this distance above the player
             _ROOST_TIME = 2,
             _HP = 10;
         private static readonly string _animPath =  @"boss2\";
@@ -32,6 +33,7 @@ namespace drawedOut
                     dmg: 1,
                     projectileEvent: ()=>{});
 
+        // NOTE: squared distances are used to reduce computation
         private readonly double _maxRangeSqrd, _minRangeSqrd;
         private readonly Platform _activationDoor; 
         private readonly Action _itemDrop;
@@ -227,7 +229,7 @@ namespace drawedOut
         private void decelerate(double dt)
         {
             double deceleration = _FRICTION*dt;
-            if (knockedBack) deceleration *= 10;
+            if (knockedBack) deceleration *= 10;//increase deceleration when knocked back
             double xSpeed = Math.Abs(xVelocity);
             double ySpeed = Math.Abs(yVelocity);
             if (Math.Abs(xVelocity) > deceleration)  xVelocity = Math.CopySign(xSpeed-deceleration, xVelocity);

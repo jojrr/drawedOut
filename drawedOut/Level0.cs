@@ -3,7 +3,7 @@ namespace drawedOut
 {
     internal abstract partial class Level0 : Form
     {
-        public static double AbsDeltaTime { get; private set; }
+        public static double AbsDeltaTime { get; private set; } // AbsDeltaTime used when the game is slowed and the 
         public float playerRelX => playerCharacter.LocationX-basePlate.LocationX;
 
         protected static Stopwatch levelTimerSW = new Stopwatch();
@@ -43,8 +43,7 @@ namespace drawedOut
             _curZoom = 1, 
             _slowTimeS = 0,
             _slowFactor = 0,
-            _zoomDuration = 0,
-            _animSlowFactor = 1;
+            _zoomDuration = 0;
 
         private bool
             _showTime = false,
@@ -209,7 +208,8 @@ namespace drawedOut
                         continue; 
                     }
 
-                    double deltaTime = slowTime(getDeltaTime());
+                    // get the deltaTime value after the slow factor is applied
+                    double deltaTime = slowTime(getDeltaTime()); 
                     TickAnimations(animTickSW);
 
                     movementTick(deltaTime);
@@ -222,6 +222,10 @@ namespace drawedOut
             });
         }
 
+        /// <summary>
+        /// method to allow levels to apply custom logic that is not implemented in this class. <br/>
+        /// To be overridden.
+        /// </summary>
         protected virtual void otherLogic(double dt) {}
 
         private void FindMouse() => _mouseLoc = PointToClient(Cursor.Position);
@@ -238,20 +242,18 @@ namespace drawedOut
 
         private void TickAnimations(Stopwatch animTickSW)
         {
-            double animationInterval = animTickSW.Elapsed.TotalMilliseconds;
+            double elapsedAnimTime = animTickSW.Elapsed.TotalMilliseconds;
 
-            if (playerCharacter.UltActive) 
+            // if the player us using their ultimate ability, the player character only should ignore _slowFactor for animations
+            if (playerCharacter.UltActive && elapsedAnimTime >= Global.ANIMATION_FPS)
             { 
-                if (animationInterval >= Global.ANIMATION_FPS) 
-                {
-                    _characterAnimations[playerCharacter]=playerCharacter.NextAnimFrame();
-                    animTickSW.Restart();
-                }
+                _characterAnimations[playerCharacter] = playerCharacter.NextAnimFrame(); 
+                animTickSW.Restart(); // restart the stopwatch stopwatch will not be reset otherwise
             }
 
-            if (_slowTimeS > 0) animationInterval *= Global.SLOW_FACTOR;
+            if (_slowTimeS > 0) elapsedAnimTime *= _slowFactor; // decrease the elapsed time by SlowFactor
 
-            if (animationInterval < Global.ANIMATION_FPS*_animSlowFactor) return;
+            if (elapsedAnimTime < Global.ANIMATION_FPS) return; // apply animation slow factor and check
 
             foreach (KeyValuePair<Character, Bitmap?> c in _characterAnimations)
             {
@@ -265,6 +267,7 @@ namespace drawedOut
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // apply settings
             _showTime = Global.ShowTime;
             _showHitboxes = Global.ShowHitboxes;
             _isPaused = false;
@@ -274,7 +277,7 @@ namespace drawedOut
             _gameTickThread.Start();
 
             _levelLoaded = true;
-            GC.Collect();
+            GC.Collect(); // collect residual garbage from the menu
         }
 
         private void ResetLevel()
@@ -296,7 +299,7 @@ namespace drawedOut
             foreach (Enemy e in Enemy.ActiveEnemyList) _characterAnimations.Add(e, e.NextAnimFrame());
         }
 
-
+        
         private double getDeltaTime()
         {
             double deltaTime = _deltaTimeSW.Elapsed.TotalSeconds;
@@ -306,6 +309,13 @@ namespace drawedOut
         }
 
 
+        /// <summary>
+        /// Apply slowTime to the game.
+        /// </summary>
+        /// <param name="factor"> The factor to slow the game by. <br/>
+        /// 1=base speed, 0.5=half speed, etc 
+        /// </param>
+        /// <param name="duration">The duration that the slow will last in seconds.</param>
         public void DoSlowTime(float factor=Global.SLOW_FACTOR, float duration=Global.SLOW_DURATION_S)
         {
             if (factor > 1) throw new Exception("slow time factor must not be > 1");
@@ -314,10 +324,13 @@ namespace drawedOut
         }
 
 
+        /// <summary>
+        /// Ticks down the _zoomDuration and _slowTimeS if they are bigger than 0.
+        /// Then returns the slowed time if _slowTimeS > 0, else returns the deltaTime.
+        /// </summary>
         private double slowTime(double deltaTime)
         {
-            if (_zoomDuration > 0)
-            { _zoomDuration-= (float)deltaTime; }
+            if (_zoomDuration > 0) _zoomDuration-= (float)deltaTime; 
             else if (_curZoom != 1)
             {
                 unZoomScreen(); 
@@ -342,12 +355,7 @@ namespace drawedOut
 
         private void attackHandler(double deltaTime)
         {
-            if (playerCharacter.UltActive) _animSlowFactor=5;
-            else
-            {
-                _animSlowFactor=1;
-                checkAttackCollisions();
-            }
+            if (!playerCharacter.UltActive) checkAttackCollisions();
 
             Projectile.CheckProjectileCollisions(deltaTime, this, playerCharacter);
             playerCharacter.TickAllCounters(deltaTime);
@@ -570,7 +578,6 @@ namespace drawedOut
 
         private void DrawCharacters(Graphics g)
         {
-            // TODO: try put animation in classes
             foreach (KeyValuePair<Character, Bitmap?> img in _characterAnimations)
             {
                 if (img.Value is null) continue;
@@ -828,6 +835,7 @@ namespace drawedOut
             _levelActive = false;
             _cancelTokenSrc.Cancel();
 
+            // collect undisposed garbage
             GC.Collect();
         }
     }

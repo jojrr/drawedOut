@@ -11,8 +11,10 @@
         private static string _spritePath = @"sprites/platforms/platformSprite/platformSprite.png";
 
         private PointF _originalLocation;
-        private bool _toggleable;
+        private bool _toggleable;   // if true, then this platform will not follow the isActive logic.
+                                    // instead the active state of the platform must be manually managed
 
+        // unused as windows forms stops taking user input once sprites are attempted to be drawn on the platforms.
         private static void _setPlatformSprite()
         {
             string directory = Path.Combine(Global.GetProjFolder(), _spritePath);
@@ -43,6 +45,9 @@
             else _inactivePlatformList.Add(this);
         }
 
+        /// <summary>
+        /// Activate a toggleable platform
+        /// </summary>
         public void Activate() 
         {
             if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
@@ -52,6 +57,9 @@
             _activePlatformList.Add(this);
         }
 
+        /// <summary>
+        /// Deactivate a toggleable platform
+        /// </summary>
         public void Deactivate()
         {
             if (!_toggleable) throw new Exception("untoggleable platform tried to be toggled");
@@ -134,6 +142,8 @@
         public override void CheckActive()
         {
             if (_toggleable) return;
+            // platforms use double the EntityLoadThreshold as they do not have movement or animation logic.
+            // They are also more important to load when further as enemies need to stand on them 
             if (this.DistToMid > Global.EntityLoadThreshold*2)
             {
                 if (!IsActive) return;

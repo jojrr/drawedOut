@@ -109,7 +109,7 @@ namespace drawedOut
             Color txtColor = Color.Black;
             if (SelectedButton==this)
             {
-                using (Brush bgBrush = new SolidBrush(Color.FromArgb(255, 20, 20, 20)))
+                using (Brush bgBrush = new SolidBrush(Color.FromArgb(255, 20, 20, 20))) // dark grey/black
                 { g.FillRectangle(bgBrush, _bounds); }
                 txtColor = Color.White;
             }

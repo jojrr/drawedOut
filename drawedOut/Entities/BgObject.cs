@@ -5,6 +5,7 @@ namespace drawedOut
         public Bitmap Sprite { get; init; }
 
         private static List<BgObj> _bgObjList = new List<BgObj>();
+        // the default width and height of the objects 
         private const int
             _BASE_WIDTH = 150,
             _BASE_HEIGHT = 150;
